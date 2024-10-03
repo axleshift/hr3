@@ -1,0 +1,49 @@
+name: Build
+
+on:
+    push:
+        branches: ["main"]
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Lint client
+        run: |
+          cd client
+          npm i
+          npm run lint
+          cd ..
+
+      - name: Build client
+        run: |
+          cd client
+          npm run build
+          cp build/assets ../server/public/ -r
+          cp build/index.html ../server/resources/views
+          rm -rf ../server/resources/views/index.blade.php
+          cp ../server/resources/views/index.html ../server/resources/views/index.blade.php
+          cd ..
+
+      - name: Upload
+        id: push_directory
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: server/
+          destination-github-username: 'freight-capstone'
+          destination-repository-name: 'hr3'
+          user-email: mrepol742@gmail.com
+          commit-message: Production
+          target-branch: build
+          
