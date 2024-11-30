@@ -6,22 +6,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Freight
+class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
+    protected $table = 'users';
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'login_method',
-        'status',
-        'type',
+        'firstName',
+        'lastName',
+        'role',
         'email',
         'password'
     ];
@@ -32,6 +32,10 @@ class User extends Freight
      * @var array<int, string>
      */
     protected $hidden = [
+        'firstName',
+        'lastName',
+        'role',
+        'email',
         'password',
         'remember_token',
     ];

@@ -13,10 +13,13 @@
         "axios": "^1.6.4",
         "bootstrap": "^5.2.3",
         "javascript-obfuscator": "^4.1.1",
-        "laravel-vite-plugin": "^1.0",
+        "laravel-vite-plugin": "^1.0.5",
         "moment": "^2.30.1",
         "prettier": "^3.3.2",
-        "sass": "^1.56.1",
-        "vite": "^5.0"
+        "sass": "^1.80.5",
+        "vite": "^5.4.10"
+    },
+    "dependencies": {
+        "puppeteer": "^23.7.1"
     }
 }

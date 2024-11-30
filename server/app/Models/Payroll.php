@@ -2,23 +2,27 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
-class Payroll extends Freight{
+class Payroll extends Model
+{
+    use HasFactory;
+    protected $table = 'payrolls';
 
-    use HasFactory, Notifiable;  
- 
     protected $fillable = [
-        'employeeID',
-      'employeeName',
-      'Department',
-      'salary',
-      'paymentMethod',
-      'numDays',
-      'ratePerDay',
+        'employeeId',
+        'employeeName',
+        'basicSalary',
+        'overtime',
+        'benefits',
+        'deductions',
+        'bonus',
+        'netSalary',
+        'hoursWorked',
+        'paymentMethod',
+        'accountNumber',
+        'status',
+        // 'note',
     ];
 }
-

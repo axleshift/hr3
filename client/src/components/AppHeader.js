@@ -14,16 +14,8 @@ import {
   CNavItem,
   useColorModes,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilContrast,
-  cilEnvelopeOpen,
-  cilList,
-  cilMenu,
-  cilMoon,
-  cilSun,
-} from '@coreui/icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBell, faMoon, faSun, faAdjust, faBars } from '@fortawesome/free-solid-svg-icons'
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
@@ -49,7 +41,7 @@ const AppHeader = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
         >
-          <CIcon icon={cilMenu} size="lg" />
+          <FontAwesomeIcon icon={faBars} size="lg" />
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
@@ -61,7 +53,7 @@ const AppHeader = () => {
         <CHeaderNav className="ms-auto">
           <CNavItem>
             <CNavLink href="#">
-              <CIcon icon={cilBell} size="lg" />
+              <FontAwesomeIcon icon={faBell} size="lg" />
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
@@ -72,11 +64,11 @@ const AppHeader = () => {
           <CDropdown variant="nav-item" placement="bottom-end">
             <CDropdownToggle caret={false}>
               {colorMode === 'dark' ? (
-                <CIcon icon={cilMoon} size="lg" />
+                <FontAwesomeIcon icon={faMoon} size="lg" />
               ) : colorMode === 'auto' ? (
-                <CIcon icon={cilContrast} size="lg" />
+                <FontAwesomeIcon icon={faAdjust} size="lg" />
               ) : (
-                <CIcon icon={cilSun} size="lg" />
+                <FontAwesomeIcon icon={faSun} size="lg" />
               )}
             </CDropdownToggle>
             <CDropdownMenu>
@@ -87,7 +79,7 @@ const AppHeader = () => {
                 type="button"
                 onClick={() => setColorMode('light')}
               >
-                <CIcon className="me-2" icon={cilSun} size="lg" /> Light
+                <FontAwesomeIcon className="me-2" icon={faSun} size="lg" /> Light
               </CDropdownItem>
               <CDropdownItem
                 active={colorMode === 'dark'}
@@ -96,7 +88,7 @@ const AppHeader = () => {
                 type="button"
                 onClick={() => setColorMode('dark')}
               >
-                <CIcon className="me-2" icon={cilMoon} size="lg" /> Dark
+                <FontAwesomeIcon className="me-2" icon={faMoon} size="lg" /> Dark
               </CDropdownItem>
               <CDropdownItem
                 active={colorMode === 'auto'}
@@ -105,7 +97,7 @@ const AppHeader = () => {
                 type="button"
                 onClick={() => setColorMode('auto')}
               >
-                <CIcon className="me-2" icon={cilContrast} size="lg" /> Auto
+                <FontAwesomeIcon className="me-2" icon={faAdjust} size="lg" /> Auto
               </CDropdownItem>
             </CDropdownMenu>
           </CDropdown>

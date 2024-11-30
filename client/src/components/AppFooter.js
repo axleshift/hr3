@@ -7,7 +7,6 @@ const AppFooter = () => {
       <div>
         <span className="ms-1">&copy; 2024</span>
       </div>
-      
     </CFooter>
   )
 }
