@@ -83,7 +83,7 @@ const EPayroll = () => {
             <CTable hover responsive>
               <CTableHead>
                 <CTableRow>
-                  <CTableHeaderCell scope="col">Pay Date</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Disbursement Date</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Amount</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Payslip</CTableHeaderCell>
                 </CTableRow>
@@ -92,7 +92,7 @@ const EPayroll = () => {
                 {payrolls.length > 0 ? (
                   payrolls.map((payroll) => (
                     <CTableRow key={payroll.id}>
-                      <CTableDataCell>{payroll.paydate}</CTableDataCell>
+                      <CTableDataCell>{payroll.disbursement}</CTableDataCell>
                       <CTableDataCell>{payroll.netSalary}</CTableDataCell>
                       <CTableDataCell>
                         <CButton color="primary" onClick={() => downloadPayslip(payroll.id)}>

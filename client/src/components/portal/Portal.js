@@ -5,7 +5,7 @@ const Portal = () => {
 
   return (
     <div>
-      <h1>Welcome, {user.firstName}!</h1>
+      <h1>Welcome</h1>
     </div>
   )
 }

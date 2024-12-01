@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { CContainer } from '@coreui/react'
 
 const Checkout = () => {
   const [isXenditLoaded, setXenditLoaded] = useState(false)
@@ -245,7 +246,7 @@ const Checkout = () => {
       .catch((error) => console.error('Failed to load Xendit script:', error))
   }, [isXenditLoaded])
   return (
-    <>
+    <CContainer>
       {/* OTP Dialog */}
       {authenticating ? (
         <div className="fixed left-0 top-0 z-10 flex h-full w-full items-center justify-center bg-black bg-opacity-75 backdrop-blur-md">
@@ -525,7 +526,7 @@ const Checkout = () => {
 
             {apiResponse === '' && errorMessage === '' ? (
               <pre className="whitespace-pre-wrap rounded-md bg-gray-100 p-4 text-center text-xs leading-relaxed">
-                There's no response yet from Xendit.
+                Theres no response yet from Xendit.
               </pre>
             ) : (
               ''
@@ -533,7 +534,7 @@ const Checkout = () => {
           </div>
         ) : null}
       </div>
-    </>
+    </CContainer>
   )
 }
 

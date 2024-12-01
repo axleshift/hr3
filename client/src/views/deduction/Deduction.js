@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom' // Import useNavigate hook
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios' // Import axios here
 import {
   CRow,
   CCol,
@@ -11,15 +12,27 @@ import {
   CTableBody,
   CTableRow,
   CTableDataCell,
-  CTableHeaderCell,
   CButton,
 } from '@coreui/react'
 
 const Deduction = () => {
   const navigate = useNavigate()
-  const location = useLocation()
+  const [loading, setLoading] = useState(true)
+  const [deductions, setDeductions] = useState([]) // State for deductions
 
-  const { deductionsList } = location.state || { deductionsList: [] }
+  useEffect(() => {
+    axios
+      .get('http://localhost:8000/api/deductions') // Corrected the API endpoint
+      .then((res) => {
+        if (res.status === 200) {
+          setDeductions(res.data.deductions || []) // Set deductions data
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching deductions:', error)
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
   const AddDeduction = () => {
     navigate('/deduct')
@@ -35,32 +48,51 @@ const Deduction = () => {
               Add Deduction
             </CButton>
           </CCardHeader>
+
           <CCardBody>
-            {deductionsList.length > 0 ? (
-              <CTable bordered>
+            {loading ? (
+              <div>Loading...</div> // Display loading message while data is being fetched
+            ) : (
+              <CTable bordered hover responsive>
                 <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>#</CTableHeaderCell>
-                    <CTableHeaderCell>Employee Name</CTableHeaderCell>
-                    <CTableHeaderCell>Deduction Type</CTableHeaderCell>
-                    <CTableHeaderCell>Amount</CTableHeaderCell>
-                    <CTableHeaderCell>Date</CTableHeaderCell>
+                  <CTableRow className="text-center">
+                    <CTableDataCell>#</CTableDataCell>
+                    <CTableDataCell>Employee Name</CTableDataCell>
+                    <CTableDataCell>Deduction Type</CTableDataCell>
+                    <CTableDataCell>Amount</CTableDataCell>
+                    <CTableDataCell>Date</CTableDataCell>
+                    <CTableDataCell>Actions</CTableDataCell>
                   </CTableRow>
                 </CTableHead>
-                <CTableBody>
-                  {deductionsList.map((deduction, index) => (
-                    <CTableRow key={deduction.deductionID}>
-                      <CTableDataCell>{index + 1}</CTableDataCell>
-                      <CTableDataCell>{deduction.employeeName}</CTableDataCell>
-                      <CTableDataCell>{deduction.deductionType}</CTableDataCell>
-                      <CTableDataCell>{deduction.amount}</CTableDataCell>
-                      <CTableDataCell>{deduction.created_at}</CTableDataCell>
+
+                <CTableBody className="text-center">
+                  {deductions.length > 0 ? (
+                    deductions.map((deduction) => (
+                      <CTableRow key={deduction.id}>
+                        <CTableDataCell>{deduction.employeeId}</CTableDataCell>
+                        <CTableDataCell>{deduction.employeeName}</CTableDataCell>
+                        <CTableDataCell>{deduction.deductionType}</CTableDataCell>
+                        <CTableDataCell>{deduction.amount}</CTableDataCell>
+                        <CTableDataCell>{deduction.date}</CTableDataCell>
+                        <CTableDataCell>
+                          <CButton className="me-2" color="success" size="sm">
+                            Edit
+                          </CButton>
+                          <CButton color="danger" size="sm">
+                            Delete
+                          </CButton>
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))
+                  ) : (
+                    <CTableRow>
+                      <CTableDataCell colSpan="6" className="text-center">
+                        No deductions available.
+                      </CTableDataCell>
                     </CTableRow>
-                  ))}
+                  )}
                 </CTableBody>
               </CTable>
-            ) : (
-              <p>No deductions to display.</p>
             )}
           </CCardBody>
         </CCard>

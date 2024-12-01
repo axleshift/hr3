@@ -230,7 +230,6 @@ const EditPayroll = () => {
                     <option value="">Select Payment Method</option>
                     <option value="Bank Transfer">Bank Transfer</option>
                     <option value="E-Wallet">E-Wallet</option>
-                    <option value="Cash">Cash</option>
                   </CFormSelect>
                 </CCol>
 

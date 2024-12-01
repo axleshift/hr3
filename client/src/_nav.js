@@ -6,6 +6,10 @@ import {
   faFileInvoiceDollar,
   faClipboardList,
   faFileAlt,
+  faChartBar,
+  faUsers,
+  faCogs,
+  faHandsHelping,
 } from '@fortawesome/free-solid-svg-icons'
 import { CNavItem, CNavTitle } from '@coreui/react'
 
@@ -35,9 +39,21 @@ const _nav = (role) => {
     },
     {
       component: CNavItem,
+      name: 'Payment',
+      to: '/Payment',
+      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    },
+    // {
+    //   component: CNavItem,
+    //   name: 'Adjustment',
+    //   to: '/Adjustment',
+    //   icon: <FontAwesomeIcon icon={faCogs} className="nav-icon" />,
+    // },
+    {
+      component: CNavItem,
       name: 'Report',
       to: '/Report',
-      icon: <FontAwesomeIcon icon={faFileAlt} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faChartBar} className="nav-icon" />,
     },
     {
       component: CNavTitle,
@@ -47,7 +63,7 @@ const _nav = (role) => {
       component: CNavItem,
       name: 'Benefits',
       to: '/Benefits',
-      icon: <FontAwesomeIcon icon={faFileAlt} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faHandsHelping} className="nav-icon" />,
     },
   ]
 
@@ -56,26 +72,20 @@ const _nav = (role) => {
       component: CNavItem,
       name: 'Dashboard',
       to: '/Portal',
-      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
     },
     {
       component: CNavItem,
       name: 'Payroll',
       to: '/EPayroll',
-      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faWallet} className="nav-icon" />,
     },
     {
       component: CNavItem,
-      name: 'Payment Method Form',
+      name: 'Update Payment Method',
       to: '/PaymentMethod',
-      icon: <FontAwesomeIcon icon={faClipboardList} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
     },
-    // {
-    //   component: CNavItem,
-    //   name: 'Expense Form',
-    //   to: '/ExpenseForm',
-    //   icon: <FontAwesomeIcon icon={faClipboardList} className="nav-icon" />,
-    // },
   ]
 
   return role === 'admin' ? admin : employee

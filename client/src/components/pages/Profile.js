@@ -12,7 +12,7 @@ const Profile = () => {
     // Fetch user data from the backend
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('/api/user')
+        const response = await axios.get('http://localhost:8000/api/user')
         setUser(response.data)
       } catch (err) {
         setError('Failed to fetch user data. Please try again later.')
@@ -63,9 +63,7 @@ const Profile = () => {
 
       {/* User Details */}
       <div className="user-details">
-        <h2>
-          {user.firstName} {user.lastName}
-        </h2>
+        <h2>{user.nameName}</h2>
         <p>{user.email}</p>
       </div>
 

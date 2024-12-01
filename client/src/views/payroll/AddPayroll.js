@@ -130,11 +130,9 @@ const AddPayroll = () => {
     try {
       const response = await axios.post('http://localhost:8000/api/addpayroll', data)
       console.log(response.data)
-      if (response.data.status === 200) {
-        navigate('/payroll')
-      } else if (response.data.status === 422) {
+      if (response.data.status === 200) return navigate('/payroll')
+      if (response.data.status === 422)
         setPayroll({ ...payrollInput, error_list: response.data.validate_err })
-      }
     } catch (error) {
       console.error('Error in POST request:', error.response || error)
     }
@@ -162,17 +160,16 @@ const AddPayroll = () => {
                     label="Employee ID"
                   />
                 </CCol>
-                {payrollInput.employeeName && (
-                  <CCol className="mb-3">
-                    <CFormInput
-                      type="text"
-                      name="employeeName"
-                      value={payrollInput.employeeName}
-                      label="Employee Name"
-                      readOnly
-                    />
-                  </CCol>
-                )}
+                <CCol className="mb-3">
+                  <CFormInput
+                    type="text"
+                    name="employeeName"
+                    value={payrollInput.employeeName}
+                    onChange={handleInput}
+                    label="Employee Name"
+                    disabled
+                  />
+                </CCol>
               </CRow>
 
               <CRow>
@@ -216,7 +213,7 @@ const AddPayroll = () => {
                   />
                 </CCol>
 
-                {/* <CCol className="mb-3">
+                <CCol className="mb-3">
                   <CFormInput
                     type="number"
                     name="hourlyRate"
@@ -224,7 +221,7 @@ const AddPayroll = () => {
                     value={payrollInput.hourlyRate}
                     label="Hourly Rate"
                   />
-                </CCol> */}
+                </CCol>
 
                 <CCol className="mb-3">
                   <CFormInput
@@ -253,7 +250,6 @@ const AddPayroll = () => {
                     onChange={handlePaymentMethodChange}
                     value={paymentMethod || ''}
                     label="Payment Method"
-                    required
                   >
                     <option value="">Select Payment Method</option>
                     <option value="Bank Transfer">Bank Transfer</option>

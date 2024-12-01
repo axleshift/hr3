@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { CCard, CCardBody, CCardHeader, CCol, CRow, CContainer, CWidgetStatsA } from '@coreui/react'
 
 const Dashboard = () => {
-  // Mock data (no fetching)
   const [dashboardData, setDashboardData] = useState({
     totalEmployees: 500,
     paidEmployees: 450,
@@ -11,12 +10,11 @@ const Dashboard = () => {
 
   return (
     <CContainer fluid>
-      <CRow>
-        {/* Total Employees Card */}
-        <CCol sm="4">
-          <CCard>
-            <CCardHeader>Total Employees</CCardHeader>
-            <CCardBody>
+      <CRow xs={{ cols: 1 }} sm={{ cols: 2 }} md={{ cols: 3 }} className="g-4">
+        <CCol>
+          <CCard className="shadow-sm">
+            <CCardHeader className="text-center">Total Employees</CCardHeader>
+            <CCardBody className="text-center">
               <CWidgetStatsA
                 className="mb-3"
                 color="primary"
@@ -28,10 +26,10 @@ const Dashboard = () => {
         </CCol>
 
         {/* Paid Employees Card */}
-        <CCol sm="4">
-          <CCard>
-            <CCardHeader>Paid Employees</CCardHeader>
-            <CCardBody>
+        <CCol>
+          <CCard className="shadow-sm">
+            <CCardHeader className="text-center">Paid Employees</CCardHeader>
+            <CCardBody className="text-center">
               <CWidgetStatsA
                 className="mb-3"
                 color="success"
@@ -43,10 +41,10 @@ const Dashboard = () => {
         </CCol>
 
         {/* Benefits Enrolled Card */}
-        <CCol sm="4">
-          <CCard>
-            <CCardHeader>Benefits Enrolled</CCardHeader>
-            <CCardBody>
+        <CCol>
+          <CCard className="shadow-sm">
+            <CCardHeader className="text-center">Benefits Enrolled</CCardHeader>
+            <CCardBody className="text-center">
               <CWidgetStatsA
                 className="mb-3"
                 color="info"

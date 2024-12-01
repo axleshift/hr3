@@ -22,6 +22,8 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEdit, faTrash, faFile } from '@fortawesome/free-solid-svg-icons'
 
+import { employees } from '../mock data/employee'
+
 const Payroll = () => {
   const [loading, setLoading] = useState(true)
   const [payrolls, setPayrolls] = useState([])
@@ -45,6 +47,11 @@ const Payroll = () => {
       })
       .finally(() => setLoading(false))
   }, [])
+
+  // Helper function to find employee details based on employee_id
+  const getEmployeeDetails = (employeeId) => {
+    return employees.find((emp) => emp.employee_id === employeeId) || {}
+  }
 
   const deletePayroll = () => {
     if (payrollToDelete) {
@@ -74,7 +81,7 @@ const Payroll = () => {
   }
 
   const generatePayslip = (id) => {
-    window.location.href = `http://localhost:8000/payroll/${id}/payslip`
+    window.open(`http://localhost:8000/api/payroll/${id}/payslip`, '_blank')
   }
 
   const AddPayroll = () => {
@@ -98,32 +105,6 @@ const Payroll = () => {
         <CSpinner color="primary" />
       </div>
     )
-
-    const generatePayslip = () => {
-      const doc = new jsPDF()
-
-      // Title
-      doc.setFontSize(18)
-      doc.text('Payslip', 14, 20)
-
-      // Employee Info
-      doc.setFontSize(12)
-      doc.text(`Employee Name: ${payrollInput.employeeName}`, 14, 30)
-      doc.text(`Employee ID: ${payrollInput.employeeId}`, 14, 40)
-      doc.text(`Hours Worked: ${payrollInput.hoursWorked}`, 14, 50)
-      doc.text(`Basic Salary: ${payrollInput.basicSalary}`, 14, 60)
-      doc.text(`Overtime: ${payrollInput.overtime}`, 14, 70)
-      doc.text(`Bonus: ${payrollInput.bonus}`, 14, 80)
-      doc.text(`Deductions: ${payrollInput.deductions}`, 14, 90)
-      doc.text(`Benefits: ${payrollInput.benefits}`, 14, 100)
-
-      // Net Salary
-      doc.setFontSize(14)
-      doc.text(`Net Salary: ${Math.round(netSalary)}`, 14, 110)
-
-      // Save PDF
-      doc.save(`${payrollInput.employeeName}_Payslip.pdf`)
-    }
   }
 
   return (
@@ -137,58 +118,66 @@ const Payroll = () => {
                 Add Payroll
               </CButton>
             </CCardHeader>
+
             <CCardBody>
               <CTable bordered hover responsive>
                 <CTableHead>
-                  <CTableRow className="text-center">
+                  <CTableRow className="text-center" style={{ fontWeight: 'bold' }}>
                     <CTableDataCell>#</CTableDataCell>
-                    <CTableDataCell>ID</CTableDataCell>
                     <CTableDataCell>Employee Name</CTableDataCell>
-                    <CTableDataCell>Net Salary</CTableDataCell>
+                    <CTableDataCell>Account Number</CTableDataCell>
+                    <CTableDataCell>Department</CTableDataCell>
+                    <CTableDataCell>Basic Salary</CTableDataCell>
                     <CTableDataCell>Status</CTableDataCell>
+                    <CTableDataCell>Payment Method</CTableDataCell>
                     <CTableDataCell>Actions</CTableDataCell>
                   </CTableRow>
                 </CTableHead>
+
                 <CTableBody className="text-center">
                   {payrolls.length > 0 ? (
-                    payrolls.map((payroll) => (
-                      <CTableRow key={payroll.id}>
-                        <CTableDataCell>{payroll.id}</CTableDataCell>
-                        <CTableDataCell>{payroll.employeeId}</CTableDataCell>
-                        <CTableDataCell>{payroll.employeeName}</CTableDataCell>
-                        <CTableDataCell>{payroll.netSalary}</CTableDataCell>
-                        <CTableDataCell>{payroll.status}</CTableDataCell>
-                        <CTableDataCell>{payroll.paymentMethod}</CTableDataCell>
-                        <CTableDataCell>
-                          <CButton
-                            className="me-2"
-                            color="success"
-                            size="sm"
-                            onClick={() => handleEditPayroll(payroll.id)}
-                          >
-                            <FontAwesomeIcon icon={faEdit} />
-                          </CButton>
-                          <CButton
-                            className="me-2"
-                            color="info"
-                            size="sm"
-                            onClick={() => generatePayslip(payroll.id)}
-                          >
-                            <FontAwesomeIcon icon={faFile} />
-                          </CButton>
-                          <CButton
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleDeleteClick(payroll.id)} // Show delete confirmation modal
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </CButton>
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))
+                    payrolls.map((payroll) => {
+                      const employee = getEmployeeDetails(payroll.employeeId)
+                      return (
+                        <CTableRow key={payroll.id}>
+                          <CTableDataCell>{payroll.employeeId}</CTableDataCell>
+                          <CTableDataCell>{employee.name}</CTableDataCell>
+                          <CTableDataCell>{employee.accountNumber}</CTableDataCell>
+                          <CTableDataCell>{employee.department}</CTableDataCell>
+                          <CTableDataCell>{payroll.basicSalary}</CTableDataCell>
+                          <CTableDataCell>{payroll.status}</CTableDataCell>
+                          <CTableDataCell>{payroll.paymentMethod}</CTableDataCell>
+                          <CTableDataCell>
+                            <CButton
+                              className="me-2"
+                              color="success"
+                              size="sm"
+                              onClick={() => handleEditPayroll(payroll.id)}
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </CButton>
+                            <CButton
+                              className="me-2"
+                              color="info"
+                              size="sm"
+                              onClick={() => generatePayslip(payroll.id)}
+                            >
+                              <FontAwesomeIcon icon={faFile} />
+                            </CButton>
+                            {/* <CButton
+                              color="danger"
+                              size="sm"
+                              onClick={() => handleDeleteClick(payroll.id)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </CButton> */}
+                          </CTableDataCell>
+                        </CTableRow>
+                      )
+                    })
                   ) : (
                     <CTableRow>
-                      <CTableDataCell colSpan="7" className="text-center">
+                      <CTableDataCell colSpan="8" className="text-center">
                         No payroll data available.
                       </CTableDataCell>
                     </CTableRow>

@@ -30,6 +30,14 @@ const Report = () => {
     fetchPayrollData()
   }, [])
 
+  // Calculate totals for each field
+  const calculateTotal = (field) => {
+    return payrolls.reduce(
+      (total, payroll) => total + Math.round(parseFloat(payroll[field] || 0)),
+      0,
+    )
+  }
+
   return (
     <CCard className="mb-4">
       <CCardHeader>
@@ -53,17 +61,17 @@ const Report = () => {
               <CTableHeaderCell>Payment Date</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
-          <CTableBody>
+          <CTableBody className="text-center">
             {payrolls.length > 0 ? (
               payrolls.map((payroll) => (
                 <CTableRow key={payroll.id}>
                   <CTableDataCell>{payroll.employeeId}</CTableDataCell>
                   <CTableDataCell>{payroll.employeeName}</CTableDataCell>
-                  <CTableDataCell>{payroll.basicSalary}</CTableDataCell>
-                  <CTableDataCell>{payroll.overtime}</CTableDataCell>
-                  <CTableDataCell>{payroll.bonus}</CTableDataCell>
-                  <CTableDataCell>{payroll.deductions}</CTableDataCell>
-                  <CTableDataCell>{payroll.netSalary}</CTableDataCell>
+                  <CTableDataCell>{Math.round(payroll.basicSalary)}</CTableDataCell>
+                  <CTableDataCell>{Math.round(payroll.overtime)}</CTableDataCell>
+                  <CTableDataCell>{Math.round(payroll.bonus)}</CTableDataCell>
+                  <CTableDataCell>{Math.round(payroll.deductions)}</CTableDataCell>
+                  <CTableDataCell>{Math.round(payroll.netSalary)}</CTableDataCell>
                   <CTableDataCell>{payroll.paymentMethod}</CTableDataCell>
                   <CTableDataCell>{payroll.status}</CTableDataCell>
                   <CTableDataCell>
@@ -81,6 +89,15 @@ const Report = () => {
               </CTableRow>
             )}
           </CTableBody>
+          {payrolls.length > 0 && (
+            <CTableRow className="text-center">
+              <CTableDataCell colSpan="2" style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                Total:
+              </CTableDataCell>
+              <CTableDataCell>{Math.round(calculateTotal('netSalary'))}</CTableDataCell>
+              <CTableDataCell colSpan="3"></CTableDataCell>
+            </CTableRow>
+          )}
         </CTable>
 
         <CButton color="primary" onClick={() => window.print()}>

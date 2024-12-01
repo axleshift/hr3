@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('employeeId');
             $table->string('employeeName');
-            $table->json('deductionType');
-            $table->decimal('amount', 10, 2);
+            $table->string('deductionType');
+            $table->integer('amount', 10, 2);
             $table->timestamps();
         });
     }

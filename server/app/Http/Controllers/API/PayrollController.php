@@ -162,7 +162,21 @@ class PayrollController extends Controller
         if (!$payroll) {
             return response()->json(['message' => 'Payroll record not found'], 404);
         }
-        $pdf = PDF::loadView('payroll.payslip', compact('payroll'));
+
+        $payslip = [
+        'employeeName' => $payroll->employeeName,
+        'basicSalary' => $payroll->basicSalary,
+        'overtime' => $payroll->overtime,
+        'bonus' => $payroll->bonus,
+        'deductions' => $payroll->deductions,
+        'benefits' => $payroll->benefits,
+        'netSalary' => $payroll->netSalary,
+        'periodStart' => '2024-11-01', // Replace with actual period data
+        'periodEnd' => '2024-11-15',   // Replace with actual period data
+        'dateIssued' => now()->format('Y-m-d'),
+        ];
+
+        $pdf = PDF::loadView('payroll.payslip', compact('payslip'));
         return $pdf->download('payslip_' . $payroll->id . '.pdf');
     }
 }

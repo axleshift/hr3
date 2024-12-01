@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import axios from 'axios'
 import {
   CCard,
   CCardBody,
@@ -19,10 +20,12 @@ const PaymentMethod = () => {
     paymentMethod: '',
     accountNumber: '',
   })
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
+    // Validate the form data
     if (!paymentMethod) {
       setError('Please select a payment method')
       return
@@ -38,10 +41,24 @@ const PaymentMethod = () => {
       paymentMethod,
       accountNumber,
     }
-    console.log('Form data submitted:', formData)
 
-    setEmployeeData({ ...employeeData, paymentMethod: '', accountNumber: '' })
+    setLoading(true)
     setError('')
+
+    try {
+      const response = await axios.post('http://localhost:8000/api/addpayroll', formData)
+      console.log('Form data submitted successfully:', response.data)
+
+      setEmployeeData({ name: '', paymentMethod: '', accountNumber: '' })
+      setPaymentMethod('')
+      setAccountNumber('')
+    } catch (err) {
+      // Handle any error that occurs during the request
+      setError('An error occurred while submitting the form')
+      console.error('Error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -83,6 +100,7 @@ const PaymentMethod = () => {
             </CCol>
           </CRow>
 
+          {/* Account number input */}
           <CRow className="mb-3">
             <CCol sm={10}>
               <CFormInput
@@ -92,7 +110,7 @@ const PaymentMethod = () => {
                 id="accountNumber"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                required
+                required={paymentMethod === 'Bank Transfer'}
               />
             </CCol>
           </CRow>
@@ -101,8 +119,8 @@ const PaymentMethod = () => {
           {error && <div style={{ color: 'red' }}>{error}</div>}
 
           {/* Submit Button */}
-          <CButton type="submit" color="primary">
-            Submit
+          <CButton type="submit" color="primary" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit'}
           </CButton>
         </CForm>
       </CCardBody>

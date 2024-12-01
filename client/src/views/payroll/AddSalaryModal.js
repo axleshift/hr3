@@ -22,12 +22,9 @@ const AddSalaryModal = ({ employeeId, showModal, onClose, onSubmit }) => {
         basicSalary: salary,
       })
 
-      if (response.status === 200) {
-        onSubmit(salary)
-        onClose()
-      } else {
-        alert('Error updating salary')
-      }
+      if (response.status !== 200) return alert('Error updating salary')
+      onSubmit(salary)
+      onClose()
     } catch (error) {
       console.error('Error adding salary:', error)
       alert('An error occurred while adding the salary')

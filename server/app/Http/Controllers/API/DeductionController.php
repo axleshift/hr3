@@ -23,7 +23,7 @@ class DeductionController extends Controller
         $validated = $request->validate([
             'employeeId' => 'required|exists:employees,id',
             'employeeName' => 'required|string|max:255',
-            'deductiontype' => 'required|string|max:255',
+            'deductionType' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
         ]);
 
@@ -39,6 +39,7 @@ class DeductionController extends Controller
             'data' => $deduction,
         ], 201);
     }
+
 
     // Edit a specific deduction record
     public function edit($id)

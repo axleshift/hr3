@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'  // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -18,10 +18,9 @@ import { faUser, faEnvelope, faLock, faUnlock } from '@fortawesome/free-solid-sv
 import axios from 'axios'
 
 const Register = () => {
-  const navigate = useNavigate()  // Initialize useNavigate hook
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     password_confirmation: '',
@@ -48,10 +47,7 @@ const Register = () => {
       const response = await axios.post('http://localhost:8000/api/register', formData)
       setMessage(response.data.message)
       console.log(response.data.user)
-
-      // Redirect to the login page after successful registration
-      navigate('/login')  // Redirect to login page
-
+      navigate('/login')
     } catch (error) {
       if (error.response?.status === 422) {
         setErrors(error.response.data.errors || {})
@@ -73,41 +69,20 @@ const Register = () => {
                   <h1 className="text-center">Register</h1>
                   <p className="text-secondary text-center">Create your account</p>
 
-                  <CRow>
-                    <CCol md={6}>
-                      <CInputGroup className="mb-3">
-                        <CInputGroupText>
-                          <FontAwesomeIcon icon={faUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="text"
-                          name="firstName"
-                          placeholder="First Name"
-                          value={formData.firstName}
-                          onChange={handleChange}
-                          required
-                        />
-                      </CInputGroup>
-                      {errors.firstName && <CAlert color="danger">{errors.firstName}</CAlert>}
-                    </CCol>
-
-                    <CCol md={6}>
-                      <CInputGroup className="mb-3">
-                        <CInputGroupText>
-                          <FontAwesomeIcon icon={faUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="text"
-                          name="lastName"
-                          placeholder="Last Name"
-                          value={formData.lastName}
-                          onChange={handleChange}
-                          required
-                        />
-                      </CInputGroup>
-                      {errors.lastName && <CAlert color="danger">{errors.lastName}</CAlert>}
-                    </CCol>
-                  </CRow>
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>
+                      <FontAwesomeIcon icon={faUser} />
+                    </CInputGroupText>
+                    <CFormInput
+                      type="text"
+                      name="name"
+                      placeholder="Name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </CInputGroup>
+                  {errors.lastName && <CAlert color="danger">{errors.name}</CAlert>}
 
                   <CInputGroup className="mb-3">
                     <CInputGroupText>

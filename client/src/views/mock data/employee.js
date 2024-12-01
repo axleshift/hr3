@@ -4,6 +4,7 @@ export const employees = [
     name: 'John Kennedy',
     paymentMethod: 'E-Wallet',
     accountNumber: '0987654321',
+    department: 'Warehouse',
     attendance: [
       {
         date: '2024-11-01',
@@ -130,6 +131,7 @@ export const employees = [
     name: 'Jane Smith',
     paymentMethod: 'Bank Transfer',
     accountNumber: '1234567890',
+    department: 'Operations ',
     attendance: [
       {
         date: '2024-11-01',

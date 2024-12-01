@@ -28,8 +28,7 @@ class UserFactory extends Factory
         $type = $this->faker->randomElement($userTypes);
 
         return [
-            'first_name' => fake()->firstName(),
-            'last_name' => fake()->lastName(),
+            'name' => fake()->name(),
             'type' => $type,
             'login_method' => 'form',
             'status' => 'active',

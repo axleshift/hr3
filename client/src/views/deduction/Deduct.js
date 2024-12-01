@@ -23,7 +23,7 @@ const Deduct = () => {
   const [deductionInput, setDeduction] = useState({
     employeeId: '',
     employeeName: '',
-    deductiontype: '',
+    deductionType: '',
     amount: '',
   })
 
@@ -60,13 +60,13 @@ const Deduct = () => {
     const data = {
       employeeId: deductionInput.employeeId,
       employeeName: deductionInput.employeeName,
-      deductiontype: deductionInput.deductiontype,
+      deductionType: deductionInput.deductionType,
       amount: Math.round(deductionInput.amount) || 0,
     }
 
     try {
       const response = await axios.post('http://localhost:8000/api/deduct', data)
-      console.log('Saving deduction data:', data)
+      console.log('Saving deduction data:', response.data)
       navigate('/deduction')
     } catch (error) {
       console.error('Error submitting deduction:', error)
@@ -112,8 +112,8 @@ const Deduct = () => {
                     <CFormLabel>Deduction Type</CFormLabel>
                     <CInputGroup>
                       <CFormSelect
-                        name="deductiontype"
-                        value={deductionInput.deductiontype}
+                        name="deductionType"
+                        value={deductionInput.deductionType}
                         onChange={handleInputChange}
                       >
                         <option value="">Select Deduction Type</option>
