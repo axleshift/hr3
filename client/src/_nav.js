@@ -3,13 +3,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faTachometerAlt,
   faWallet,
-  faFileInvoiceDollar,
-  faClipboardList,
-  faFileAlt,
   faChartBar,
-  faUsers,
-  faCogs,
   faHandsHelping,
+  faUsers,
+  faCalendarAlt,
+  faFileInvoiceDollar,
+  faChartLine,
+  faHandHoldingHeart,
+  faTasks,
+  faUserCog,
 } from '@fortawesome/free-solid-svg-icons'
 import { CNavItem, CNavTitle } from '@coreui/react'
 
@@ -18,8 +20,14 @@ const _nav = (role) => {
     {
       component: CNavItem,
       name: 'Dashboard',
-      to: '/dashboard',
+      to: '/Dashboard',
       icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Leave List',
+      to: '/LeaveList',
+      icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
     },
     {
       component: CNavTitle,
@@ -29,31 +37,13 @@ const _nav = (role) => {
       component: CNavItem,
       name: 'Payroll',
       to: '/Payroll',
-      icon: <FontAwesomeIcon icon={faWallet} className="nav-icon" />,
-    },
-    {
-      component: CNavItem,
-      name: 'Deductions',
-      to: '/Deduction',
-      icon: <FontAwesomeIcon icon={faClipboardList} className="nav-icon" />,
-    },
-    {
-      component: CNavItem,
-      name: 'Payment',
-      to: '/Payment',
       icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
     },
-    // {
-    //   component: CNavItem,
-    //   name: 'Adjustment',
-    //   to: '/Adjustment',
-    //   icon: <FontAwesomeIcon icon={faCogs} className="nav-icon" />,
-    // },
     {
       component: CNavItem,
-      name: 'Report',
+      name: 'Salary Report',
       to: '/Report',
-      icon: <FontAwesomeIcon icon={faChartBar} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
     },
     {
       component: CNavTitle,
@@ -63,7 +53,7 @@ const _nav = (role) => {
       component: CNavItem,
       name: 'Benefits',
       to: '/Benefits',
-      icon: <FontAwesomeIcon icon={faHandsHelping} className="nav-icon" />,
+      icon: <FontAwesomeIcon icon={faHandHoldingHeart} className="nav-icon" />,
     },
   ]
 
@@ -71,24 +61,95 @@ const _nav = (role) => {
     {
       component: CNavItem,
       name: 'Dashboard',
-      to: '/Portal',
+      to: '/Dashboard',
       icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
     },
     {
       component: CNavItem,
-      name: 'Payroll',
-      to: '/EPayroll',
-      icon: <FontAwesomeIcon icon={faWallet} className="nav-icon" />,
+      name: 'Leave',
+      to: '/Leave',
+      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
     },
     {
       component: CNavItem,
-      name: 'Update Payment Method',
-      to: '/PaymentMethod',
-      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+      name: 'Leave',
+      to: '/EmployeeLeave',
+      icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
     },
   ]
 
-  return role === 'admin' ? admin : employee
+  const superAdmin = [
+    {
+      component: CNavItem,
+      name: 'Dashboard',
+      to: '/dashboard',
+      icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Leave List',
+      to: '/LeaveList',
+      icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
+    },
+    {
+      component: CNavTitle,
+      name: 'Payroll Management',
+    },
+    {
+      component: CNavItem,
+      name: 'Payroll',
+      to: '/Payroll',
+      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Report',
+      to: '/Report',
+      icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
+    },
+    {
+      component: CNavTitle,
+      name: 'Benefit Management',
+    },
+    {
+      component: CNavItem,
+      name: 'Benefits',
+      to: '/Benefits',
+      icon: <FontAwesomeIcon icon={faHandHoldingHeart} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Compliance',
+      to: '/Compliance',
+      icon: <FontAwesomeIcon icon={faUserCog} className="nav-icon" />,
+    },
+  ]
+
+  const staff = [
+    {
+      component: CNavItem,
+      name: 'Dashboard',
+      to: '/dashboard',
+      icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Tasks',
+      to: '/staff-tasks',
+      icon: <FontAwesomeIcon icon={faTasks} className="nav-icon" />,
+    },
+  ]
+
+  switch (role) {
+    case 'admin':
+      return admin
+    case 'superAdmin':
+      return superAdmin
+    case 'staff':
+      return staff
+    default:
+      return employee
+  }
 }
 
 export default _nav
