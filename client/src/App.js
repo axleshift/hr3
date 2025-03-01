@@ -5,10 +5,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
-const Login = React.lazy(() => import('./components/pages/Login'))
-const Register = React.lazy(() => import('./components/pages/Register'))
-// const ForgotPassword = React.lazy(() => import('./components/pages/ForgotPassword'))
-// const ChangePassword = React.lazy(() => import('./components/pages/ChangePassword'))
+const Login = React.lazy(() => import('./views/pages/Login'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -39,7 +36,6 @@ const App = () => {
       >
         <Routes>
           <Route exact path="/Login" name="Login" element={<Login />} />
-          <Route path="/Register" name="Register" element={<Register />} />
           <Route path="*" name="Home" element={<DefaultLayout />} />
         </Routes>
       </Suspense>
