@@ -22,9 +22,8 @@ const Benefits = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const API_URL = 'http://localhost:8000/api/benefits'
+  const API_URL = 'http://127.0.0.1:8000/api/benefits'
 
-  // Function to submit form data
   const handleSubmit = async () => {
     setLoading(true)
     setError(null)
@@ -42,7 +41,7 @@ const Benefits = () => {
       handleClear()
     } catch (err) {
       console.error('Error:', err.response?.data || err.message)
-      setError(err.response?.data?.message || 'Failed to submit data. Please try again.')
+      setError(err.response?.data?.error || 'Failed to submit data.')
     } finally {
       setLoading(false)
     }
