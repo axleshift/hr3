@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('leave_credits', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id')->unique();
+            $table->string('employee_id');
             $table->string('name');
-            $table->string('department');
-            $table->string('job_position');
+            $table->integer('LWOP')->default(0);
+            $table->integer('SL')->default(0);
+            $table->integer('VL')->default(0);
             $table->timestamps();
+
+         //   $table->foreign('employee_id')->references('employee_id')->on('employees')->onDelete('cascade');
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('leave_credits');
     }
 };
