@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import api from '../../util/api'
 import {
   CAlert,
   CButton,
@@ -50,7 +50,7 @@ const ChangePassword = () => {
     }
 
     try {
-      const response = await axios.post('/changepassword', {
+      const response = await api.post('/changepassword', {
         ...formData,
         userId: user.id,
       })

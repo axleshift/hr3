@@ -117,7 +117,7 @@ class LeaveRequestController extends Controller
         if ($request->has('status')) {
             // $leaveRequest->status = $request->status;
             if ($request->status == 'Approved') {
-                $leaveRequest->approved_date = now(); // Set the approved date to the current date
+                $leaveRequest->approved_date = now();
             }
             $leaveRequest->status = $request->status;
         }

@@ -128,6 +128,9 @@ const Leave = () => {
                 <option value="Sick Leave">Sick Leave</option>
                 <option value="Vacation Leave">Vacation Leave</option>
                 <option value="Emergency Leave">Emergency Leave</option>
+                <option value="Maternity Leave">Maternity Leave</option>
+                <option value="Calamity Leave">Calamity Leave</option>
+                <option value="Bereavement Leave">Bereavement Leave</option>
               </CFormSelect>
               {validationErrors.leaveType && (
                 <span className="text-danger">{validationErrors.leaveType}</span>
@@ -159,7 +162,6 @@ const Leave = () => {
                   )}
                 </CCol>
               </CRow>
-              <br />
               <CFormTextarea
                 label="Reason"
                 value={reason}

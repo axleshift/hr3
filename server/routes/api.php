@@ -1,43 +1,77 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\API\DeductionController;
-use App\Http\Controllers\API\DirectDepositController;
-use App\Http\Controllers\Auth\RegisteredUserController;
+
 use App\Http\Controllers\API\PayrollController;
 use App\Http\Controllers\API\BenefitController;
+use App\Http\Controllers\API\LeaveRequestController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LeaveCreditController;
+use App\Http\Controllers\API\LeaveController;
+use App\Http\Controllers\API\AttendanceController;
+use App\Http\Controllers\API\EmployeeController;
+use App\Http\Controllers\API\SalaryController;
+use App\Http\Controllers\API\PayslipController;
 
-Route::get('/payrolls', [PayrollController::class, 'index']);
-Route::get('/payrolls/{id}', [PayrollController::class, 'show']);
-Route::post('/addpayroll', [PayrollController::class, 'store']);
-Route::get('/edit-payroll/{id}', [PayrollController::class, 'edit']);
-Route::put('/payroll/{id}', [PayrollController::class, 'update']);
-Route::delete('/deletepayroll/{id}', [PayrollController::class, 'destroy']);
-Route::get('/payroll/{id}/payslip', [PayrollController::class, 'generatePayslip']);
+Route::post('/salaries', [SalaryController::class, 'store']);
+Route::get('/salaries', [SalaryController::class, 'show']);
+Route::get('/salaries', [SalaryController::class, 'index']);
 
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-Route::post('/register', [RegisteredUserController::class, 'store']);
-Route::get('/user', [AuthenticatedSessionController::class, 'user']);
-Route::get('/users', [AuthenticatedSessionController::class, 'index']);
+// For Payroll Mgt
+Route::get('/attendances', [AttendanceController::class, 'index']);
+Route::get('/rates', [PayrollController::class, 'getRates']);
+Route::get('/payroll', [PayrollController::class, 'calculate']);
+Route::post('/rates', [PayrollController::class, 'storeRates']);
+Route::post('/payroll', [PayrollController::class, 'saveDeductionBonus']);
+Route::get('/payroll/{id}', [PayrollController::class, 'show']);
+Route::get('/payroll/generate-payslip/{id}', [PayrollController::class, 'generatePayslip']);
+Route::get('/payrolls', [PayrollController::class, 'getPayrolls']);
+Route::put('/payrolls/{id}', [PayrollController::class, 'update']);
 
-Route::get('/deductions', [DeductionController::class, 'index']);
-Route::get('/deductions/{id}', [DeductionController::class, 'show']);
-Route::post('/deduct', [DeductionController::class, 'store']);
-Route::get('/edit-deduction/{id}', [DeductionController::class, 'edit']);
-Route::put('/deduction/{id}', [DeductionController::class, 'update']);
-Route::delete('/deletededuction/{id}', [DeductionController::class, 'destroy']);
+Route::get('/payslip', [PayrollController::class, 'viewPayslip']);
+    Route::get('/payslip/download', [PayrollController::class, 'downloadPayslip']);
+    
+// Leave Mgt
+Route::get('/leaves', [LeaveController::class, 'index']);
+Route::post('/leave', [LeaveController::class, 'store']);
+Route::put('/leaves/{id}', [LeaveController::class, 'update']);
+Route::delete('/leave/{id}', [LeaveController::class, 'destroy']);
+
+// Employee Leave REuqest Mgt
+Route::get('/leave-requests/{employeeId}', [LeaveRequestController::class, 'employee']);
+    Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
+    Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);   
+    Route::post('/leave-request', [LeaveRequestController::class, 'store']);
+    Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
+    Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'delete']);
 
 
-Route::post('/direct-deposit', [DirectDepositController ::class, 'store']);
-Route::get('/direct-deposit', [DirectDepositController ::class, 'index']);
+    // Route::get('/payrolls', [PayrollController::class, 'index']);
+    // Route::post('/addpayroll', [PayrollController::class, 'store']);
+    // Route::get('/payrolls/{id}', [PayrollController::class, 'show']);
+    // Route::put('/payroll/{id}', [PayrollController::class, 'update']);
+    // Route::get('/edit-payroll/{id}', [PayrollController::class, 'edit']);
+    // Route::delete('/deletepayroll/{id}', [PayrollController::class, 'destroy']);
+    // Route::get('/payroll/{id}/payslip', [PayrollController::class, 'generatePayslip']);
+    
 
-Route::post('/expenses', [DirectDepositController ::class, '']);
-Route::get('/expenses', [DirectDepositController ::class, 'index']);
-Route::get('/expenses/{id}', [DirectDepositController ::class, 'show']);
-Route::put('/expenses/{id}', [DirectDepositController ::class, 'update']);
+    // Coun for Dashboard
+    Route::get('/leave-requests/count?status=Pending', [LeaveRequestController::class, 'countLeaveRequests']);
+
+    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::get('/employees/{id}', [EmployeeController::class, 'show']);
+    Route::post('/employee', [EmployeeController::class, 'store']);
+    // Route::put('/employee/{id}', [EmployeeController::class, 'update']);
+    // Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+
+    Route::get('/profile/{employeeId}', [ProfileController::class, 'getProfile']);
+Route::post('/profile/upload', [ProfileController::class, 'uploadProfilePicture']);
+
+// Limit for leave request of employee
+Route::get('/leave-credits', [LeaveCreditController::class, 'index']);
+Route::post('/leave-credit', [LeaveCreditController::class, 'store']);
+Route::get('/leave-credit/{id}', [LeaveCreditController::class, 'show']);
+Route::put('/leave-credit/{id}', [LeaveCreditController::class, 'update']);
 
 Route::get('/benefits/{id}', [BenefitController::class, 'show']);
 Route::post('/benefits', [BenefitController::class, 'store']);
