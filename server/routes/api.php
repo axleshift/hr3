@@ -7,6 +7,7 @@ use App\Http\Controllers\API\DeductionController;
 use App\Http\Controllers\API\DirectDepositController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\API\PayrollController;
+use App\Http\Controllers\API\BenefitController;
 
 Route::get('/payrolls', [PayrollController::class, 'index']);
 Route::get('/payrolls/{id}', [PayrollController::class, 'show']);
@@ -37,3 +38,6 @@ Route::post('/expenses', [DirectDepositController ::class, '']);
 Route::get('/expenses', [DirectDepositController ::class, 'index']);
 Route::get('/expenses/{id}', [DirectDepositController ::class, 'show']);
 Route::put('/expenses/{id}', [DirectDepositController ::class, 'update']);
+
+Route::get('/benefits/{id}', [BenefitController::class, 'show']);
+Route::post('/benefits', [BenefitController::class, 'store']);
