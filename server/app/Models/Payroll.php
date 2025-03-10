@@ -23,16 +23,4 @@ class Payroll extends Model
         'bonus',
         'deduction',
     ];
-    
-    // protected $fillable = [
-    //     'employee_id',
-    //     'name',
-    //     'salary',
-    //     'overtime',
-    //     'benefits',
-    //     'bonus',
-    //     'netSalary',
-    //     'hoursWorked',
-    //     'status',
-    // ];
 }
