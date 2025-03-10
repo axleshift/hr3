@@ -39,6 +39,12 @@ class LeaveRequestController extends Controller
         ]);
     }
 
+    public function getLeaveRequests($employeeId)
+    {
+        $leaveRequests = LeaveRequest::where('employee_id', $employeeId)->get();
+        return response()->json($leaveRequests);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -50,11 +56,18 @@ class LeaveRequestController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'required|string',
             'is_paid' => 'sometimes|boolean',
+            'document' => 'sometimes|file|mimes:jpg,jpeg,png,pdf,doc,docx,txt|max:10240',
         ]);
 
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $total_days = $startDate->diffInDays($endDate) + 1;
+
+        $filePath = null;
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $filePath = $file->store('documents', 'public');
+        }
 
         $leave = LeaveRequest::create([
             'employee_id' => $request->employee_id,
@@ -66,6 +79,7 @@ class LeaveRequestController extends Controller
             'total_days' => $total_days,
             'status' => 'Pending',
             'is_paid' => $request->is_paid ?? false,
+            'document_path' => $filePath,
         ]);
         
         return response()->json([
@@ -79,6 +93,9 @@ class LeaveRequestController extends Controller
      */
     public function show($id)
     {
+        // $leaveRequest = LeaveRequest::findOrFail($id);
+        // return response()->json(['leaveRequest' => $leaveRequest]);
+
         $leaveRequest = LeaveRequest::findOrFail($id);
         if (!$leaveRequest) {
             return response()->json(['message' => 'Leave request not found'], 404);
@@ -98,6 +115,10 @@ class LeaveRequestController extends Controller
 
         $leaveRequest = LeaveRequest::findOrFail($id);
         if ($request->has('status')) {
+            // $leaveRequest->status = $request->status;
+            if ($request->status == 'Approved') {
+                $leaveRequest->approved_date = now(); // Set the approved date to the current date
+            }
             $leaveRequest->status = $request->status;
         }
 

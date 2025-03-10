@@ -21,15 +21,22 @@ const Leave = () => {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [reason, setReason] = useState('')
+  const [file, setFile] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
   const [alert, setAlert] = useState({ visible: false, type: '', message: '' })
   const navigate = useNavigate()
   const authStatus = useAuthStatus()
 
-  // Fetch user details from session storage
   const employee = {
     employee_id: sessionStorage.getItem('employee_id') || '',
     name: sessionStorage.getItem('name') || '',
+  }
+
+  const handleFileChange = (e) => {
+    const uploadedFile = e.target.files[0]
+    if (uploadedFile) {
+      setFile(uploadedFile)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -49,14 +56,23 @@ const Leave = () => {
     }
     setValidationErrors({})
 
+    const formData = new FormData()
+    formData.append('employee_id', employee.employee_id)
+    formData.append('name', employee.name)
+    formData.append('leave_type', leaveType)
+    formData.append('start_date', startDate)
+    formData.append('end_date', endDate)
+    formData.append('reason', reason)
+
+    if (file) {
+      formData.append('document', file)
+    }
+
     try {
-      const response = await api.post('/leave-request', {
-        employee_id: employee.employee_id,
-        name: employee.name,
-        leave_type: leaveType,
-        start_date: startDate,
-        end_date: endDate,
-        reason: reason,
+      const response = await api.post('/leave-request', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       })
       console.log('Response:', response.data)
       setAlert({ visible: true, type: 'success', message: 'Leave request submitted successfully!' })
@@ -64,6 +80,7 @@ const Leave = () => {
       setStartDate('')
       setEndDate('')
       setReason('')
+      setFile(null)
     } catch (error) {
       console.error('Error Response:', error.response?.data)
       setAlert({
@@ -152,6 +169,13 @@ const Leave = () => {
               {validationErrors.reason && (
                 <span className="text-danger">{validationErrors.reason}</span>
               )}
+              <br />
+              <CFormInput
+                type="file"
+                label="Upload Document"
+                onChange={handleFileChange}
+                accept="image/*,.pdf,.doc,.docx,.txt,.jpg,.png,.jpeg"
+              />
               <br />
               <CButton type="submit" color="primary">
                 Submit Request

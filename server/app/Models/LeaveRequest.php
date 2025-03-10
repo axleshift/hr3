@@ -19,5 +19,6 @@ class LeaveRequest extends Model
         'total_days',
         'status',
         'is_paid',
+        'document_path',
     ];
 }

@@ -22,6 +22,8 @@ return new class extends Migration
             $table->integer('total_days');
             $table->boolean('is_paid')->default(false);
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
+            $table->string('document_path')->nullable();
+            $table->date('approved_date')->nullable();
             $table->timestamps();
         });
     }

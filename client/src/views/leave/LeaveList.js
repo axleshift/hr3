@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../../util/api'
 import {
   CCard,
   CCardBody,
@@ -12,37 +10,56 @@ import {
   CTableHeaderCell,
   CTableDataCell,
   CButton,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
   CBadge,
   CSpinner,
+  CFormSelect,
+  CFormCheck,
   CDropdown,
   CDropdownToggle,
-  CDropdownMenu,
   CDropdownItem,
-  CFormCheck,
+  CDropdownMenu,
 } from '@coreui/react'
+import api from '../../util/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faEllipsisVertical, faChevronDown, faEye } from '@fortawesome/free-solid-svg-icons'
+import { faFile, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 
 const LeaveList = () => {
   const [leave, setLeave] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedLeave, setSelectedLeave] = useState(null)
-  const [viewModalVisible, setViewModalVisible] = useState(false)
-  const navigate = useNavigate()
+  const [filterType, setFilterType] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
-    fetchLeave()
-  }, [])
+    fetchLeave(currentPage)
+  }, [currentPage, filterType])
 
-  const fetchLeave = async () => {
+  const fetchLeave = async (page = 1) => {
     try {
-      const response = await api.get('/leave-requests')
-      setLeave(response.data.leaveRequests || [])
+      setLoading(true)
+      const response = await api.get(`/leave-requests?page=${page}`)
+      let leaveRequests = response.data.leaveRequests || []
+
+      const now = new Date()
+      const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+      if (filterType === 'last24') {
+        leaveRequests = leaveRequests.filter((leave) => new Date(leave.created_at) >= last24Hours)
+      } else if (filterType === 'recent') {
+        leaveRequests = leaveRequests.filter(
+          (leave) =>
+            new Date(leave.created_at) < last24Hours &&
+            new Date(leave.created_at) > new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        )
+      } else if (filterType === 'old') {
+        leaveRequests = leaveRequests.filter(
+          (leave) =>
+            new Date(leave.created_at) <= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        )
+      }
+
+      setLeave(leaveRequests)
+      setTotalPages(response.data.totalPages)
     } catch (error) {
       console.error('Error fetching leave list:', error)
       alert('Failed to fetch leave requests. Please try again later.')
@@ -51,48 +68,13 @@ const LeaveList = () => {
     }
   }
 
-  const handleView = async (id) => {
-    try {
-      const response = await api.get(`/leave-requests/${id}`)
-      console.log('API Response:', response.data)
-      setSelectedLeave(response.data)
-      setViewModalVisible(true)
-    } catch (error) {
-      console.error('Error fetching leave details:', error)
-      alert('Failed to fetch leave details. Please try again.')
-    }
-  }
-  const handleStatusUpdate = async (id, status) => {
-    try {
-      await api.put(`/leave-requests/${id}`, { status })
-      fetchLeave()
-    } catch (error) {
-      console.error('Error updating leave status:', error)
-      alert(`Failed to update leave status: ${error.response?.data?.message || error.message}`)
-    }
-  }
-
-  const handlePaidUpdate = async (id, isPaid) => {
-    try {
-      await api.put(`/leave-requests/${id}`, { is_paid: isPaid })
-      fetchLeave()
-    } catch (error) {
-      console.error('Error updating paid status:', error)
-      alert('Failed to update paid status. Please try again.')
-    }
-  }
-
-  const LeaveCredit = () => {
-    navigate('/LeaveCredit')
-  }
-
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Pending':
-        return 'primary'
-      case 'Approved':
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'warning'
+      case 'approved':
         return 'success'
-      case 'Rejected':
+      case 'rejected':
         return 'danger'
       default:
         return 'secondary'
@@ -101,16 +83,18 @@ const LeaveList = () => {
 
   return (
     <CCard>
-      <CCardHeader>
+      <CCardHeader className="d-flex justify-content-between align-items-center">
         <strong>Leave Requests</strong>
-        <div className="float-end">
-          <CButton color="primary" onClick={() => setViewModalVisible(true)} className="me-2">
-            <FontAwesomeIcon icon={faPlus} />
-          </CButton>
-          <CButton color="primary" onClick={() => navigate('/LeaveCredit')}>
-            <FontAwesomeIcon icon={faEllipsisVertical} />
-          </CButton>
-        </div>
+        <CFormSelect
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          style={{ width: '200px' }}
+        >
+          <option value="all">All Requests</option>
+          <option value="last24">Last 24 Hours</option>
+          <option value="recent">Recent (Last 7 Days)</option>
+          <option value="old">Older</option>
+        </CFormSelect>
       </CCardHeader>
 
       <CCardBody>
@@ -118,6 +102,10 @@ const LeaveList = () => {
           <div className="text-center">
             <CSpinner color="primary" />
             <p>Loading...</p>
+          </div>
+        ) : leave.length === 0 ? (
+          <div className="text-center">
+            <p>No leave request.</p>
           </div>
         ) : (
           <CTable hover responsive>
@@ -137,9 +125,7 @@ const LeaveList = () => {
               {leave.map((leave, index) => (
                 <CTableRow key={leave.id}>
                   <CTableDataCell>{index + 1}</CTableDataCell>
-                  <CTableDataCell>
-                    ID: {leave.employee_id} <br /> Name: {leave.name}
-                  </CTableDataCell>
+                  <CTableDataCell>{leave.name}</CTableDataCell>
                   <CTableDataCell>{new Date(leave.created_at).toLocaleDateString()}</CTableDataCell>
                   <CTableDataCell>{leave.leave_type}</CTableDataCell>
                   <CTableDataCell>{leave.total_days}</CTableDataCell>
@@ -154,13 +140,8 @@ const LeaveList = () => {
                     />
                   </CTableDataCell>
                   <CTableDataCell>
-                    <CButton
-                      color="link"
-                      size="sm"
-                      onClick={() => handleView(leave.id)}
-                      className="me-2"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
+                    <CButton color="link" onClick={() => handleView(leave.id)}>
+                      <FontAwesomeIcon icon={faFile} />
                     </CButton>
                     <CDropdown>
                       <CDropdownToggle color="link" size="sm">
@@ -194,54 +175,6 @@ const LeaveList = () => {
           </CTable>
         )}
       </CCardBody>
-
-      <CModal visible={viewModalVisible} onClose={() => setViewModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Leave Details</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          {selectedLeave ? (
-            <>
-              <p>
-                <strong>Employee ID:</strong> {selectedLeave.employee_id}
-              </p>
-              <p>
-                <strong>Employee Name:</strong> {selectedLeave.name}
-              </p>
-              <p>
-                <strong>Leave Type:</strong> {selectedLeave.leave_type}
-              </p>
-              <p>
-                <strong>Start Date:</strong> {selectedLeave.start_date}
-              </p>
-              <p>
-                <strong>End Date:</strong> {selectedLeave.end_date}
-              </p>
-              <p>
-                <strong>Total Days:</strong> {selectedLeave.total_days}
-              </p>
-              <p>
-                <strong>Reason:</strong> {selectedLeave.reason}
-              </p>
-              <p>
-                <strong>Status:</strong>{' '}
-                <CBadge color={getStatusBadge(selectedLeave.status)}>{selectedLeave.status}</CBadge>
-              </p>
-              <p>
-                <strong>Date Requested:</strong>{' '}
-                {new Date(selectedLeave.created_at).toLocaleDateString()}
-              </p>
-            </>
-          ) : (
-            <p>No data available.</p>
-          )}
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setViewModalVisible(false)}>
-            Close
-          </CButton>
-        </CModalFooter>
-      </CModal>
     </CCard>
   )
 }
