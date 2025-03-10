@@ -45,16 +45,6 @@ Route::get('/leave-requests/{employeeId}', [LeaveRequestController::class, 'empl
     Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
     Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'delete']);
 
-
-    // Route::get('/payrolls', [PayrollController::class, 'index']);
-    // Route::post('/addpayroll', [PayrollController::class, 'store']);
-    // Route::get('/payrolls/{id}', [PayrollController::class, 'show']);
-    // Route::put('/payroll/{id}', [PayrollController::class, 'update']);
-    // Route::get('/edit-payroll/{id}', [PayrollController::class, 'edit']);
-    // Route::delete('/deletepayroll/{id}', [PayrollController::class, 'destroy']);
-    // Route::get('/payroll/{id}/payslip', [PayrollController::class, 'generatePayslip']);
-    
-
     // Coun for Dashboard
     Route::get('/leave-requests/count?status=Pending', [LeaveRequestController::class, 'countLeaveRequests']);
 

@@ -4,78 +4,84 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Payroll;
+use App\Models\Employee;
+use PDF;
+use Illuminate\Support\Facades\Auth;
 
 class PayslipController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
-     public function generatePayslip(Request $request)
+    public function viewEmployeePayslip()
     {
-        $data = $request->validate([
-            'employee_id' => 'required|integer',
-            'gross_salary' => 'required|numeric',
-            'deductions' => 'required|numeric',
-            'bonuses' => 'nullable|numeric',
-        ]);
-
-        $net_salary = $data['gross_salary'] - $data['deductions'] + ($data['bonuses'] ?? 0);
-
-        $payslip = Payslip::create([
-            'employee_id' => $data['employee_id'],
-            'gross_salary' => $data['gross_salary'],
-            'deductions' => $data['deductions'],
-            'bonuses' => $data['bonuses'] ?? 0,
-            'net_salary' => $net_salary,
-        ]);
-
-        // Send payslip via email
-        Mail::to($request->user()->email)->send(new \App\Mail\PayslipMail($payslip));
-
-        return response()->json($payslip, 201);
-    }
-
-    public function getPayslips(Request $request)
-    {
-        $payslips = Payslip::where('employee_id', $request->user()->id)->get();
-        return response()->json($payslips);
-    }
+        // Get the logged-in employee's ID
+        $employeeId = Auth::user()->employee_id;
     
-    public function index()
-    {
-        //
+        // Fetch the latest payroll record for the employee
+        $payroll = Payroll::where('employee_id', $employeeId)->latest()->first();
+    
+        if (!$payroll) {
+            return redirect()->back()->with('error', 'No payroll record found.');
+        }
+    
+        // Fetch the employee details
+        $employee = Employee::where('employee_id', $employeeId)->first();
+    
+        if (!$employee) {
+            return redirect()->back()->with('error', 'Employee record not found.');
+        }
+    
+        // Define benefits (this can be dynamic based on your application logic)
+        $benefits = [
+            'health_insurance' => 500.00,
+        ];
+    
+        $totalBenefits = array_sum($benefits);
+    
+        // Prepare payslip data
+        $payslipData = [
+            'employeeName' => $payroll->name,
+            'employeeId' => $payroll->employee_id,
+            'job_position' => $employee->job_position,
+            'overtime' => $payroll->total_overtime_amount,
+            'deductions' => $payroll->deduction,
+            'bonus' => $payroll->bonus,
+            'netSalary' => $payroll->net_salary,
+            'periodStart' => $payroll->year . '-' . str_pad($payroll->month, 2, '0', STR_PAD_LEFT) . '-01',
+            'periodEnd' => $payroll->year . '-' . str_pad($payroll->month, 2, '0', STR_PAD_LEFT) . '-15', // Adjust as needed
+            'dateIssued' => now()->format('Y-m-d'),
+            'benefits' => $benefits,
+            'totalBenefits' => $totalBenefits,
+        ];
+    
+        // Load the view with the payslip data
+        return view('employee.payslip', compact('payslipData'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function getEmployeePayslip($employeeId, Request $request)
+{
+    $year = $request->query('year');
+    $month = $request->query('month');
+
+    $payroll = Payroll::where('employee_id', $employeeId)
+        ->where('year', $year)
+        ->where('month', $month)
+        ->first();
+
+    if (!$payroll) {
+        return response()->json(['message' => 'No payslip data available for the selected month and year.'], 404);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+    return response()->json($payroll);
+}
+
+public function getEmployeePayslips($employeeId)
+{
+    $payrolls = Payroll::where('employee_id', $employeeId)->get();
+
+    if ($payrolls->isEmpty()) {
+        return response()->json(['message' => 'No payslip data available.'], 404);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    return response()->json($payrolls);
+}
 }

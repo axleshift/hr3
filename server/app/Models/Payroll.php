@@ -11,18 +11,28 @@ class Payroll extends Model
     protected $table = 'payrolls';
 
     protected $fillable = [
-        'employeeId',
-        'employeeName',
-        'basicSalary',
-        'overtime',
-        'benefits',
-        'deductions',
+        'employee_id',
+        'name',
+        'total_regular_hours',
+        'total_undertime_hours',
+        'total_overtime_hours',
+        'total_overtime_amount',
+        'net_salary',
+        'year',
+        'month',
         'bonus',
-        'netSalary',
-        'hoursWorked',
-        'paymentMethod',
-        'accountNumber',
-        'status',
-        // 'note',
+        'deduction',
     ];
+    
+    // protected $fillable = [
+    //     'employee_id',
+    //     'name',
+    //     'salary',
+    //     'overtime',
+    //     'benefits',
+    //     'bonus',
+    //     'netSalary',
+    //     'hoursWorked',
+    //     'status',
+    // ];
 }

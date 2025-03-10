@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Payslip</title>
+    <title>Employee Payslip</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,7 +73,7 @@
 <body>
     <div class="payslip">
         <div class="header">
-            <h1>Payslip for Small Business</h1>
+            <h1>Employee Payslip</h1>
         </div>
         
         <div class="sub-header">

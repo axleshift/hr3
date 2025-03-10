@@ -28,6 +28,14 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => 'admin'
             ]);
+            
+            $this->call([
+                AttendanceSeeder::class,
+            ]);
+
+            // $this->call([
+            //     EmployeeSeeder::class,
+            // ]);
         }
     }
-}
+
