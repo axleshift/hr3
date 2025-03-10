@@ -66,7 +66,13 @@ const _nav = (role) => {
     },
     {
       component: CNavItem,
-      name: 'Leave',
+      name: 'Payslip',
+      to: '/Payslip',
+      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Leave Request',
       to: '/Leave',
       icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
     },
@@ -85,6 +91,16 @@ const _nav = (role) => {
       to: '/dashboard',
       icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
     },
+    // {
+    //   component: CNavTitle,
+    //   name: 'Leave Management',
+    // },
+    // {
+    //   component: CNavItem,
+    //   name: 'Leave Type',
+    //   to: '/LeaveType',
+    //   icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
+    // },
     {
       component: CNavItem,
       name: 'Leave List',
@@ -95,6 +111,12 @@ const _nav = (role) => {
       component: CNavTitle,
       name: 'Payroll Management',
     },
+    // {
+    //   component: CNavItem,
+    //   name: 'Employee',
+    //   to: '/Employee',
+    //   icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    // },
     {
       component: CNavItem,
       name: 'Payroll',
