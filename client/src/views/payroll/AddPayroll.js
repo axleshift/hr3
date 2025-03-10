@@ -17,7 +17,7 @@ import {
 } from '@coreui/react'
 
 import { calculateTotalHoursWorked } from '../mock data/attendanceUtils'
-import { employees } from '../mock data/employee'
+import { employees } from '../mock data/compute'
 
 const AddPayroll = () => {
   const navigate = useNavigate()
@@ -27,7 +27,6 @@ const AddPayroll = () => {
     basicSalary: '',
     overtime: '',
     bonus: '',
-    deductions: '',
     hoursWorked: '',
     benefits: '',
     accountNumber: '',
@@ -36,7 +35,6 @@ const AddPayroll = () => {
   })
 
   const [netSalary, setNetSalary] = useState(0)
-  const [paymentMethod, setPaymentMethod] = useState('')
   const [attendanceData, setAttendanceData] = useState([])
 
   const handleEmployeeIdChange = (e) => {
@@ -52,10 +50,8 @@ const AddPayroll = () => {
         ...prev,
         employeeName: selectedEmployee.name,
         hoursWorked: calculateTotalHoursWorked(selectedEmployee.attendance),
-        accountNumber: selectedEmployee.accountNumber,
       }))
       setAttendanceData(selectedEmployee.attendance)
-      setPaymentMethod(selectedEmployee.paymentMethod)
     } else {
       setPayroll((prev) => ({
         ...prev,
@@ -74,8 +70,7 @@ const AddPayroll = () => {
       const overtime = parseFloat(payrollInput.overtime) || 0
       const benefits = parseFloat(payrollInput.benefits) || 0
       const bonus = parseFloat(payrollInput.bonus) || 0
-      const deductions = parseFloat(payrollInput.deductions) || 0
-      const net = basicSalary + overtime + bonus - (deductions + benefits)
+      const net = basicSalary + overtime + bonus - benefits
       setNetSalary(net)
     }
     calculateNetSalary()
@@ -93,7 +88,6 @@ const AddPayroll = () => {
       basicSalary: '',
       overtime: '',
       bonus: '',
-      deductions: '',
       hoursWorked: '',
       benefits: '',
       accountNumber: '',
@@ -118,7 +112,6 @@ const AddPayroll = () => {
       overtime: Math.round(payrollInput.overtime) || 0,
       benefits: Math.round(payrollInput.benefits) || 0,
       bonus: Math.round(payrollInput.bonus) || 0,
-      deductions: Math.round(payrollInput.deductions) || 0,
       netSalary: Math.round(netSalary),
       hoursWorked: payrollInput.hoursWorked,
       paymentMethod,
@@ -223,15 +216,6 @@ const AddPayroll = () => {
                   />
                 </CCol>
 
-                <CCol className="mb-3">
-                  <CFormInput
-                    type="number"
-                    name="deductions"
-                    onChange={handleInput}
-                    value={payrollInput.deductions}
-                    label="Deductions"
-                  />
-                </CCol>
                 <CCol className="mb-3">
                   <CFormInput
                     type="number"

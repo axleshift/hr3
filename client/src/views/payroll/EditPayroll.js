@@ -25,7 +25,6 @@ const EditPayroll = () => {
     basicSalary: '',
     overtime: '',
     bonus: '',
-    deductions: '',
     hoursWorked: 0,
     benefits: '',
     accountNumber: '',
@@ -35,14 +34,13 @@ const EditPayroll = () => {
   const [paymentMethod, setPaymentMethod] = useState('')
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/api/edit-payroll/${id}`).then((res) => {
+    axios.get(`http://localhost:8000/api/edit-payrolls/${id}`).then((res) => {
       if (res.data.status === 200) {
         setPayroll({
           employeeName: res.data.payroll.employeeName || '',
           basicSalary: res.data.payroll.basicSalary || '0',
           overtime: res.data.payroll.overtime || '0',
           bonus: res.data.payroll.bonus || '0',
-          deductions: res.data.payroll.deductions || '0',
           hoursWorked: res.data.payroll.hoursWorked || '0',
           benefits: res.data.payroll.benefits || '0',
           accountNumber: res.data.payroll.accountNumber || '',
@@ -63,8 +61,7 @@ const EditPayroll = () => {
       const overtime = parseFloat(payrollInput.overtime) || 0
       const benefits = parseFloat(payrollInput.benefits) || 0
       const bonus = parseFloat(payrollInput.bonus) || 0
-      const deductions = parseFloat(payrollInput.deductions) || 0
-      const net = basicSalary + overtime + bonus - (deductions + benefits)
+      const net = basicSalary + overtime + bonus - benefits
       setNetSalary(net)
     }
 
@@ -82,7 +79,6 @@ const EditPayroll = () => {
       basicSalary: '',
       overtime: '',
       bonus: '',
-      deductions: '',
       hoursWorked: 0,
       benefits: '',
       accountNumber: '',
@@ -104,7 +100,6 @@ const EditPayroll = () => {
       overtime: Math.round(payrollInput.overtime) || 0,
       benefits: Math.round(payrollInput.benefits) || 0,
       bonus: Math.round(payrollInput.bonus) || 0,
-      deductions: Math.round(payrollInput.deductions) || 0,
       netSalary: Math.round(netSalary), // Ensure netSalary is a number here
       hoursWorked: payrollInput.hoursWorked,
       paymentMethod,
@@ -198,15 +193,7 @@ const EditPayroll = () => {
                     label="Hours Worked"
                   />
                 </CCol>
-                <CCol className="mb-3">
-                  <CFormInput
-                    type="number"
-                    name="deductions"
-                    onChange={handleInput}
-                    value={payrollInput.deductions}
-                    label="Deductions"
-                  />
-                </CCol>
+
                 <CCol className="mb-3">
                   <CFormInput
                     type="number"

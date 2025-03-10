@@ -11,13 +11,23 @@ import { faUser, faSignOutAlt, faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import { useNavigate } from 'react-router-dom'
+import api from '../../util/api'
+import Cookies from 'js-cookie'
+import { useDispatch } from 'react-redux'
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  const handleLogout = () => {
-    sessionStorage.clear()
-    navigate('/login')
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout')
+      Cookies.remove('dcims')
+      dispatch({ type: 'LOGOUT' })
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout failed', error)
+    }
   }
 
   return (
@@ -40,7 +50,6 @@ const AppHeaderDropdown = () => {
           Change Password
         </CDropdownItem>
 
-        {/* Logout Button */}
         <CDropdownItem onClick={handleLogout}>
           <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
           Logout

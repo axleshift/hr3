@@ -39,11 +39,11 @@ Route::delete('/leave/{id}', [LeaveController::class, 'destroy']);
 
 // Employee Leave REuqest Mgt
 Route::get('/leave-requests/{employeeId}', [LeaveRequestController::class, 'employee']);
-    Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
-    Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);   
-    Route::post('/leave-request', [LeaveRequestController::class, 'store']);
-    Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
-    Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'delete']);
+Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
+Route::get('/leave-requests/{id}', [LeaveRequestController::class, 'show']);   
+Route::post('/leave-request', [LeaveRequestController::class, 'store']);
+Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
+Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'delete']);
 
     // Coun for Dashboard
     Route::get('/leave-requests/count?status=Pending', [LeaveRequestController::class, 'countLeaveRequests']);

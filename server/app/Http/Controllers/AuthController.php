@@ -21,7 +21,6 @@ class AuthController extends Controller
                 'session_id' => $sessionId
             ]);
         }
-
         return response()->json(['message' => 'Login failed'], 401);
     }
 
@@ -35,7 +34,6 @@ class AuthController extends Controller
                 'user' => Auth::user()
             ]);
         }
-
         return response()->json(['message' => 'Session is inactive or invalid'], 401);
     }
 

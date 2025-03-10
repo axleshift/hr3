@@ -52,11 +52,12 @@ const AppHeader = () => {
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>
-            {/* <CNavLink href="#">
+            <CNavLink href="#">
               <FontAwesomeIcon icon={faBell} size="lg" />
-            </CNavLink> */}
+            </CNavLink>
           </CNavItem>
         </CHeaderNav>
+
         <CHeaderNav>
           <li className="nav-item py-1">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>

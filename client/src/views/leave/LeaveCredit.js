@@ -10,109 +10,141 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CAlert,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+  CFormCheck,
+  CFormInput,
 } from '@coreui/react'
+import api from '../../util/api' // Assuming you are using an API utility for making requests
 
 const LeaveCredit = () => {
-  const [employee, setEmployee] = useState(null)
-  const [leaveCredits, setLeaveCredits] = useState([])
-  const [leaveRecords, setLeaveRecords] = useState([])
-  const [error, setError] = useState(null)
-
-  const employeeId = sessionStorage.getItem('employee_id')
+  const [visible, setVisible] = useState(false)
+  const [leaveCredits, setLeaveCredits] = useState({
+    LWOP: '',
+    SL: '',
+    VL: '',
+  })
+  const [initialCredits, setInitialCredits] = useState({})
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!employeeId) {
-      setError('Employee ID not found. Please log in again.')
-      return
+    // Fetch existing leave credits from the API when the component is loaded
+    const fetchLeaveCredits = async () => {
+      try {
+        const response = await api.get('/leave-credits') // Adjust the API endpoint if necessary
+        if (response.data) {
+          const fetchedCredits = response.data // Assuming the API response has leave credits
+          setLeaveCredits(fetchedCredits)
+          setInitialCredits(fetchedCredits) // Save the initial values to compare later
+        }
+      } catch (error) {
+        console.error('Error fetching leave credits:', error)
+      }
     }
 
-    fetch(`http://localhost:8000/api/employee/${employeeId}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Failed to fetch employee data')
-        }
-        return res.json()
-      })
-      .then((data) => {
-        setEmployee(data.employee)
-        setLeaveCredits(data.leaveCredits)
-        setLeaveRecords(data.leaveRecords)
-      })
-      .catch((error) => {
-        setError(error.message)
-      })
-  }, [employeeId])
+    fetchLeaveCredits()
+  }, [])
+
+  const handleInputChange = (type, value) => {
+    setLeaveCredits({ ...leaveCredits, [type]: value })
+  }
+
+  const isFormChanged = () => {
+    // Compare the current leave credits with the initial state to check if any changes were made
+    return JSON.stringify(leaveCredits) !== JSON.stringify(initialCredits)
+  }
+
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      const response = await api.put(`/leave-credits/${leaveCredits.employee_id}`, leaveCredits) // Assuming you have an endpoint for updating leave credits
+      if (response.data) {
+        // Successfully updated leave credits
+        setInitialCredits(leaveCredits) // Update the initial credits to the new ones
+        setVisible(false) // Close the modal
+        setLeaveCredits(response.data.data) // Update the leaveCredits state with the new data from the backend
+      }
+    } catch (error) {
+      console.error('Error saving leave credits:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <CCard>
-      <CCardHeader>Employee Leave Record</CCardHeader>
-      <CCardBody>
-        {error && <CAlert color="danger">{error}</CAlert>}
+    <>
+      <CCard>
+        <CCardHeader>Employee Record</CCardHeader>
+        <CCardBody>
+          <p>
+            <strong>Employee ID:</strong> 6231415
+          </p>
+          <p>
+            <strong>Name:</strong> John D Smith
+          </p>
+          <p>
+            <strong>Department:</strong> IT
+          </p>
+          <p>
+            <strong>Designation:</strong> Web Developer
+          </p>
+          <CButton color="primary" onClick={() => setVisible(true)}>
+            Manage Leave Credits
+          </CButton>
+        </CCardBody>
+      </CCard>
 
-        {employee ? (
-          <>
-            <p>
-              <strong>Employee ID:</strong> {employee.id}
-            </p>
-            <p>
-              <strong>Name:</strong> {employee.name}
-            </p>
-            <p>
-              <strong>Department:</strong> {employee.department}
-            </p>
-
-            <h5>Leave Credits</h5>
-            <CTable striped>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Type</CTableHeaderCell>
-                  <CTableHeaderCell>Allowable</CTableHeaderCell>
-                  <CTableHeaderCell>Available</CTableHeaderCell>
+      <CCard className="mt-3">
+        <CCardHeader>Leave Credits</CCardHeader>
+        <CCardBody>
+          <CTable>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell>Type</CTableHeaderCell>
+                <CTableHeaderCell>Allowable</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {Object.entries(leaveCredits).map(([type, value]) => (
+                <CTableRow key={type}>
+                  <CTableDataCell>{type}</CTableDataCell>
+                  <CTableDataCell>{value}</CTableDataCell>
                 </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {leaveCredits.map((credit) => (
-                  <CTableRow key={credit.type}>
-                    <CTableDataCell>{credit.type}</CTableDataCell>
-                    <CTableDataCell>{credit.allowable}</CTableDataCell>
-                    <CTableDataCell>{credit.available}</CTableDataCell>
-                  </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
 
-            <h5>Leave Records</h5>
-            <CTable striped>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Leave Type</CTableHeaderCell>
-                  <CTableHeaderCell>Start Date</CTableHeaderCell>
-                  <CTableHeaderCell>End Date</CTableHeaderCell>
-                  <CTableHeaderCell>Total Days</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Remarks</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {leaveRecords.map((record) => (
-                  <CTableRow key={record.id}>
-                    <CTableDataCell>{record.leave_type}</CTableDataCell>
-                    <CTableDataCell>{record.start_date}</CTableDataCell>
-                    <CTableDataCell>{record.end_date}</CTableDataCell>
-                    <CTableDataCell>{record.total_days}</CTableDataCell>
-                    <CTableDataCell>{record.status}</CTableDataCell>
-                    <CTableDataCell>{record.remarks || 'N/A'}</CTableDataCell>
-                  </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
-          </>
-        ) : (
-          !error && <p>Loading employee data...</p>
-        )}
-      </CCardBody>
-    </CCard>
+      <CModal visible={visible} onClose={() => setVisible(false)}>
+        <CModalHeader>
+          <CModalTitle>Manage Leave Credits</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {Object.entries(leaveCredits).map(([type, value]) => (
+            <div key={type} className="mb-3">
+              <CFormCheck id={type} label={type} defaultChecked />
+              <CFormInput
+                type="number"
+                value={value}
+                onChange={(e) => handleInputChange(type, e.target.value)}
+              />
+            </div>
+          ))}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="primary" onClick={handleSave} disabled={!isFormChanged() || loading}>
+            {loading ? 'Saving...' : 'Save'}
+          </CButton>
+          <CButton color="secondary" onClick={() => setVisible(false)}>
+            Cancel
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    </>
   )
 }
 

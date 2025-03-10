@@ -64,12 +64,12 @@ const _nav = (role) => {
       to: '/Dashboard',
       icon: <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon" />,
     },
-    {
-      component: CNavItem,
-      name: 'Payslip',
-      to: '/Payslip',
-      icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
-    },
+    // {
+    //   component: CNavItem,
+    //   name: 'Payslip',
+    //   to: '/Payslip',
+    //   icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    // },
     {
       component: CNavItem,
       name: 'Leave Request',

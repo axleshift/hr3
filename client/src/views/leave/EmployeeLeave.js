@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import api from '../../util/api'
 import {
   CCard,
@@ -20,13 +20,11 @@ import {
   CModalFooter,
   CForm,
   CFormSelect,
-  CFormInput,
   CFormTextarea,
   CRow,
   CCol,
   CAlert,
 } from '@coreui/react'
-import { format } from 'date-fns'
 
 const EmployeeLeave = () => {
   const [leave, setLeave] = useState([])
@@ -34,16 +32,9 @@ const EmployeeLeave = () => {
   const [error, setError] = useState(null)
   const [modalVisible, setModalVisible] = useState(false)
   const [leaveType, setLeaveType] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
   const [reason, setReason] = useState('')
   const [alert, setAlert] = useState({ visible: false, type: '', message: '' })
   const employeeId = sessionStorage.getItem('employee_id')
-
-  const employee = {
-    employee_id: sessionStorage.getItem('employee_id') || '',
-    name: sessionStorage.getItem('name') || '',
-  }
 
   useEffect(() => {
     if (!employeeId) {
@@ -54,17 +45,17 @@ const EmployeeLeave = () => {
     fetchLeave()
   }, [employeeId])
 
-  const fetchLeave = async () => {
+  const fetchLeave = useCallback(async () => {
     try {
+      setLoading(true)
       const response = await api.get(`/leave-requests/${employeeId}`)
       setLeave(response.data.leaveRequests)
     } catch (error) {
-      console.error('Error fetching leave list:', error)
       setError('Failed to load leave requests. Please try again later.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [employeeId])
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -82,33 +73,21 @@ const EmployeeLeave = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Basic validation
-    if (!leaveType || !startDate || !endDate || !reason) {
-      setAlert({ visible: true, type: 'danger', message: 'All fields are required.' })
-      return
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-      setAlert({ visible: true, type: 'danger', message: 'End Date must be after Start Date.' })
+    if (!leaveType || !reason) {
+      setAlert({ visible: true, type: 'danger', message: 'Leave Type and Reason are required.' })
       return
     }
 
     try {
       const response = await api.post('/leave-request', {
-        employee_id: employee.employee_id,
-        name: employee.name,
+        employee_id: employeeId,
         leave_type: leaveType,
-        start_date: startDate,
-        end_date: endDate,
         reason: reason,
         status: 'Pending',
       })
-      console.log('Response:', response.data)
       setAlert({ visible: true, type: 'success', message: 'Leave request submitted successfully!' })
 
       setLeaveType('')
-      setStartDate('')
-      setEndDate('')
       setReason('')
       fetchLeave()
 
@@ -116,7 +95,6 @@ const EmployeeLeave = () => {
         setModalVisible(false)
       }, 2000)
     } catch (error) {
-      console.error('Error Response:', error.response?.data)
       setAlert({
         visible: true,
         type: 'danger',
@@ -131,9 +109,9 @@ const EmployeeLeave = () => {
     <CCard>
       <CCardHeader>
         <strong>My Leave Requests</strong>
-        <CButton className="float-end" color="primary" onClick={() => setModalVisible(true)}>
+        {/* <CButton className="float-end" color="primary" onClick={() => setModalVisible(true)}>
           Request
-        </CButton>
+        </CButton> */}
       </CCardHeader>
       <CCardBody>
         {loading ? (
@@ -151,16 +129,14 @@ const EmployeeLeave = () => {
               <CTableRow>
                 <CTableHeaderCell>#</CTableHeaderCell>
                 <CTableHeaderCell>Leave Type</CTableHeaderCell>
-                <CTableHeaderCell>Start Date</CTableHeaderCell>
-                <CTableHeaderCell>End Date</CTableHeaderCell>
-                <CTableHeaderCell>Days</CTableHeaderCell>
+                <CTableHeaderCell>Approved Date</CTableHeaderCell>
                 <CTableHeaderCell>Status</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
               {leave.length === 0 ? (
                 <CTableRow>
-                  <CTableDataCell colSpan="6" className="text-center">
+                  <CTableDataCell colSpan="4" className="text-center">
                     No leave requests available.
                   </CTableDataCell>
                 </CTableRow>
@@ -169,9 +145,7 @@ const EmployeeLeave = () => {
                   <CTableRow key={leave.id}>
                     <CTableDataCell>{index + 1}</CTableDataCell>
                     <CTableDataCell>{leave.leave_type}</CTableDataCell>
-                    <CTableDataCell>{leave.start_date}</CTableDataCell>
-                    <CTableDataCell>{leave.end_date}</CTableDataCell>
-                    <CTableDataCell>{leave.total_days}</CTableDataCell>
+                    <CTableDataCell>{leave.approved_date || 'N/A'}</CTableDataCell>
                     <CTableDataCell>
                       <CBadge color={getStatusBadge(leave.status)}>{leave.status}</CBadge>
                     </CTableDataCell>
@@ -183,7 +157,6 @@ const EmployeeLeave = () => {
         )}
       </CCardBody>
 
-      {/* Leave Request Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
           <CModalTitle>Leave Request</CModalTitle>
@@ -207,26 +180,6 @@ const EmployeeLeave = () => {
               <option value="Emergency Leave">Emergency Leave</option>
             </CFormSelect>
             <br />
-            <CRow>
-              <CCol className="mb-3">
-                <CFormInput
-                  type="date"
-                  label="Start Date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
-                />
-              </CCol>
-              <CCol className="mb-3">
-                <CFormInput
-                  type="date"
-                  label="End Date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  required
-                />
-              </CCol>
-            </CRow>
             <CFormTextarea
               label="Reason"
               value={reason}
