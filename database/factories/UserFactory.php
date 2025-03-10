@@ -23,15 +23,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $userTypes = ['user', 'admin'];
-
-        $type = $this->faker->randomElement($userTypes);
+        $type = $this->faker->randomElement(['user', 'admin', 'employee']);
 
         return [
             'name' => fake()->name(),
-            'type' => $type,
-            'login_method' => 'form',
-            'status' => 'active',
+            'role' => $type,
+            'username' => $this->faker->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

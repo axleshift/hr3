@@ -20,12 +20,14 @@ class DatabaseSeeder extends Seeder
             User::create([
                 'name' => 'John',
                 'email' => 'user@example.com',
+                'username' => 'user',
                 'password' => 'user'
             ]);
 
             User::create([
                'name' => 'Admin',
                 'email' => 'admin@example.com',
+                'username' => 'admin',
                 'password' => 'admin'
             ]);
             
