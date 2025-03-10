@@ -9,13 +9,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Freight HR 3</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="shortcut icon" href="./favicon.ico">
-    <script type="module" crossorigin src="./assets/index-BregGavu.js"></script>
+    <script type="module" crossorigin src="./assets/index-DXiirQRx.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-C7NBzQCU.css">
   </head>
   <body>

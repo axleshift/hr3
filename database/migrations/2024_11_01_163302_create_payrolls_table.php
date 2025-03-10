@@ -13,20 +13,21 @@ return new class extends Migration
     {
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId');
-            $table->string('employeeName');
-            $table->integer('basicSalary');
-            $table->integer('overtime')->nullable();
-            $table->integer('bonus')->nullable();
-            $table->integer('deductions')->nullable();
-            $table->integer('benefits')->nullable();
-            $table->integer('hoursWorked')->nullable();
-            $table->integer('netSalary')->nullable();
-            $table->string('paymentMethod', 50)->nullable();
-            $table->string('accountNumber', 50)->nullable();
-            $table->string('status', 50)->default('Pending');
-            // $table->string('note')->nullable();
+            $table->string('employee_id');
+            $table->string('name')->nullable();
+            $table->decimal('total_regular_hours', 8, 2)->nullable();
+            $table->decimal('total_undertime_hours', 8, 2)->nullable();
+            $table->decimal('total_overtime_hours', 8, 2)->nullable();
+            $table->decimal('total_overtime_amount', 8, 2)->nullable();
+            $table->decimal('net_salary', 10, 2)->nullable();
+            $table->decimal('deduction', 8, 2)->default(0);
+            $table->decimal('bonus', 8, 2)->default(0);
+            $table->integer('year')->nullable();
+            $table->integer('month')->nullable();
+            $table->enum('status', ['Pending', 'Paid'])->default('Pending');
             $table->timestamps();
+
+            $table->unique(['employee_id', 'year', 'month'], 'unique_employee_year_month');
         });
     }
     

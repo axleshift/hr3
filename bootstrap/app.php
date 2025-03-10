@@ -12,10 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [
-            \Fahlisaputra\Minify\Middleware\MinifyHtml::class,
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
+        
+       $middleware->alias([
+            'verify.session' => \App\Http\Middleware\VerifySession::class,
+        ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
+    

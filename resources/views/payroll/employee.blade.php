@@ -73,7 +73,7 @@
 <body>
     <div class="payslip">
         <div class="header">
-            <h1>Payslip for Small Business</h1>
+            <h1>Payslip</h1>
         </div>
         
         <div class="sub-header">
