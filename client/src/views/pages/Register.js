@@ -15,7 +15,7 @@ import {
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'
-import axios from 'axios'
+import api from '../../util/api'
 
 const Register = () => {
   const [username, setUsername] = useState('')
@@ -33,7 +33,7 @@ const Register = () => {
     setSuccess('')
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register', {
+      const response = await api.post('/auth/register', {
         username,
         name,
         email,
