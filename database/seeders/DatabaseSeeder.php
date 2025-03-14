@@ -15,29 +15,10 @@ class DatabaseSeeder extends Seeder
     {
         $debugEnabled = config('app.debug');
         if ($debugEnabled) {
-            User::factory(100)->create();
-
-            User::create([
-                'name' => 'John',
-                'email' => 'user@example.com',
-                'username' => 'user',
-                'password' => 'user'
-            ]);
-
-            User::create([
-               'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'username' => 'admin',
-                'password' => 'admin'
-            ]);
             
             $this->call([
                 AttendanceSeeder::class,
             ]);
-
-            // $this->call([
-            //     EmployeeSeeder::class,
-            // ]);
         }
     }
 }
