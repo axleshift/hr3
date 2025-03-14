@@ -3,9 +3,12 @@ import { HashRouter, Routes, Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import ProtectedRoute from './util/ProtectedRoute'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/Login'))
+const Register = React.lazy(() => import('./views/pages/Register'))
+const ForgotPassword = React.lazy(() => import('./views/pages/ForgotPassword'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -36,7 +39,11 @@ const App = () => {
       >
         <Routes>
           <Route exact path="/Login" name="Login" element={<Login />} />
-          <Route path="*" name="Home" element={<DefaultLayout />} />
+          <Route path="/Register" name="Register" element={<Register />} />
+          <Route path="/ForgotPassword" name="ForgotPassword" element={<ForgotPassword />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="*" name="Home" element={<DefaultLayout />} />
+          </Route>
         </Routes>
       </Suspense>
     </HashRouter>

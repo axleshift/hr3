@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import {
@@ -13,27 +13,26 @@ import {
   CInputGroup,
   CInputGroupText,
   CFormInput,
+  CSpinner, // Import CSpinner
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'
 import api from '../../util/api'
 import Cookies from 'js-cookie'
 
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [alert, setAlert] = useState({ visible: false, type: '', message: '' })
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
     e.preventDefault()
+    setLoading(true)
     try {
-      let searchParams = new URLSearchParams(window.location.search)
-      let rParam = searchParams.get('r')
       const response = await api.post('/auth/login', { username, password })
-
       dispatch({ type: 'SET_USER', payload: response.data.user })
       dispatch({ type: 'SET_SESSION_ID', payload: response.data.session_id })
       Cookies.set('dcims', response.data.session_id, { expires: 30 })
@@ -43,35 +42,51 @@ const Login = () => {
       sessionStorage.setItem('employee_id', response.data.user.employee_id)
       sessionStorage.setItem('name', response.data.user.name)
 
-      navigate(rParam ? rParam : '/dashboard')
+      // Directly navigate to the dashboard without showing a success alert
+      navigate('/dashboard')
     } catch (err) {
-      setError('Login failed. Please check your credentials.')
+      setAlert({
+        visible: true,
+        type: 'danger',
+        message: 'Login failed. Please check your credentials.',
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
+  useEffect(() => {
+    if (alert.visible) {
+      const timer = setTimeout(() => setAlert({ ...alert, visible: false }), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [alert])
+
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+    <div className="bg-light min-vh-100 d-flex flex-row align-items-center justify-content-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={5} lg={4} xl={5}>
-            <CCard className="mx-4">
-              <CCardBody className="p-4">
+          <CCol xs={12} sm={10} md={8} lg={5}>
+            <CCard className="shadow-sm p-4 border-0 rounded">
+              <CCardBody>
                 <CForm onSubmit={handleLogin}>
-                  <h1 className="text-center">Login</h1>
-                  <p className="text-secondary text-center">Sign in to your account</p>
-
-                  {error && <CAlert color="danger">{error}</CAlert>}
+                  <h2 className="text-center fw-bold">Login</h2>
+                  <p className="text-center text-muted">Sign in to your account</p>
+                  {alert.visible && (
+                    <CAlert color={alert.type} className="mb-3">
+                      {alert.message}
+                    </CAlert>
+                  )}
 
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
-                      <FontAwesomeIcon icon={faEnvelope} />
+                      <FontAwesomeIcon icon={faUser} />
                     </CInputGroupText>
                     <CFormInput
                       type="text"
-                      id="username"
+                      placeholder="Username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Username"
                       required
                     />
                   </CInputGroup>
@@ -82,17 +97,39 @@ const Login = () => {
                     </CInputGroupText>
                     <CFormInput
                       type="password"
-                      id="password"
+                      placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Password"
                       required
                     />
                   </CInputGroup>
 
-                  <CButton type="submit" color="primary" className="w-100" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
-                  </CButton>
+                  <CRow>
+                    <CCol>
+                      <CButton type="submit" color="primary" className="w-100" disabled={loading}>
+                        {loading ? (
+                          <CSpinner component="span" size="sm" aria-hidden="true" />
+                        ) : (
+                          'Login'
+                        )}
+                      </CButton>
+                    </CCol>
+                    <CCol>
+                      <CButton
+                        color="light"
+                        className="w-100"
+                        onClick={() => navigate('/Register')}
+                      >
+                        Register
+                      </CButton>
+                    </CCol>
+                  </CRow>
+
+                  <div className="text-center mt-3">
+                    <Link to="/forgot-password" className="text-decoration-none">
+                      Forgot password?
+                    </Link>
+                  </div>
                 </CForm>
               </CCardBody>
             </CCard>

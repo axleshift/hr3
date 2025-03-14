@@ -1,130 +1,94 @@
 import React, { useEffect, useState } from 'react'
-import { CCard, CCardBody, CCardHeader, CRow, CCol, CSpinner } from '@coreui/react'
-import api from '../../util/api'
+import { useNavigate } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faClock, faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { CCol, CRow, CWidgetStatsF, CContainer } from '@coreui/react'
+import axios from 'axios'
 
-const Dashboard = () => {
-  const [loading, setLoading] = useState(true)
-  const [counts, setCounts] = useState({
-    activeEmployees: 0,
-    newLeaveRequests: 0,
-    approvedLeaveRequests: 0,
-    rejectedLeaveRequests: 0,
-    budget: 0,
-    paidPayroll: 0,
-    pendingPayroll: 0,
+const getLeaveCountByStatus = async (status) => {
+  try {
+    const response = await axios.get(`/leave-requests/count/${status}`)
+    return response.data.count
+  } catch (error) {
+    console.error(`Error fetching count for status ${status}:`, error)
+    return 0
+  }
+}
+
+export const Dashboard = () => {
+  const navigate = useNavigate() // Hook for navigation
+  const [leaveStats, setLeaveStats] = useState({
+    pendingRequests: 0,
+    approvedLeaves: 0,
+    rejectedLeaves: 0,
   })
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLeaveStats = async () => {
       try {
-        const [
-          activeEmployeesRes,
-          newLeaveRequestsRes,
-          approvedLeaveRequestsRes,
-          rejectedLeaveRequestsRes,
-          budgetRes,
-          paidPayrollRes,
-          pendingPayrollRes,
-        ] = await Promise.all([
-          api.get('/employees/count'),
-          api.get('/leave-requests/count?status=Pending'),
-          api.get('/leave-requests/count?status=Approved'),
-          api.get('/leave-requests/count?status=Rejected'),
-          api.get('/budget'),
-          api.get('/payrolls/count?status=Paid'),
-          api.get('/payrolls/count?status=Pending'),
-        ])
+        const pendingRequests = await getLeaveCountByStatus('Pending')
+        const approvedLeaves = await getLeaveCountByStatus('Approved')
+        const rejectedLeaves = await getLeaveCountByStatus('Rejected')
 
-        setCounts({
-          activeEmployees: activeEmployeesRes.data.count,
-          newLeaveRequests: newLeaveRequestsRes.data.count,
-          approvedLeaveRequests: approvedLeaveRequestsRes.data.count,
-          rejectedLeaveRequests: rejectedLeaveRequestsRes.data.count,
-          budget: budgetRes.data.budget,
-          paidPayroll: paidPayrollRes.data.count,
-          pendingPayroll: pendingPayrollRes.data.count,
+        setLeaveStats({
+          pendingRequests,
+          approvedLeaves,
+          rejectedLeaves,
         })
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-      } finally {
-        setLoading(false)
+        console.error('Error fetching leave stats:', error)
       }
     }
 
-    fetchData()
+    fetchLeaveStats()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <CSpinner color="primary" />
-      </div>
-    )
-  }
-
   return (
-    <div className="container">
-      <CRow>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Active Employees</CCardHeader>
-            <CCardBody>
-              <h3>{counts.activeEmployees}</h3>
-            </CCardBody>
-          </CCard>
+    <CContainer fluid>
+      <CRow className="g-3">
+        {/* Pending Requests */}
+        <CCol xs={12} sm={6} md={4} lg={3}>
+          <div onClick={() => navigate('/Pending')} style={{ cursor: 'pointer' }}>
+            <CWidgetStatsF
+              className="mb-3 h-100"
+              color="warning"
+              icon={<FontAwesomeIcon icon={faClock} size="2x" />}
+              title="Pending Requests"
+              value={leaveStats.pendingRequests}
+              padding={true}
+            />
+          </div>
         </CCol>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>New Leave Requests</CCardHeader>
-            <CCardBody>
-              <h3>{counts.newLeaveRequests}</h3>
-            </CCardBody>
-          </CCard>
+
+        {/* Approved Leaves */}
+        <CCol xs={12} sm={6} md={4} lg={3}>
+          <div onClick={() => navigate('/Approved')} style={{ cursor: 'pointer' }}>
+            <CWidgetStatsF
+              className="mb-3 h-100"
+              color="success"
+              icon={<FontAwesomeIcon icon={faCheckCircle} size="2x" />}
+              title="Approved Leaves"
+              value={leaveStats.approvedLeaves}
+              padding={true}
+            />
+          </div>
         </CCol>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Approved Leave Requests</CCardHeader>
-            <CCardBody>
-              <h3>{counts.approvedLeaveRequests}</h3>
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Rejected Leave Requests</CCardHeader>
-            <CCardBody>
-              <h3>{counts.rejectedLeaveRequests}</h3>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-      <CRow className="mt-4">
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Budget</CCardHeader>
-            <CCardBody>
-              <h3>${counts.budget}</h3>
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Paid Payroll</CCardHeader>
-            <CCardBody>
-              <h3>{counts.paidPayroll}</h3>
-            </CCardBody>
-          </CCard>
-        </CCol>
-        <CCol md={3}>
-          <CCard>
-            <CCardHeader>Pending Payroll</CCardHeader>
-            <CCardBody>
-              <h3>{counts.pendingPayroll}</h3>
-            </CCardBody>
-          </CCard>
+
+        {/* Rejected Leaves */}
+        <CCol xs={12} sm={6} md={4} lg={3}>
+          <div onClick={() => navigate('/Rejected')} style={{ cursor: 'pointer' }}>
+            <CWidgetStatsF
+              className="mb-3 h-100"
+              color="danger"
+              icon={<FontAwesomeIcon icon={faTimesCircle} size="2x" />}
+              title="Rejected Leaves"
+              value={leaveStats.rejectedLeaves}
+              padding={true}
+            />
+          </div>
         </CCol>
       </CRow>
-    </div>
+    </CContainer>
   )
 }
 

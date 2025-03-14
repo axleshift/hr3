@@ -26,7 +26,7 @@ const useAuthStatus = () => {
     } else {
       setStatus('unauthenticated')
     }
-  }, [Cookies.get('dcims')])
+  }, [dispatch])
 
   return status
 }
