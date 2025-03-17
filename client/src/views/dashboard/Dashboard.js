@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClock, faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
-import { CCol, CRow, CWidgetStatsF, CContainer } from '@coreui/react'
+import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
+import WidgetStats from './WidgetStats'
+import useAuthStatus from '../../hook/useAuthStatus'
+
+const API_URL = 'http://localhost:8000/api'
 
 const getLeaveCountByStatus = async (status) => {
   try {
-    const response = await axios.get(`/leave-requests/count/${status}`)
+    const response = await axios.get(`${API_URL}/leave-requests/count/${status}`)
     return response.data.count
   } catch (error) {
     console.error(`Error fetching count for status ${status}:`, error)
@@ -15,13 +18,15 @@ const getLeaveCountByStatus = async (status) => {
   }
 }
 
-export const Dashboard = () => {
-  const navigate = useNavigate() // Hook for navigation
+const Dashboard = () => {
+  const navigate = useNavigate()
   const [leaveStats, setLeaveStats] = useState({
     pendingRequests: 0,
     approvedLeaves: 0,
     rejectedLeaves: 0,
   })
+  const userRole = sessionStorage.getItem('role')
+  const authStatus = useAuthStatus()
 
   useEffect(() => {
     const fetchLeaveStats = async () => {
@@ -40,56 +45,114 @@ export const Dashboard = () => {
       }
     }
 
-    fetchLeaveStats()
-  }, [])
+    if (authStatus === 'authenticated') {
+      fetchLeaveStats()
+    }
+  }, [authStatus])
+
+  if (authStatus === 'unauthenticated') {
+    navigate('/login')
+    return null
+  }
 
   return (
     <CContainer fluid>
-      <CRow className="g-3">
-        {/* Pending Requests */}
-        <CCol xs={12} sm={6} md={4} lg={3}>
-          <div onClick={() => navigate('/Pending')} style={{ cursor: 'pointer' }}>
-            <CWidgetStatsF
-              className="mb-3 h-100"
-              color="warning"
-              icon={<FontAwesomeIcon icon={faClock} size="2x" />}
-              title="Pending Requests"
-              value={leaveStats.pendingRequests}
-              padding={true}
-            />
-          </div>
-        </CCol>
+      {(userRole === 'admin' || userRole === 'superAdmin') && (
+        <>
+          <WidgetStats />
+        </>
+      )}
 
-        {/* Approved Leaves */}
-        <CCol xs={12} sm={6} md={4} lg={3}>
-          <div onClick={() => navigate('/Approved')} style={{ cursor: 'pointer' }}>
-            <CWidgetStatsF
-              className="mb-3 h-100"
-              color="success"
-              icon={<FontAwesomeIcon icon={faCheckCircle} size="2x" />}
-              title="Approved Leaves"
-              value={leaveStats.approvedLeaves}
-              padding={true}
-            />
-          </div>
-        </CCol>
+      {userRole === 'employee' && (
+        <>
+          <h3>Employee Dashboard</h3>
+          <CRow>
+            <CCol md={4}>
+              <Link to="/payslips">
+                <CCard className="text-center">
+                  <CCardHeader>Payslips</CCardHeader>
+                  <CCardBody>View your payslips</CCardBody>
+                </CCard>
+              </Link>
+            </CCol>
 
-        {/* Rejected Leaves */}
-        <CCol xs={12} sm={6} md={4} lg={3}>
-          <div onClick={() => navigate('/Rejected')} style={{ cursor: 'pointer' }}>
-            <CWidgetStatsF
-              className="mb-3 h-100"
-              color="danger"
-              icon={<FontAwesomeIcon icon={faTimesCircle} size="2x" />}
-              title="Rejected Leaves"
-              value={leaveStats.rejectedLeaves}
-              padding={true}
-            />
-          </div>
-        </CCol>
-      </CRow>
+            <CCol md={4}>
+              <Link to="/leave-request">
+                <CCard className="text-center">
+                  <CCardHeader>Leave Request</CCardHeader>
+                  <CCardBody>Submit leave requests</CCardBody>
+                </CCard>
+              </Link>
+            </CCol>
+
+            <CCol md={4}>
+              <Link to="/leave-history">
+                <CCard className="text-center">
+                  <CCardHeader>Leave History</CCardHeader>
+                  <CCardBody>View past leave requests</CCardBody>
+                </CCard>
+              </Link>
+            </CCol>
+          </CRow>
+        </>
+      )}
     </CContainer>
   )
 }
 
 export default Dashboard
+
+// import React, { useEffect, useState } from 'react'
+// import { useNavigate } from 'react-router-dom'
+// import { CContainer } from '@coreui/react'
+// import axios from 'axios'
+// import { WidgetStats } from './WidgetStats'
+
+// const API_URL = 'http://localhost:8000/api'
+
+// const getLeaveCountByStatus = async (status) => {
+//   try {
+//     const response = await axios.get(`${API_URL}/leave-requests/count/${status}`)
+//     return response.data.count
+//   } catch (error) {
+//     console.error(`Error fetching count for status ${status}:`, error)
+//     return 0
+//   }
+// }
+
+// export const Dashboard = () => {
+//   const navigate = useNavigate() // Hook for navigation
+//   const [leaveStats, setLeaveStats] = useState({
+//     pendingRequests: 0,
+//     approvedLeaves: 0,
+//     rejectedLeaves: 0,
+//   })
+
+//   useEffect(() => {
+//     const fetchLeaveStats = async () => {
+//       try {
+//         const pendingRequests = await getLeaveCountByStatus('Pending')
+//         const approvedLeaves = await getLeaveCountByStatus('Approved')
+//         const rejectedLeaves = await getLeaveCountByStatus('Rejected')
+
+//         setLeaveStats({
+//           pendingRequests,
+//           approvedLeaves,
+//           rejectedLeaves,
+//         })
+//       } catch (error) {
+//         console.error('Error fetching leave stats:', error)
+//       }
+//     }
+
+//     fetchLeaveStats()
+//   }, [])
+
+//   return (
+//     <CContainer fluid>
+//       <WidgetStats />
+//     </CContainer>
+//   )
+// }
+
+// export default Dashboard

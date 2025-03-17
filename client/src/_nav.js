@@ -46,13 +46,13 @@ const navItems = [
   //   icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
   //   permission: ['superAdmin'],
   // },
-  // {
-  //   component: CNavItem,
-  //   name: 'Leave Type',
-  //   to: '/LeaveType',
-  //   icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
-  //   permission: ['superAdmin'],
-  // },
+  {
+    component: CNavItem,
+    name: 'Leave',
+    to: '/LeaveType',
+    icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
+    permission: ['superAdmin'],
+  },
   // {
   //   component: CNavItem,
   //   name: 'Leave Report',
@@ -75,9 +75,23 @@ const navItems = [
     permission: ['superAdmin', 'admin'],
   },
   {
+    component: CNavItem,
+    name: 'Leave Report',
+    to: '/LeaveReport',
+    icon: <FontAwesomeIcon icon={faCheckCircle} className="nav-icon" />,
+    permission: ['superAdmin', 'admin'],
+  },
+  {
     component: CNavTitle,
     name: 'Payroll Management',
     permission: ['superAdmin', 'admin'],
+  },
+  {
+    component: CNavItem,
+    name: 'Payslip',
+    to: '/EmployeePayslip',
+    icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
+    permission: ['employee'],
   },
   {
     component: CNavItem,
@@ -95,6 +109,13 @@ const navItems = [
   },
   {
     component: CNavItem,
+    name: 'Payslip',
+    to: '/Payslip',
+    icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
+    permission: ['superAdmin', 'admin'],
+  },
+  {
+    component: CNavItem,
     name: 'Report',
     to: '/Report',
     icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
@@ -103,6 +124,13 @@ const navItems = [
   {
     component: CNavTitle,
     name: 'Benefit Management',
+    permission: ['superAdmin', 'admin'],
+  },
+  {
+    component: CNavItem,
+    name: 'Benefit Types',
+    to: '/BenefitTypes',
+    icon: <FontAwesomeIcon icon={faHandHoldingHeart} className="nav-icon" />,
     permission: ['superAdmin', 'admin'],
   },
   {
