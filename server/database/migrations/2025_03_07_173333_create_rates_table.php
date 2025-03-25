@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('rates', function (Blueprint $table) {
             $table->id();
-            $table->string('type')->unique();
+            $table->string('overtime_rate')->unique();
             $table->decimal('rate', 8, 2);
             $table->timestamps();
         });

@@ -2,54 +2,61 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\Salary;
-use App\Models\Employee;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+use App\Models\Rate;
 
 class SalaryController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $salaries = Salary::all(); // Fetch all salaries from the database
-        return response()->json($salaries); // Return the data as JSON
-    }
-    
-    public function show(Request $request)
-    {
-        $department = $request->input('department');
-        $jobPosition = $request->input('job_position');
+        $overtimeRate = Rate::where('type', 'overtime_rate')->first();
 
-        $salary = Salary::where('department', $department)
-                        ->where('job_position', $jobPosition)
-                        ->first();
-
-        if ($salary) {
-            return response()->json($salary);
-        }
-
-        return response()->json(['message' => 'Salary not found'], 404);
+        return response()->json([
+            'overtime_rate' => $overtimeRate ? $overtimeRate->rate : null,
+        ]);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'job_position' => 'required|string',
-            'department' => 'required|string',
-            'salary' => 'required|numeric',
+        $validated = $request->validate([
+            'overtime_rate' => 'required|numeric|min:0',
         ]);
+    
+        Rate::updateOrCreate(
+            ['type' => 'overtime_rate'],
+            ['rate' => $validated['overtime_rate']]
+        );
+        return response()->json(['message' => 'Rates saved successfully'], 201);
+    }
 
-        $salary = Salary::create([
-            'employee_id' => $request->employee_id,
-            'job_position' => $request->job_position,
-            'department' => $request->department,
-            'salary' => $request->salary,
-        ]);
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
 
-        Log::info('Salary Created:', $salary->toArray());
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
 
-        return response()->json(['message' => 'Salary added successfully', 'salary' => $salary], 201);
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }

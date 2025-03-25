@@ -9,6 +9,7 @@ class Rate extends Model
 {
     use HasFactory;
     
+    protected $table = 'rates';
     protected $fillable = [
         'type',
         'rate',

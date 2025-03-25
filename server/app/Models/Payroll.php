@@ -12,6 +12,7 @@ class Payroll extends Model
 
     protected $fillable = [
         'employee_id',
+        'user_id',
         'name',
         'total_regular_hours',
         'total_undertime_hours',
@@ -21,6 +22,12 @@ class Payroll extends Model
         'year',
         'month',
         'bonus',
-        'deduction',
+        'benefits_total',
+        'base_salary',
+        'department',
+        'job_position',
+        'daily_rate',
+        'gross_salary',
+        'tax'
     ];
 }
