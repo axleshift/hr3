@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('leaves', function (Blueprint $table) {
+        Schema::create('benefit_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('type')->default('Paid');
-            $table->decimal('pay_rate', 8, 2)->default(0);
+            $table->string('name')->index();
+            $table->decimal('amount', 10, 2)->index();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('leaves');
+        Schema::dropIfExists('benefit_types');
     }
 };

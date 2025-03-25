@@ -9,30 +9,22 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableDataCell,
-  CButton,
   CBadge,
   CSpinner,
-  CFormSelect,
-  CFormCheck,
-  CDropdown,
-  CDropdownToggle,
-  CDropdownItem,
-  CDropdownMenu,
   CPagination,
   CPaginationItem,
   CInputGroup,
   CFormInput,
-  CInputGroupText,
+  CButton,
 } from '@coreui/react'
 import api from '../../util/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFile, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons'
+import { faSearch } from '@fortawesome/free-solid-svg-icons'
 
-const LeaveList = () => {
+const Pending = () => {
   const [leave, setLeave] = useState([])
   const [filteredLeave, setFilteredLeave] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filterType, setFilterType] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -40,19 +32,22 @@ const LeaveList = () => {
 
   useEffect(() => {
     fetchLeave()
-  }, [filterType, currentPage])
+  }, [currentPage])
 
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests/page', {
+      const response = await api.get('/leave-requests', {
         params: { page: currentPage, limit: itemsPerPage },
       })
       const data = response.data || {}
 
       if (Array.isArray(data.leaveRequests)) {
-        setLeave(data.leaveRequests)
-        setFilteredLeave(data.leaveRequests)
+        const approvedLeave = data.leaveRequests.filter(
+          (item) => item.status.toLowerCase() === 'pending',
+        )
+        setLeave(approvedLeave)
+        setFilteredLeave(approvedLeave)
       } else {
         setLeave([])
         setFilteredLeave([])
@@ -69,16 +64,6 @@ const LeaveList = () => {
     }
   }
 
-  const handleStatus = async (id, status) => {
-    try {
-      await api.put(`/leave-requests/${id}`, { status })
-      fetchLeave()
-    } catch (error) {
-      console.error('Error updating leave status:', error)
-      alert(`Failed to update leave status: ${error.response?.data?.message || error.message}`)
-    }
-  }
-
   const handleSearch = (query) => {
     setSearchQuery(query)
     if (query.trim() === '') {
@@ -91,46 +76,22 @@ const LeaveList = () => {
     }
   }
 
-  const getStatusBadge = (status) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'warning'
-      case 'approved':
-        return 'success'
-      case 'rejected':
-        return 'danger'
-      default:
-        return 'secondary'
-    }
-  }
-
   return (
     <CCard>
       <CCardHeader className="d-flex justify-content-between align-items-center">
-        <strong>Leave Requests</strong>
+        <strong>Pending Leave Requests</strong>
         <div className="d-flex gap-2">
-          <CInputGroup style={{ width: '200px' }}>
+          <CInputGroup>
             <CFormInput
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
             />
-            <CInputGroupText>
+            <CButton color="primary">
               <FontAwesomeIcon icon={faSearch} />
-            </CInputGroupText>
+            </CButton>
           </CInputGroup>
-
-          <CFormSelect
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            style={{ width: '150px' }}
-          >
-            <option value="all">All Requests</option>
-            <option value="last24">Last 24 Hours</option>
-            <option value="recent">Recent (Last 7 Days)</option>
-            <option value="old">Older</option>
-          </CFormSelect>
         </div>
       </CCardHeader>
 
@@ -142,7 +103,7 @@ const LeaveList = () => {
           </div>
         ) : filteredLeave.length === 0 ? (
           <div className="text-center">
-            <p>No leave request found.</p>
+            <p>No approved leave request found.</p>
           </div>
         ) : (
           <>
@@ -154,9 +115,8 @@ const LeaveList = () => {
                   <CTableHeaderCell>Date Requested</CTableHeaderCell>
                   <CTableHeaderCell>Leave Type</CTableHeaderCell>
                   <CTableHeaderCell>Days</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
                   <CTableHeaderCell>Paid</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
+                  <CTableHeaderCell>Status</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -169,45 +129,9 @@ const LeaveList = () => {
                     </CTableDataCell>
                     <CTableDataCell>{leave.leave_type}</CTableDataCell>
                     <CTableDataCell>{leave.total_days}</CTableDataCell>
+                    <CTableDataCell>{leave.is_paid ? 'Paid' : 'Unpaid'}</CTableDataCell>
                     <CTableDataCell>
-                      <CBadge color={getStatusBadge(leave.status)}>{leave.status}</CBadge>
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CFormCheck
-                        id={`paid-checkbox-${leave.id}`}
-                        checked={leave.is_paid}
-                        onChange={() => {}}
-                      />
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CButton color="link">
-                        <FontAwesomeIcon icon={faFile} />
-                      </CButton>
-                      <CDropdown>
-                        <CDropdownToggle color="link" size="sm">
-                          <FontAwesomeIcon icon={faChevronDown} />
-                        </CDropdownToggle>
-                        <CDropdownMenu>
-                          <CDropdownItem
-                            onClick={() => handleStatus(leave.id, 'Approved')}
-                            disabled={leave.status === 'Approved'}
-                          >
-                            Approved
-                          </CDropdownItem>
-                          <CDropdownItem
-                            onClick={() => handleStatus(leave.id, 'Rejected')}
-                            disabled={leave.status === 'Rejected'}
-                          >
-                            Rejected
-                          </CDropdownItem>
-                          <CDropdownItem
-                            onClick={() => handleStatus(leave.id, 'Pending')}
-                            disabled={leave.status === 'Pending'}
-                          >
-                            Pending
-                          </CDropdownItem>
-                        </CDropdownMenu>
-                      </CDropdown>
+                      <CBadge color="warning">{leave.status}</CBadge>
                     </CTableDataCell>
                   </CTableRow>
                 ))}
@@ -245,4 +169,4 @@ const LeaveList = () => {
   )
 }
 
-export default LeaveList
+export default Pending

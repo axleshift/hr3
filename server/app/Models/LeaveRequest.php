@@ -11,7 +11,8 @@ class LeaveRequest extends Model
 
     protected $table = 'leave_requests';
     protected $fillable = [
-        'employee_id', 
+        'user_id',
+        'department',
         'name', 
         'leave_type',
         'start_date',
@@ -21,5 +22,25 @@ class LeaveRequest extends Model
         'status',
         'is_paid',
         'document_path',
+        'month',
+        'leave_used',
+        'department'
+        // 'rejected_date',
+        // 'approved_date',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function leaveType()
+    {
+        return $this->belongsTo(Leave::class);
+    }
 }

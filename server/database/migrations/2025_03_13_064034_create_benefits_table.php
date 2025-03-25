@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('leaves', function (Blueprint $table) {
+        Schema::create('benefits', function (Blueprint $table) {
             $table->id();
+            $table->string('employee_id');
             $table->string('name');
-            $table->string('type')->default('Paid');
-            $table->decimal('pay_rate', 8, 2)->default(0);
+            $table->enum('type', ['Pag-ibig', 'SSS', 'PhilHealth', '13th Month Pay', 'Service Incentive Leave']);
+            $table->decimal('amount', 10, 2);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('leaves');
+        Schema::dropIfExists('benefits');
     }
 };
