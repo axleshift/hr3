@@ -15,6 +15,7 @@ import {
   CBadge,
   CRow,
   CCol,
+  CButton,
 } from '@coreui/react'
 import api from '../../api'
 
@@ -44,7 +45,6 @@ const Attendances = () => {
       const data = response.data
       setEmployees(Array.isArray(data.employees) ? data.employees : [])
 
-      // Update stats if available
       if (data.stats) {
         setStats({
           totalEmployees: data.stats.totalEmployees || 0,
