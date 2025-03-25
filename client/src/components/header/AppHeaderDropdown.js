@@ -34,7 +34,7 @@ const AppHeaderDropdown = () => {
       try {
         const sessionId = Cookies.get('dcims')
         if (sessionId) {
-          const response = await api.post('/api/auth/verify-session', { session_id: sessionId })
+          const response = await api.post('/auth/verify-session', { session_id: sessionId })
           const userId = response.data.user.id
           await fetchProfile(userId)
         }
