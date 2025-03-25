@@ -32,13 +32,6 @@ const navItems = [
     icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
     permission: ['employee'],
   },
-  // {
-  //   component: CNavItem,
-  //   name: 'Policy',
-  //   to: '/Policy',
-  //   icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
-  //   permission: ['superAdmin'],
-  // },
   {
     component: CNavItem,
     name: 'Leave Type',

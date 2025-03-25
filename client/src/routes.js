@@ -15,16 +15,13 @@ const Employee = React.lazy(() => import('./views/payroll/Employee'))
 const EmployeeLeave = React.lazy(() => import('./views/employee/EmployeeLeave'))
 
 const Attendances = React.lazy(() => import('./views/payroll/Attendances'))
-const Tax = React.lazy(() => import('./views/payroll/Tax'))
 const Payslip = React.lazy(() => import('./views/payroll/Payslip'))
 
-const BenefitTypes = React.lazy(() => import('./views/benefits/BenefitTypes'))
 const Compliance = React.lazy(() => import('./views/benefits/Compliance'))
 
 const List = React.lazy(() => import('./views/leave/List'))
 const Pending = React.lazy(() => import('./views/leave/Pending'))
 const LeaveList = React.lazy(() => import('./views/leave/LeaveList'))
-const Policy = React.lazy(() => import('./views/leave/Policy'))
 const LeaveType = React.lazy(() => import('./views/leave/LeaveType'))
 const LeaveReport = React.lazy(() => import('./views/leave/LeaveReport'))
 
@@ -45,14 +42,11 @@ const routes = [
   { path: '/ChangePassword', name: 'Change Password', element: ChangePassword },
   { path: '/Leave', name: 'Leave', element: Leave },
   { path: '/LeaveList', name: 'Leave', element: LeaveList },
-  { path: '/EmployeeLeave', name: 'Leave', element: EmployeeLeave },
+  { path: '/EmployeeLeave', name: 'Employee Leave', element: EmployeeLeave },
   { path: '/Employee', name: 'Employee', element: Employee },
   { path: '/Attendances', name: 'Attendances', element: Attendances },
   { path: '/Payslip', name: 'Payslip', element: Payslip },
-  { path: '/Policy', name: 'Policy', element: Policy },
   { path: '/LeaveType', name: 'LeaveType', element: LeaveType },
-  { path: '/BenefitTypes', name: 'Benefits Types', element: BenefitTypes },
-  { path: '/Tax', name: 'Tax', element: Tax },
 ]
 
 export default routes

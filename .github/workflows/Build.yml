@@ -27,12 +27,23 @@ jobs:
       - name: Build client
         run: |
           cd client
+          echo "VITE_APP_API_URL=${{ secrets.VITE_APP_API_URL }}" > .env
           npm run build
           cp build/assets ../server/public/ -r
           cp build/index.html ../server/resources/views
           rm -rf ../server/resources/views/index.blade.php
           cp ../server/resources/views/index.html ../server/resources/views/index.blade.php
           cd ..
+
+      - name: Build backend
+        run: |
+          cd server
+          cp .env.example .env
+          echo "APP_URL=${{ secrets.APP_URL }}" >> .env
+          echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> .env
+          php artisan key:generate
+          php artisan serve
+
 
       - name: Upload
         id: push_directory
