@@ -17,7 +17,7 @@ import {
   CCol,
   CButton,
 } from '@coreui/react'
-import api from '../../api'
+import api from '../../util/api'
 
 const Attendances = () => {
   const [employees, setEmployees] = useState([])
