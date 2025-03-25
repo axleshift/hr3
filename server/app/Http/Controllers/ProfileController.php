@@ -40,22 +40,22 @@ class ProfileController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'profile' => 'required|file|mimes:jpg,jpeg,png|max:50',
+            'profile' => 'required|file|mimes:jpg,jpeg,png|max:5120',
         ]);
-
+    
         $userId = $request->input('user_id');
         $profile = Profile::where('user_id', $userId)->first();
-
+    
         if ($profile && $profile->profile_path) {
             Storage::disk('public')->delete($profile->profile_path);
         }
-
+    
         $filePath = null;
         if ($request->hasFile('profile')) {
             $file = $request->file('profile');
             $filePath = $file->store('profiles', 'public');
         }
-
+    
         if ($profile) {
             $profile->update(['profile_path' => $filePath]);
         } else {
@@ -64,7 +64,7 @@ class ProfileController extends Controller
                 'profile_path' => $filePath,
             ]);
         }
-
+    
         return response()->json([
             'message' => 'Profile uploaded successfully',
             'data' => [
@@ -74,18 +74,14 @@ class ProfileController extends Controller
         ], 201);
     }
 
-    
-    
     public function update(Request $request, $id)
     {
-        // Find the user by ID
         $user = User::find($id);
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        // Validate the request data
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
@@ -96,10 +92,11 @@ class ProfileController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Update the user's information
         $user->update($request->only(['name', 'username', 'email']));
 
-        return response()->json(['success' => 'Profile updated successfully.', 'user' => $user]);
+        return response()->json([
+            'success' => 'Profile updated successfully.', 
+            'user' => $user]);
     }
 
 

@@ -19,10 +19,11 @@ const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [profile, setProfile] = useState(null)
+
   useEffect(() => {
     const fetchProfile = async (userId) => {
       try {
-        const profileResponse = await api.get(`/profile/${userId}`)
+        const profileResponse = await api.get(`/profiles/${userId}`)
         setProfile(profileResponse.data.data)
       } catch (error) {
         console.error('Error fetching profile', error)
@@ -48,6 +49,7 @@ const AppHeaderDropdown = () => {
   const handleLogout = async () => {
     try {
       await api.post('/auth/logout')
+      sessionStorage.clear()
       Cookies.remove('dcims')
       dispatch({ type: 'LOGOUT' })
       navigate('/login')

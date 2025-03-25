@@ -13,7 +13,7 @@ import {
   CInputGroup,
   CInputGroupText,
   CFormInput,
-  CSpinner, // Import CSpinner
+  CSpinner,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'
@@ -39,10 +39,9 @@ const Login = () => {
 
       sessionStorage.setItem('session_id', response.data.session_id)
       sessionStorage.setItem('role', response.data.user.role)
-      sessionStorage.setItem('employee_id', response.data.user.employee_id)
+      sessionStorage.setItem('user_id', response.data.user.id)
       sessionStorage.setItem('name', response.data.user.name)
 
-      // Directly navigate to the dashboard without showing a success alert
       navigate('/dashboard')
     } catch (err) {
       setAlert({

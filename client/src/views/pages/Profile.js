@@ -7,9 +7,12 @@ import {
   CCardHeader,
   CForm,
   CFormInput,
+  CInputGroup,
+  CInputGroupText,
   CRow,
   CCol,
   CImage,
+  CSpinner,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faEdit } from '@fortawesome/free-solid-svg-icons'
@@ -47,10 +50,13 @@ const Profile = () => {
   }, [sessionId])
 
   const fetchProfile = (userId) => {
-    api.get(`/profile/${userId}`).then((response) => {
-      setProfile(response.data.data)
-      setLoading(false)
-    })
+    api
+      .get(`/profiles/${userId}`)
+      .then((response) => {
+        setProfile(response.data.data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
   }
 
   const handleFileChange = (event) => {
@@ -69,7 +75,11 @@ const Profile = () => {
     formData.append('user_id', user.id)
 
     api
-      .post('/profile', formData)
+      .post('/profiles', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
       .then((response) => {
         setProfile(response.data.data)
         setAlert({
@@ -88,7 +98,7 @@ const Profile = () => {
 
   const handleSave = () => {
     api
-      .put(`/user/${user.id}`, formData)
+      .put(`/profiles/${user.id}`, formData)
       .then((response) => {
         setAlert({ visible: true, type: 'success', message: 'Profile updated successfully!' })
         setIsEditing(false)
@@ -106,7 +116,13 @@ const Profile = () => {
     }
   }, [alert])
 
-  if (loading) return <div>Loading...</div>
+  if (loading)
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '60vh' }}>
+        <CSpinner color="primary" />
+      </div>
+    )
+
   if (!user) return <div>You are not authenticated.</div>
 
   return (
@@ -152,33 +168,42 @@ const Profile = () => {
               style={{ display: 'none' }}
             />
             <CForm>
-              <CFormInput
-                className="mb-3"
-                type="text"
-                name="name"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-              <CFormInput
-                className="mb-3"
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-              <CFormInput
-                className="mb-3"
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
+              <CInputGroup className="mb-3">
+                <CInputGroupText>Name</CInputGroupText>
+                <CFormInput
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </CInputGroup>
+
+              <CInputGroup className="mb-3">
+                <CInputGroupText>Username</CInputGroupText>
+                <CFormInput
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </CInputGroup>
+
+              <CInputGroup className="mb-3">
+                <CInputGroupText>Email</CInputGroupText>
+                <CFormInput
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </CInputGroup>
+
               <div className="text-center mt-4">
                 {isEditing && (
                   <>

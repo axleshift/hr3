@@ -1,6 +1,6 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import useAuthStatus from '../hook/checkAuthStatus '
+import useAuthStatus from '../hook/useAuthStatus'
 
 const ProtectedRoute = () => {
   const status = useAuthStatus()

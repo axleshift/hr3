@@ -19,7 +19,6 @@ class User extends Authenticatable
     protected $table = 'users';
     protected $fillable = [
         'role',
-        'employee_id',
         'username',
         'name',
         'email',
@@ -47,5 +46,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function payslips()
+    {
+        return $this->hasMany(Payslip::class);
     }
 }

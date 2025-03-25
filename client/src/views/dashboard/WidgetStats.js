@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
-import { CCol, CRow, CWidgetStatsA, CSpinner } from '@coreui/react' // Import CSpinner
+import { CCol, CRow, CWidgetStatsA, CSpinner } from '@coreui/react'
 
 const WidgetStats = () => {
   const [leaveRequests, setLeaveRequests] = useState([])
@@ -8,7 +8,7 @@ const WidgetStats = () => {
   const [monthlyData, setMonthlyData] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/leave-requests')
+    fetch('https://hr3.axleshift.com/leave-requests')
       .then((response) => response.json())
       .then((data) => {
         setLeaveRequests(data.leaveRequests)
@@ -60,7 +60,7 @@ const WidgetStats = () => {
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
-        <CSpinner color="primary" /> {/* Add CSpinner here */}
+        <CSpinner color="primary" />
       </div>
     )
   }

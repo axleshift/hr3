@@ -38,7 +38,7 @@ const Register = () => {
         name,
         email,
         password,
-        password_confirmation: passwordConfirmation, // Ensure password confirmation
+        password_confirmation: passwordConfirmation,
       })
 
       setSuccess('Registration successful! Redirecting to login...')
@@ -67,34 +67,35 @@ const Register = () => {
                   {error && <CAlert color="danger">{error}</CAlert>}
                   {success && <CAlert color="success">{success}</CAlert>}
 
-                  <CInputGroup className="mb-3">
-                    <CInputGroupText>
-                      <FontAwesomeIcon icon={faUser} />
-                    </CInputGroupText>
-                    <CFormInput
-                      type="text"
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Username"
-                      required
-                    />
-                  </CInputGroup>
+                  <CRow>
+                    <CInputGroup className="mb-3">
+                      <CInputGroupText>
+                        <FontAwesomeIcon icon={faUser} />
+                      </CInputGroupText>
+                      <CFormInput
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
+                        required
+                      />
+                    </CInputGroup>
 
-                  <CInputGroup className="mb-3">
-                    <CInputGroupText>
-                      <FontAwesomeIcon icon={faUser} />
-                    </CInputGroupText>
-                    <CFormInput
-                      type="text"
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Full Name"
-                      required
-                    />
-                  </CInputGroup>
-
+                    <CInputGroup className="mb-3">
+                      <CInputGroupText>
+                        <FontAwesomeIcon icon={faUser} />
+                      </CInputGroupText>
+                      <CFormInput
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Full Name"
+                        required
+                      />
+                    </CInputGroup>
+                  </CRow>
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <FontAwesomeIcon icon={faLock} />

@@ -27,13 +27,6 @@ const navItems = [
   },
   {
     component: CNavItem,
-    name: 'Leave Request',
-    to: '/Leave',
-    icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
-    permission: ['employee'],
-  },
-  {
-    component: CNavItem,
     name: 'Leave',
     to: '/EmployeeLeave',
     icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
@@ -48,7 +41,7 @@ const navItems = [
   // },
   {
     component: CNavItem,
-    name: 'Leave',
+    name: 'Leave Type',
     to: '/LeaveType',
     icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
     permission: ['superAdmin'],
@@ -95,13 +88,6 @@ const navItems = [
   },
   {
     component: CNavItem,
-    name: 'Attendances',
-    to: '/Attendances',
-    icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
-    permission: ['superAdmin', 'admin'],
-  },
-  {
-    component: CNavItem,
     name: 'Payroll',
     to: '/Payroll',
     icon: <FontAwesomeIcon icon={faFileInvoiceDollar} className="nav-icon" />,
@@ -124,13 +110,6 @@ const navItems = [
   {
     component: CNavTitle,
     name: 'Benefit Management',
-    permission: ['superAdmin', 'admin'],
-  },
-  {
-    component: CNavItem,
-    name: 'Benefit Types',
-    to: '/BenefitTypes',
-    icon: <FontAwesomeIcon icon={faHandHoldingHeart} className="nav-icon" />,
     permission: ['superAdmin', 'admin'],
   },
   {

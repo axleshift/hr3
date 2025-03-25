@@ -42,7 +42,7 @@ const App = () => {
           <Route path="/Register" name="Register" element={<Register />} />
           <Route path="/ForgotPassword" name="ForgotPassword" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="*" name="Home" element={<DefaultLayout />} />
+            <Route path="*" element={<DefaultLayout />} />
           </Route>
         </Routes>
       </Suspense>
