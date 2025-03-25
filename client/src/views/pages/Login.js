@@ -69,8 +69,8 @@ const Login = () => {
             <CCard className="shadow-sm p-4 border-0 rounded">
               <CCardBody>
                 <CForm onSubmit={handleLogin}>
-                  <h2 className="text-center fw-bold">Login</h2>
-                  <p className="text-center text-muted">Sign in to your account</p>
+                  <h2 className="text-left fw-bold">Login</h2>
+                  <p className="text-left text-muted">Sign in to your account</p>
                   {alert.visible && (
                     <CAlert color={alert.type} className="mb-3">
                       {alert.message}
@@ -125,7 +125,7 @@ const Login = () => {
                   </CRow>
 
                   <div className="text-center mt-3">
-                    <Link to="/forgot-password" className="text-decoration-none">
+                    <Link to="/ForgotPassword" className="text-decoration-none">
                       Forgot password?
                     </Link>
                   </div>

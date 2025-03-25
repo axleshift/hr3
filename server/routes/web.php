@@ -8,8 +8,10 @@ Route::get('/', function () {
 });
 
 
-Route::prefix('auth')->group(function () {
+Route::prefix('api/auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/verify-session', [AuthController::class, 'verifySession']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+
