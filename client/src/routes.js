@@ -7,10 +7,6 @@ const Report = React.lazy(() => import('./views/payroll/Report'))
 const ChangePassword = React.lazy(() => import('./views/pages/ChangePassword'))
 const Profile = React.lazy(() => import('./views/pages/Profile'))
 
-//pages
-const Services = React.lazy(() => import('./components/landing/Services'))
-const Footer = React.lazy(() => import('./components/landing/Footer'))
-
 // employee
 const Leave = React.lazy(() => import('./views/employee/Leave'))
 const EmployeePayslip = React.lazy(() => import('./views/employee/EmployeePayslip'))
