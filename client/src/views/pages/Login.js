@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'
 import api from '../../util/api'
 import Cookies from 'js-cookie'
+import Footer from './Footer'
 
 const Login = () => {
   const [username, setUsername] = useState('')
@@ -62,8 +63,8 @@ const Login = () => {
   }, [alert])
 
   return (
-    <div className="bg-light min-vh-100 d-flex flex-row align-items-center justify-content-center">
-      <CContainer>
+    <div className="bg-light min-vh-100 d-flex flex-column">
+      <CContainer className="flex-grow-1 d-flex flex-column justify-content-center">
         <CRow className="justify-content-center">
           <CCol xs={12} sm={10} md={8} lg={5}>
             <CCard className="shadow-sm p-4 border-0 rounded">
@@ -113,15 +114,6 @@ const Login = () => {
                         )}
                       </CButton>
                     </CCol>
-                    {/* <CCol>
-                      <CButton
-                        color="light"
-                        className="w-100"
-                        onClick={() => navigate('/Register')}
-                      >
-                        Register
-                      </CButton>
-                    </CCol> */}
                   </CRow>
 
                   <div className="text-center mt-3">
@@ -135,6 +127,7 @@ const Login = () => {
           </CCol>
         </CRow>
       </CContainer>
+      <Footer /> {/* Add the Footer component here */}
     </div>
   )
 }
