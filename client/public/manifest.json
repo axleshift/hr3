@@ -1,6 +1,6 @@
 {
   "short_name": "HR3",
-  "name": "Axeshift",
+  "name": "Axeshift HR 3",
   "icons": [
     {
       "src": "./favicon.png",
@@ -9,7 +9,5 @@
     }
   ],
   "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "display": "standalone"
 }
