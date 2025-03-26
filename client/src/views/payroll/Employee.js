@@ -21,7 +21,7 @@ import {
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
-import axios from 'axios'
+import api from '../../util/api'
 
 const Employee = () => {
   const [employees, setEmployees] = useState([])
@@ -41,7 +41,7 @@ const Employee = () => {
   const fetchEmployees = async () => {
     setLoading(true)
     try {
-      const response = await axios.get('http://localhost:8000/api/employees')
+      const response = await api.get('/employees')
       if (Array.isArray(response.data)) {
         const employeesWithSalaries = await Promise.all(
           response.data.map(async (employee) => {
@@ -63,7 +63,7 @@ const Employee = () => {
 
   const fetchSalary = async (department, jobPosition) => {
     try {
-      const response = await axios.get('http://localhost:8000/api/salaries', {
+      const response = await api.get('/salaries', {
         params: { department, job_position: jobPosition },
       })
       return response.data ? response.data : null
@@ -80,9 +80,9 @@ const Employee = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('http://localhost:8000/api/salaries', formData)
+      await api.post('/salaries', formData)
       setModalVisible(false)
-      fetchEmployees() // Refresh the list of employees
+      fetchEmployees()
     } catch (error) {
       console.error('Error submitting salary:', error)
     }

@@ -113,7 +113,7 @@ const Login = () => {
                         )}
                       </CButton>
                     </CCol>
-                    <CCol>
+                    {/* <CCol>
                       <CButton
                         color="light"
                         className="w-100"
@@ -121,7 +121,7 @@ const Login = () => {
                       >
                         Register
                       </CButton>
-                    </CCol>
+                    </CCol> */}
                   </CRow>
 
                   <div className="text-center mt-3">

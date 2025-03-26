@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import axios from 'axios'
+import api from '../../util/api'
 import {
   CCard,
   CCardHeader,

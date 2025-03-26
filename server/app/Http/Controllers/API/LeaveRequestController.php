@@ -217,18 +217,18 @@ class LeaveRequestController extends Controller
         return response()->json($statistics);
     }
 
-    // public function approveLeaveRequest($id)
-    // {
-    //     $leave = Leave::findOrFail($id);
-    //     if ($leave->status === 'Approved') {
-    //         return response()->json(['message' => 'Leave request is already approved.'], 400);
-    //     }
+    public function approveLeaveRequest($id)
+    {
+        $leave = Leave::findOrFail($id);
+        if ($leave->status === 'Approved') {
+            return response()->json(['message' => 'Leave request is already approved.'], 400);
+        }
     
-    //     $leave->leave_used += $leave->total_days;
-    //     $leave->status = 'Approved';
-    //     $leave->save();
-    //     return response()->json(['message' => 'Leave request approved successfully.'], 200);
-    // }
+        $leave->leave_used += $leave->total_days;
+        $leave->status = 'Approved';
+        $leave->save();
+        return response()->json(['message' => 'Leave request approved successfully.'], 200);
+    }
 
     public function generateReport(Request $request)
     {

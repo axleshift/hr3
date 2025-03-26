@@ -15,7 +15,7 @@ import {
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons'
-import axios from 'axios'
+import api from '../../util/api'
 
 const LeaveReport = () => {
   const [leaveRequests, setLeaveRequests] = useState([])
@@ -29,7 +29,7 @@ const LeaveReport = () => {
   const fetchLeaveData = async () => {
     try {
       setLoading(true)
-      const response = await axios.get('http://localhost:8000/api/leave-requests', {
+      const response = await api.get('/leave-requests', {
         params: { year: selectedYear, month: selectedMonth },
       })
       const leaveData = response.data.leaveRequests || response.data
@@ -63,7 +63,7 @@ const LeaveReport = () => {
 
   const handleDownloadPDF = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/generate-leave', {
+      const response = await api.get('/generate-leave', {
         params: {
           year: selectedYear,
           month: selectedMonth,

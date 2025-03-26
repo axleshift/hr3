@@ -20,6 +20,10 @@ class DatabaseSeeder extends Seeder
                 AttendanceSeeder::class,
             ]);
 
+            $this->call([
+                UserSeeder::class,
+            ]);
+
         }
     }
 }

@@ -37,7 +37,7 @@ const EmployeePayslip = () => {
 
   const getMonthName = (monthNumber) => {
     const date = new Date()
-    date.setMonth(monthNumber - 1) // Month is 0-indexed in JavaScript
+    date.setMonth(monthNumber - 1)
     return date.toLocaleString('default', { month: 'long' })
   }
 

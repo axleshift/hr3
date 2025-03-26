@@ -29,7 +29,6 @@ class PayslipController extends Controller
 
     public function getPayslipsByUserId(Request $request)
     {
-        try {
             $validator = Validator::make($request->all(), [
                 'user_id' => 'required|integer|exists:users,id',
             ]);
@@ -44,23 +43,11 @@ class PayslipController extends Controller
             $userId = $request->input('user_id');
             $payslips = Payslip::where('user_id', $userId)->get();
 
-            if ($payslips->isEmpty()) {
-                return response()->json([
-                    'message' => 'No payslips found for the specified user.',
-                ], 404);
-            }
-
             return response()->json([
                 'message' => 'Payslips retrieved successfully.',
                 'payslips' => $payslips,
             ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error fetching payslips: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while fetching payslips.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        
     }
 
     public function downloadPayslip($employeeId)

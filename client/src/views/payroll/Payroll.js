@@ -25,7 +25,7 @@ import {
   CDropdownMenu,
   CDropdownItem,
 } from '@coreui/react'
-import axios from 'axios'
+import api from '../../util/api'
 import {
   faFile,
   faChevronDown,

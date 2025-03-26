@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
 import { CCol, CRow, CWidgetStatsA, CSpinner } from '@coreui/react'
+import api from '../../util/api'
 
 const WidgetStats = () => {
   const [leaveRequests, setLeaveRequests] = useState([])
@@ -8,17 +9,19 @@ const WidgetStats = () => {
   const [monthlyData, setMonthlyData] = useState([])
 
   useEffect(() => {
-    fetch('https://hr3.axleshift.com/leave-requests')
-      .then((response) => response.json())
-      .then((data) => {
-        setLeaveRequests(data.leaveRequests)
+    const fetchLeaveRequests = async () => {
+      try {
+        const response = await api.get('/leave-requests')
+        setLeaveRequests(response.data.leaveRequests)
+      } catch (err) {
+        setError(err.message)
+        console.error('Error fetching leave requests:', err)
+      } finally {
         setLoading(false)
-        calculateMonthlyData(data.leaveRequests)
-      })
-      .catch((error) => {
-        console.error('Error fetching leave requests:', error)
-        setLoading(false)
-      })
+      }
+    }
+
+    fetchLeaveRequests()
   }, [])
 
   const calculateMonthlyData = (requests) => {

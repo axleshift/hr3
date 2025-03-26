@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../../util/api'
 import {
   CCardHeader,
   CRow,
@@ -48,7 +48,7 @@ const Benefits = () => {
     const fetchBenefits = async () => {
       try {
         setLoading(true)
-        const response = await axios.get('http://localhost:8000/api/benefits')
+        const response = await api.get('/benefits')
         setBenefits(response.data)
       } catch (err) {
         console.error('Error fetching benefits:', err)
@@ -77,15 +77,15 @@ const Benefits = () => {
 
     try {
       if (editingBenefit) {
-        await axios.put(`http://localhost:8000/api/benefits/${editingBenefit.id}`, benefitData)
+        await api.put(`/benefits/${editingBenefit.id}`, benefitData)
         alert('Benefit updated successfully!')
       } else {
-        const response = await axios.post('http://localhost:8000/api/benefits', benefitData)
+        const response = await api.post('/benefits', benefitData)
         console.log('Success:', response.data)
         alert('Benefit applied successfully!')
       }
 
-      const benefitsResponse = await axios.get('http://localhost:8000/api/benefits')
+      const benefitsResponse = await api.get('/benefits')
       setBenefits(benefitsResponse.data)
 
       setModalVisible(false)
@@ -103,10 +103,10 @@ const Benefits = () => {
   const handleDelete = async (benefitId) => {
     if (window.confirm('Are you sure you want to delete this benefit?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/benefits/${benefitId}`)
+        await api.delete(`/benefits/${benefitId}`)
         alert('Benefit deleted successfully!')
 
-        const benefitsResponse = await axios.get('http://localhost:8000/api/benefits')
+        const benefitsResponse = await api.get('/benefits')
         setBenefits(benefitsResponse.data)
       } catch (err) {
         console.error('Error:', err.response?.data || err.message)
