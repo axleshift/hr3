@@ -73,7 +73,7 @@
 <body>
     <div class="payslip">
         <div class="header">
-            <h1>Payslip for Small Business</h1>
+            <h1>Payslip</h1>
         </div>
         
         <div class="sub-header">
@@ -100,24 +100,40 @@
                 <tbody>
                     <!-- Earnings -->
                     <tr>
-                        <td>Basic Salary</td>
-                        <td>{{ number_format($payslipData['netSalary'] - $payslipData['overtime'] - $payslipData['bonus'], 2) }}</td>
-                        <td>Benefits</td>
-                        <td>{{ number_format($payslipData['deductions'], 2) }}</td>
+                        <td>Base Salary</td>
+                        <td>{{ number_format($payslipData['base_salary'], 2) }}</td>
+                        <td>Tax</td>
+                        <td>{{ number_format($payslipData['tax'], 2) }}</td>
                     </tr>
                     <tr>
                         <td>Overtime Pay</td>
                         <td>{{ number_format($payslipData['overtime'], 2) }}</td>
+                        <td>Benefits</td>
+                        <td>{{ number_format($payslipData['benefits_total'], 2) }}</td>
                     </tr>
                     <tr>
                         <td>Bonus</td>
                         <td>{{ number_format($payslipData['bonus'], 2) }}</td>
+                        <td></td>
+                        <td></td>
                     </tr>
+                    
+                    <!-- List individual benefits if available -->
+                    @if(isset($payslipData['benefits']) && is_array($payslipData['benefits']))
+                        @foreach($payslipData['benefits'] as $benefit)
+                        <tr>
+                            <td colspan="2"></td>
+                            <td>{{ $benefit['type'] }}</td>
+                            <td>{{ number_format($benefit['amount'], 2) }}</td>
+                        </tr>
+                        @endforeach
+                    @endif
+                    
                     <tr>
                         <td>Total Earnings</td>
-                        <td class="highlight">{{ number_format($payslipData['netSalary'] + $payslipData['deductions'], 2) }}</td>
+                        <td class="highlight">{{ number_format($payslipData['base_salary'] + $payslipData['overtime'] + $payslipData['bonus'], 2) }}</td>
                         <td>Total Deductions</td>
-                        <td class="highlight">{{ number_format($payslipData['deductions'] + $payslipData['benefits']['health_insurance'], 2) }}</td>
+                        <td class="highlight">{{ number_format($payslipData['tax'] + $payslipData['benefits_total'], 2) }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -127,7 +143,15 @@
             <table>
                 <tr>
                     <th>Net Pay</th>
-                    <td class="total">{{ number_format($payslipData['netSalary'], 2) }}</td>
+                    <td class="total">
+                        {{ number_format(
+                            ($payslipData['base_salary'] + 
+                            $payslipData['overtime'] + 
+                            $payslipData['bonus']) - 
+                            ($payslipData['tax'] + $payslipData['benefits_total']), 
+                        2) 
+                        }}
+                    </td>
                 </tr>
             </table>
         </div>

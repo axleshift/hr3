@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('type')->default('Paid');
+            $table->decimal('pay_rate', 8, 2)->default(0);
             $table->timestamps();
         });
     }

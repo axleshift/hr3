@@ -12,8 +12,8 @@ class Salary extends Model
     protected $table = 'salaries';
 
     protected $fillable = [
-        'salary',
-        'department',
-        'job_position'
+        'base_salary',
+      //  'department',
+        'job_position',
     ];
 }

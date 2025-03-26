@@ -13,17 +13,18 @@ return new class extends Migration
     {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id')->index();
+            $table->string('user_id');
             $table->string('name')->index();
+            $table->string('department');
             $table->string('leave_type');
             $table->date('start_date');
             $table->date('end_date');
             $table->text('reason');
             $table->integer('total_days');
-            $table->boolean('is_paid')->default(false);
+            $table->integer('month')->nullable();
+            $table->enum('is_paid', ['Paid', 'Unpaid'])->default('Unpaid');
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->string('document_path')->nullable();
-            $table->date('approved_date')->nullable();
             $table->timestamps();
         });
     }

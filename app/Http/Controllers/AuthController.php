@@ -19,19 +19,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
         ]);
     
-        // Get the last assigned employee ID
-        $lastUser = User::whereNotNull('employee_id')->latest('id')->first();
-    
-        if ($lastUser && preg_match('/EMP-(\d+)/', $lastUser->employee_id, $matches)) {
-            $nextNumber = str_pad((int)$matches[1] + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $nextNumber = '0001';
-        }
-    
-        $employeeId = "EMP-{$nextNumber}";
-    
         $user = User::create([
-            'employee_id' => $employeeId,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'name' => $request->name,

@@ -9,5 +9,18 @@ class Benefit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['employee_name', 'benefit_type', 'status'];
+    protected $table = 'benefits';
+    protected $fillable = [ 
+        'employee_id',
+        'name', 
+        'type', 
+        'amount', 
+    ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+
 }
