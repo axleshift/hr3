@@ -1,8 +1,9 @@
 import axios from 'axios'
 
-const API = import.meta.env.VITE_APP_API_URL
+const API = import.meta.env.VITE_APP_API_URL || 'https://hr3.axleshift.com'
+
 const api = axios.create({
-  baseURL: API,
+  baseURL: `${API}`,
   withCredentials: true,
   headers: {
     Accept: 'application/json',
