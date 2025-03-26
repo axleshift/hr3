@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom' // Changed from HashRouter
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
@@ -29,7 +29,9 @@ const App = () => {
   }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
-    <HashRouter>
+    <BrowserRouter>
+      {' '}
+      {/* Changed from HashRouter */}
       <Suspense
         fallback={
           <div className="loading-overlay">
@@ -38,15 +40,15 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/Login" name="Login" element={<Login />} />
-          <Route path="/Register" name="Register" element={<Register />} />
-          <Route path="/ForgotPassword" name="ForgotPassword" element={<ForgotPassword />} />
+          <Route exact path="/login" name="Login" element={<Login />} /> {/* lowercase path */}
+          <Route path="/register" name="Register" element={<Register />} />
+          <Route path="/forgot-password" name="ForgotPassword" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="*" element={<DefaultLayout />} />
           </Route>
         </Routes>
       </Suspense>
-    </HashRouter>
+    </BrowserRouter>
   )
 }
 
