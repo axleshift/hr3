@@ -45,7 +45,7 @@ const LeaveList = () => {
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests/page', {
+      const response = await api.get('/api/leave-requests/page', {
         params: { page: currentPage, limit: itemsPerPage },
       })
       const data = response.data || {}
@@ -71,7 +71,7 @@ const LeaveList = () => {
 
   const handleStatus = async (id, status) => {
     try {
-      await api.put(`/leave-requests/${id}`, { status })
+      await api.put(`/api/leave-requests/${id}`, { status })
       fetchLeave()
     } catch (error) {
       console.error('Error updating leave status:', error)

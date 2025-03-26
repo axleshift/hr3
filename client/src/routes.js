@@ -2,23 +2,23 @@ import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Benefits = React.lazy(() => import('./views/benefits/Benefits'))
-
 const Payroll = React.lazy(() => import('./views/payroll/Payroll'))
 const Report = React.lazy(() => import('./views/payroll/Report'))
 const ChangePassword = React.lazy(() => import('./views/pages/ChangePassword'))
 const Profile = React.lazy(() => import('./views/pages/Profile'))
+
+//pages
+const Services = React.lazy(() => import('./components/landing/Services'))
+const Footer = React.lazy(() => import('./components/landing/Footer'))
 
 // employee
 const Leave = React.lazy(() => import('./views/employee/Leave'))
 const EmployeePayslip = React.lazy(() => import('./views/employee/EmployeePayslip'))
 const Employee = React.lazy(() => import('./views/payroll/Employee'))
 const EmployeeLeave = React.lazy(() => import('./views/employee/EmployeeLeave'))
-
 const Attendances = React.lazy(() => import('./views/payroll/Attendances'))
 const Payslip = React.lazy(() => import('./views/payroll/Payslip'))
-
 const Compliance = React.lazy(() => import('./views/benefits/Compliance'))
-
 const List = React.lazy(() => import('./views/leave/List'))
 const Pending = React.lazy(() => import('./views/leave/Pending'))
 const LeaveList = React.lazy(() => import('./views/leave/LeaveList'))
@@ -27,12 +27,10 @@ const LeaveReport = React.lazy(() => import('./views/leave/LeaveReport'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/Pending', name: 'Leave Pending', element: Pending },
+  { path: '/Dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/Pending', name: 'Leave Pending', element: Pending },
   { path: '/List', name: 'Leave List', element: List },
   { path: '/EmployeePayslip', name: 'Employee List', element: EmployeePayslip },
-
-  { path: '/Dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/Benefits', name: 'Benefits', element: Benefits },
   { path: '/Compliance', name: 'Compliance', element: Compliance },
   { path: '/Payroll', name: 'Payroll', element: Payroll },

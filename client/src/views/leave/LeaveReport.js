@@ -29,7 +29,7 @@ const LeaveReport = () => {
   const fetchLeaveData = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests', {
+      const response = await api.get('/api/leave-requests', {
         params: { year: selectedYear, month: selectedMonth },
       })
       const leaveData = response.data.leaveRequests || response.data
@@ -63,7 +63,7 @@ const LeaveReport = () => {
 
   const handleDownloadPDF = async () => {
     try {
-      const response = await api.get('/generate-leave', {
+      const response = await api.get('/api/generate-leave', {
         params: {
           year: selectedYear,
           month: selectedMonth,

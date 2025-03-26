@@ -60,7 +60,7 @@ const Payroll = () => {
 
   const fetchJobPositions = async () => {
     try {
-      const response = await api.get('/job-positions')
+      const response = await api.get('/api/job-positions')
       setJobPositions(response.data)
     } catch (error) {
       console.error('Error fetching job positions:', error)
@@ -72,7 +72,7 @@ const Payroll = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get('/payroll', {
+      const response = await api.get('/api/payroll', {
         params: {
           year: selectedYear,
           month: selectedMonth,
@@ -95,7 +95,7 @@ const Payroll = () => {
     }
 
     try {
-      await api.post('/salaries', {
+      await api.post('/api/salaries', {
         job_position: jobPosition,
         base_salary: parseFloat(baseSalary),
       })
@@ -123,7 +123,7 @@ const Payroll = () => {
 
   const fetchRates = async () => {
     try {
-      const response = await api.get('/rates')
+      const response = await api.get('/api/rates')
       setOvertimeRate(response.data.overtime_rate || '')
     } catch (error) {
       console.error('Error fetching rates:', error)
@@ -141,7 +141,7 @@ const Payroll = () => {
       return
     }
     try {
-      await api.post('/rates', { overtime_rate: parseFloat(overtimeRate) })
+      await api.post('/api/rates', { overtime_rate: parseFloat(overtimeRate) })
       setModalVisible(false)
       setValidationError('')
       fetchPayrollData()
@@ -154,7 +154,7 @@ const Payroll = () => {
     try {
       setLoading(true)
       setSelectedEmployee(employee)
-      const response = await api.get('/benefits', {
+      const response = await api.get('/api/benefits', {
         params: {
           employee_id: employee.employee_id,
           year: selectedYear,
@@ -173,7 +173,7 @@ const Payroll = () => {
 
   const handleStatus = async (id, newStatus) => {
     try {
-      await api.put(`/payrolls/${id}`, { status: newStatus })
+      await api.put(`/api/payrolls/${id}`, { status: newStatus })
       fetchPayrollData()
     } catch (error) {
       console.error('Error updating status:', error)
@@ -183,7 +183,7 @@ const Payroll = () => {
 
   const handleBonus = async () => {
     try {
-      await api.post('/payroll/bonus', {
+      await api.post('/api/payroll/bonus', {
         year: selectedYear,
         month: selectedMonth,
         bonus: parseFloat(bonus),
@@ -198,7 +198,7 @@ const Payroll = () => {
 
   const fetchBonus = async () => {
     try {
-      const response = await api.get('/payroll/bonus', {
+      const response = await api.get('/api/payroll/bonus', {
         params: { year: selectedYear, month: selectedMonth },
       })
       setBonus(response.data?.bonus || 0)

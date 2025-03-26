@@ -50,7 +50,7 @@ const List = () => {
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests/page', {
+      const response = await api.get('/api/leave-requests/page', {
         params: {
           page: currentPage,
           limit: itemsPerPage,
@@ -111,7 +111,7 @@ const List = () => {
 
   const fetchEmployeeInfo = async (userId, employeeName) => {
     try {
-      const leaveHistoryResponse = await api.get(`/leaves/${userId}`)
+      const leaveHistoryResponse = await api.get(`/api/leaves/${userId}`)
       const leaveHistory = leaveHistoryResponse.data.leaveRequests || []
 
       const department = leaveHistory.length > 0 ? leaveHistory[0].department : 'Unknown'
@@ -128,7 +128,7 @@ const List = () => {
 
   const fetchLeaveDetails = async (id) => {
     try {
-      const response = await api.get(`/leave-requests/${id}`)
+      const response = await api.get(`/api/leave-requests/${id}`)
       if (response.data.leaveRequests && response.data.leaveRequests.length > 0) {
         setSelectedLeave(response.data.leaveRequests[0])
       } else {

@@ -23,7 +23,7 @@ const AppHeaderDropdown = () => {
   useEffect(() => {
     const fetchProfile = async (userId) => {
       try {
-        const profileResponse = await api.get(`/profiles/${userId}`)
+        const profileResponse = await api.get(`/api/profiles/${userId}`)
         setProfile(profileResponse.data.data)
       } catch (error) {
         console.error('Error fetching profile', error)
@@ -34,7 +34,7 @@ const AppHeaderDropdown = () => {
       try {
         const sessionId = Cookies.get('dcims')
         if (sessionId) {
-          const response = await api.post('/auth/verify-session', { session_id: sessionId })
+          const response = await api.post('/api/auth/verify-session', { session_id: sessionId })
           const userId = response.data.user.id
           await fetchProfile(userId)
         }
@@ -48,7 +48,7 @@ const AppHeaderDropdown = () => {
 
   const handleLogout = async () => {
     try {
-      await api.post('/auth/logout')
+      await api.post('/api/auth/logout')
       sessionStorage.clear()
       Cookies.remove('dcims')
       dispatch({ type: 'LOGOUT' })

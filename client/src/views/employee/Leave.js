@@ -67,7 +67,7 @@ const Leave = () => {
     setValidationErrors({})
 
     const formData = new FormData()
-    formData.append('user_id', user.user_id) // Ensure this is an integer
+    formData.append('user_id', user.user_id)
     formData.append('name', user.name)
     formData.append('leave_type', leaveType)
     formData.append('start_date', startDate)
@@ -79,7 +79,7 @@ const Leave = () => {
     }
 
     try {
-      const response = await api.post('/leave-requests', formData, {
+      const response = await api.post('/api/leave-requests', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

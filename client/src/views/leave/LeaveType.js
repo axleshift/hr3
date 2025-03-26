@@ -45,7 +45,7 @@ const LeaveType = () => {
 
   const fetchLeaveTypes = async () => {
     try {
-      const response = await api.get('/leave-types')
+      const response = await api.get('/api/leave-types')
       if (Array.isArray(response.data)) {
         setLeaveTypes(response.data)
       } else {
@@ -72,7 +72,7 @@ const LeaveType = () => {
       return
     }
     try {
-      const response = await api.post('/leave-types', newLeaveType)
+      const response = await api.post('/api/leave-types', newLeaveType)
       setLeaveTypes([...leaveTypes, response.data])
       setModalVisible(false)
       setNewLeaveType({ name: '', type: 'Paid', pay_rate: 0 })
@@ -87,7 +87,7 @@ const LeaveType = () => {
       return
     }
     try {
-      const response = await api.put(`/leave-types/${editLeaveType.id}`, editLeaveType)
+      const response = await api.put(`/api/leave-types/${editLeaveType.id}`, editLeaveType)
       const updatedLeaveTypes = leaveTypes.map((type) =>
         type.id === editLeaveType.id ? response.data : type,
       )
@@ -100,7 +100,7 @@ const LeaveType = () => {
 
   const handleDeleteLeaveType = async (id) => {
     try {
-      await api.delete(`/leave-types/${id}`)
+      await api.delete(`/api/leave-types/${id}`)
       setLeaveTypes(leaveTypes.filter((type) => type.id !== id))
     } catch (error) {
       console.error('Error deleting leave type:', error)

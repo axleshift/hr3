@@ -27,9 +27,9 @@ const Dashboard = () => {
       try {
         setLoading(true)
         const [pendingRequests, approvedLeaves, rejectedLeaves] = await Promise.all([
-          api.get('/leave-requests/count/Pending'),
-          api.get('/leave-requests/count/Approved'),
-          api.get('/leave-requests/count/Rejected'),
+          api.get('/api/leave-requests/count/Pending'),
+          api.get('/api/leave-requests/count/Approved'),
+          api.get('/api/leave-requests/count/Rejected'),
         ])
 
         setLeaveStats({

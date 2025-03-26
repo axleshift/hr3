@@ -69,7 +69,7 @@ const EmployeeLeave = () => {
   const fetchLeave = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await api.get(`/leave/${userId}`)
+      const response = await api.get(`/api/leave/${userId}`)
       setLeave(response.data.leaveRequests || [])
     } catch (error) {
       setError('Failed to load leave requests. Please try again later.')
@@ -80,7 +80,7 @@ const EmployeeLeave = () => {
 
   const fetchLeaveTypes = useCallback(async () => {
     try {
-      const response = await api.get('/leave-types')
+      const response = await api.get('/api/leave-types')
       setLeaveTypes(response.data)
     } catch (error) {
       console.error('Error fetching leave types:', error)
@@ -147,7 +147,7 @@ const EmployeeLeave = () => {
     }
 
     try {
-      const response = await api.post('/leave-request', formData, {
+      const response = await api.post('/api/leave-request', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

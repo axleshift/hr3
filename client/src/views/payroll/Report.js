@@ -33,7 +33,7 @@ const Report = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get(`/payroll`, {
+      const response = await api.get(`/api/payroll`, {
         params: {
           year: selectedYear,
           month: selectedMonth,
@@ -86,7 +86,7 @@ const Report = () => {
   const handleDownloadPDF = async () => {
     try {
       setPdfLoading(true)
-      const response = await api.get(`/payroll/download-report`, {
+      const response = await api.get(`/api/payroll/download-report`, {
         params: {
           year: selectedYear,
           month: selectedMonth,

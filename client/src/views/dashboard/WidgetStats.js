@@ -11,7 +11,7 @@ const WidgetStats = () => {
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
-        const response = await api.get('/leave-requests')
+        const response = await api.get('/api/leave-requests')
         setLeaveRequests(response.data.leaveRequests)
       } catch (err) {
         setError(err.message)

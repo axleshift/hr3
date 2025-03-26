@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'
 import api from '../../util/api'
 import Cookies from 'js-cookie'
-import Footer from './Footer'
+import Footer from '../../components/landing/Footer'
 
 const Login = () => {
   const [username, setUsername] = useState('')
@@ -33,7 +33,8 @@ const Login = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const response = await api.post('/auth/login', { username, password })
+      const response = await api.post('/api/auth/login', { username, password })
+      console.log('API URL:', import.meta.env.VITE_APP_API_URL)
       dispatch({ type: 'SET_USER', payload: response.data.user })
       dispatch({ type: 'SET_SESSION_ID', payload: response.data.session_id })
       Cookies.set('dcims', response.data.session_id, { expires: 30 })
@@ -127,7 +128,7 @@ const Login = () => {
           </CCol>
         </CRow>
       </CContainer>
-      <Footer /> {/* Add the Footer component here */}
+      <Footer />
     </div>
   )
 }

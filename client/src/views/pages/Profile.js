@@ -33,7 +33,7 @@ const Profile = () => {
   useEffect(() => {
     if (sessionId) {
       api
-        .post('/auth/verify-session', { session_id: sessionId })
+        .post('/api/auth/verify-session', { session_id: sessionId })
         .then((response) => {
           setUser(response.data.user)
           setFormData({
@@ -51,7 +51,7 @@ const Profile = () => {
 
   const fetchProfile = (userId) => {
     api
-      .get(`/profiles/${userId}`)
+      .get(`/api/profiles/${userId}`)
       .then((response) => {
         setProfile(response.data.data)
         setLoading(false)
@@ -75,7 +75,7 @@ const Profile = () => {
     formData.append('user_id', user.id)
 
     api
-      .post('/profiles', formData, {
+      .post('/api/profiles', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -98,7 +98,7 @@ const Profile = () => {
 
   const handleSave = () => {
     api
-      .put(`/profiles/${user.id}`, formData)
+      .put(`/api/profiles/${user.id}`, formData)
       .then((response) => {
         setAlert({ visible: true, type: 'success', message: 'Profile updated successfully!' })
         setIsEditing(false)

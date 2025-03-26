@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import {
   CCard,
   CCardHeader,
@@ -20,6 +19,7 @@ import {
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFile, faDownload } from '@fortawesome/free-solid-svg-icons'
+import api from '../../util/api'
 
 const EmployeePayslip = () => {
   const [payslips, setPayslips] = useState([])
@@ -32,8 +32,6 @@ const EmployeePayslip = () => {
   )
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [downloading, setDownloading] = useState(false)
-
-  const API_URL = 'http://localhost:8000/api/releases'
 
   const getMonthName = (monthNumber) => {
     const date = new Date()
@@ -50,9 +48,9 @@ const EmployeePayslip = () => {
         return
       }
 
-      const response = await axios.get(`${API_URL}`, {
+      const response = await api.get(`/api/releases`, {
         params: {
-          user_id: userId, // Send user_id as a query parameter
+          user_id: userId,
         },
       })
 
@@ -83,15 +81,10 @@ const EmployeePayslip = () => {
 
   const handlePreviewPayslip = (payslip) => {
     setSelectedEmployee(payslip)
-
-    // Calculate Pay Period based on the selected payslip's month and year
-    const monthName = getMonthName(payslip.month) // Get the month name
-    const year = payslip.year // Get the year
-
-    // Calculate the start and end dates of the pay period
-    const periodStart = `${year}-${String(payslip.month).padStart(2, '0')}-01` // First day of the month
-    const periodEnd = new Date(year, payslip.month, 0).toISOString().split('T')[0] // Last day of the month
-
+    const monthName = getMonthName(payslip.month)
+    const year = payslip.year
+    const periodStart = `${year}-${String(payslip.month).padStart(2, '0')}-01`
+    const periodEnd = new Date(year, payslip.month, 0).toISOString().split('T')[0]
     setMonthName(monthName)
     setSelectedYear(year)
     setVisible(true)
@@ -100,7 +93,7 @@ const EmployeePayslip = () => {
   const handleDownloadPayslip = async (employeeId, employeeName, monthNumber) => {
     setDownloading(true)
     try {
-      const response = await axios.get(`${API_URL}/download/${employeeId}`, {
+      const response = await api.get(`/api/releases/download/${employeeId}`, {
         responseType: 'blob',
       })
       const monthName = getMonthName(monthNumber)
@@ -128,7 +121,7 @@ const EmployeePayslip = () => {
         return
       }
 
-      const response = await axios.get(`${API_URL}/download-all`, {
+      const response = await api.get(`/api/releases/download-all`, {
         params: {
           user_id: userId,
         },
