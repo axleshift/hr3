@@ -45,10 +45,11 @@ const Login = () => {
 
       navigate('/dashboard')
     } catch (err) {
+      const message = err.response?.data?.message || 'Login failed. Please check your credentials.'
       setAlert({
         visible: true,
         type: 'danger',
-        message: 'Login failed. Please check your credentials.',
+        message,
       })
     } finally {
       setLoading(false)
