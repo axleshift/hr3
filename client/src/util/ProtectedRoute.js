@@ -6,7 +6,7 @@ const ProtectedRoute = () => {
   const status = useAuthStatus()
 
   if (status === 'loading') {
-    return <div>Loading...</div>
+    return <div>Loading...</div> // Or a spinner
   }
 
   if (status === 'unauthenticated') {
@@ -15,3 +15,5 @@ const ProtectedRoute = () => {
 
   return <Outlet />
 }
+
+export default ProtectedRoute
