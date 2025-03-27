@@ -36,7 +36,7 @@ const AppSidebar = () => {
         <CSidebarBrand to="/">
           <CImage
             fluid
-            src="/images/logo.png"
+            src="../assets/images/logo.png"
             className="sidebar-brand-full"
             height={30}
             loading="lazy"
