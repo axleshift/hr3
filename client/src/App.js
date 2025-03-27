@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom' // Changed from HashRouter
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
@@ -30,19 +30,17 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      {' '}
-      {/* Changed from HashRouter */}
       <Suspense
         fallback={
-          <div className="loading-overlay">
+          <div className="text-center pt-3">
             <CSpinner color="primary" variant="grow" />
           </div>
         }
       >
         <Routes>
-          <Route exact path="/login" name="Login" element={<Login />} /> {/* lowercase path */}
-          <Route path="/register" name="Register" element={<Register />} />
-          <Route path="/forgot-password" name="ForgotPassword" element={<ForgotPassword />} />
+          <Route exact path="/Login" name="Login" element={<Login />} />
+          <Route path="/Register" name="Register" element={<Register />} />
+          <Route path="/ForgotPassword" name="Forgot Password" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="*" element={<DefaultLayout />} />
           </Route>

@@ -34,7 +34,6 @@ const Login = () => {
     setLoading(true)
     try {
       const response = await api.post('/api/auth/login', { username, password })
-      console.log('API URL:', import.meta.env.VITE_APP_API_URL)
       dispatch({ type: 'SET_USER', payload: response.data.user })
       dispatch({ type: 'SET_SESSION_ID', payload: response.data.session_id })
       Cookies.set('dcims', response.data.session_id, { expires: 30 })

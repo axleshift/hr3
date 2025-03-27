@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id')->index();
-            $table->string('user_id');
+            $table->string('employee_id')->nullable();
+            $table->string('user_id')->nullable()->constrained('users');
             $table->string('name')->nullable();
             $table->decimal('total_regular_hours', 8, 2)->nullable();
             $table->decimal('total_undertime_hours', 8, 2)->nullable();

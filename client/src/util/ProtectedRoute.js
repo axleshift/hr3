@@ -6,7 +6,7 @@ const ProtectedRoute = () => {
   const status = useAuthStatus()
 
   if (status === 'unauthenticated') {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/Login" replace />
   }
   return <Outlet />
 }

@@ -32,6 +32,7 @@ import {
   faMoneyBill,
   faClock,
   faGift,
+  faCalculator,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -45,18 +46,19 @@ const Payroll = () => {
   )
   const [modalVisible, setModalVisible] = useState(false)
   const [overtimeRate, setOvertimeRate] = useState('')
-  const [bonusModalVisible, setbonusModalVisible] = useState(false)
+  const [bonusModalVisible, setBonusModalVisible] = useState(false)
   //  const [deduction, setDeduction] = useState(0)
   const [bonus, setBonus] = useState(0)
-  const [visible, setVisible] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [salaryModalVisible, setSalaryModalVisible] = useState(false)
-  const [salaries, setSalaries] = useState([])
   const [jobPosition, setJobPosition] = useState('')
   const [baseSalary, setBaseSalary] = useState('')
   const [validationError, setValidationError] = useState('')
   const [jobPositions, setJobPositions] = useState([])
   const [employeeBenefits, setEmployeeBenefits] = useState([])
+  const [error, setError] = useState(null)
+  const [payslipModalVisible, setPayslipModalVisible] = useState(false)
+  const [hasAttendanceData, setHasAttendanceData] = useState(false)
 
   const fetchJobPositions = async () => {
     try {
@@ -71,22 +73,47 @@ const Payroll = () => {
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
-      setError(null)
-      const response = await api.get('/api/payroll', {
-        params: {
-          year: selectedYear,
-          month: selectedMonth,
-        },
+      setHasAttendanceData(false)
+
+      const params = new URLSearchParams({
+        year: selectedYear,
+        month: selectedMonth,
+        calculate: true,
       })
-      setEmployees(Array.isArray(response.data) ? response.data : [])
+
+      const response = await api.get(`/api/payrolls?${params.toString()}`)
+
+      setEmployees(response.data)
+      setHasAttendanceData(response.data.length > 0)
     } catch (error) {
-      console.error('Error fetching payroll data:', error)
-      setError('Failed to fetch payroll data')
-      setEmployees([])
+      console.error('Error:', error.response?.data)
+      setError(error.response?.data?.message || 'Failed to fetch payroll')
+      setHasAttendanceData(false)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    console.log(`Fetching payroll for ${selectedMonth}/${selectedYear}`)
+    fetchPayrollData()
+  }, [selectedMonth, selectedYear])
+
+  // const handleCalculatePayroll = async () => {
+  //   try {
+  //     setLoading(true)
+  //     await api.post('/api/calculate', {
+  //       year: selectedYear,
+  //       month: selectedMonth,
+  //     })
+  //     fetchPayrollData()
+  //   } catch (error) {
+  //     console.error('Error calculating payroll:', error)
+  //     setError('Failed to calculate payroll')
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const handleSaveSalary = async () => {
     if (!jobPosition || !baseSalary) {
@@ -95,7 +122,7 @@ const Payroll = () => {
     }
 
     try {
-      await api.post('/api/salaries', {
+      await api.post('/api/payrolls', {
         job_position: jobPosition,
         base_salary: parseFloat(baseSalary),
       })
@@ -183,7 +210,7 @@ const Payroll = () => {
 
   const handleBonus = async () => {
     try {
-      await api.post('/api/payroll/bonus', {
+      await api.post('/api/bonus', {
         year: selectedYear,
         month: selectedMonth,
         bonus: parseFloat(bonus),
@@ -198,7 +225,7 @@ const Payroll = () => {
 
   const fetchBonus = async () => {
     try {
-      const response = await api.get('/api/payroll/bonus', {
+      const response = await api.get('/api/payrolls', {
         params: { year: selectedYear, month: selectedMonth },
       })
       setBonus(response.data?.bonus || 0)
@@ -254,10 +281,13 @@ const Payroll = () => {
                 </option>
               ))}
             </CFormSelect>
+            {/* <CButton color="primary" onClick={handleCalculatePayroll}>
+              <FontAwesomeIcon icon={faCalculator} />
+            </CButton> */}
             <CButton color="primary" onClick={() => setModalVisible(true)}>
               <FontAwesomeIcon icon={faClock} />
             </CButton>
-            <CButton color="primary" onClick={() => setDeductionBonusModalVisible(true)}>
+            <CButton color="primary" onClick={() => setBonusModalVisible(true)}>
               <FontAwesomeIcon icon={faGift} />
             </CButton>
             <CButton color="info" onClick={() => setSalaryModalVisible(true)}>
@@ -266,9 +296,19 @@ const Payroll = () => {
           </div>
         </CCardHeader>
         <CCardBody>
-          {loading && employees.length === 0 ? (
-            <div className="text-center">
+          {loading ? (
+            <div className="text-center py-5">
               <CSpinner color="primary" />
+              <p className="mt-2">Loading payroll data...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-5 text-danger">
+              <h5>Error loading data</h5>
+              <p>{error}</p>
+            </div>
+          ) : !hasAttendanceData ? (
+            <div className="text-center py-5">
+              <p>No attendance records found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -382,7 +422,7 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
-      <CModal visible={bonusModalVisible} onClose={() => setbonusModalVisible(false)}>
+      <CModal visible={bonusModalVisible} onClose={() => setBonusModalVisible(false)}>
         <CModalHeader>
           <CModalTitle>Set Bonus</CModalTitle>
         </CModalHeader>
@@ -403,7 +443,7 @@ const Payroll = () => {
           />
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setbonusModalVisible(false)}>
+          <CButton color="secondary" onClick={() => setBonusModalVisible(false)}>
             Close
           </CButton>
           <CButton color="primary" onClick={handleBonus}>
@@ -449,7 +489,7 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
-      <CModal visible={visible} onClose={() => setVisible(false)} size="lg">
+      <CModal visible={payslipModalVisible} onClose={() => setPayslipModalVisible(false)} size="lg">
         <CModalHeader closeButton>
           <CModalTitle>Payslip for {selectedEmployee?.name}</CModalTitle>
         </CModalHeader>
