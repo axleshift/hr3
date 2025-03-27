@@ -33,10 +33,13 @@ Route::get('/employees/${employeeId}', [EmployeeController::class, 'getLeaveHist
 Route::apiResource('benefits', BenefitController::class);
 
 Route::apiResource('payrolls', PayrollController::class);
-Route::post('/payroll', [PayrollController::class, 'save']);
-Route::get('/payroll', [PayrollController::class, 'calculate']);
-Route::post('payroll/release', [PayrollController::class, 'releasePayslips']);
+Route::post('/payrolls/calculate', [PayrollController::class, 'calculate']);
+Route::post('/bonus', [PayrollController::class, 'save']);
+Route::post('/release', [PayrollController::class, 'releasePayslips']);
 Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
+Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
+Route::get('/bonus', [PayrollController::class, 'getBonus']);
+Route::get('/payroll', [PayrollController::class, 'all']);
 
 Route::apiResource('leave-types', LeaveController::class);
 Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
@@ -55,8 +58,8 @@ Route::post('/leave-request', [LeaveRequestController::class, 'store']);
 Route::put('/leave/{id}/approve', [LeaveRequestController::class, 'approveLeave']);
 
 // Payslip
-Route::get('/payslip', [PayslipController::class, 'index']);
-Route::get('/payslips', [PayslipController::class, 'all']);
+Route::get('/payslips', [PayslipController::class, 'index']);
+Route::get('/payslip', [PayslipController::class, 'all']);
 Route::get('/releases', [PayslipController::class, 'getPayslipsByUserId']);
 Route::get('/releases/download/{employeeId}', [PayslipController::class, 'downloadPayslip']);
 Route::get('/releases/download-all', [PayslipController::class, 'downloadAllPayslips']);

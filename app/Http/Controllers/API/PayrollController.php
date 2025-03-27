@@ -12,15 +12,43 @@ use App\Models\Benefit;
 use App\Models\Rate;
 use App\Models\Attendance;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class PayrollController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function all()
     {
-        $payrolls = Payroll::all();
+         $payrolls = Payroll::all();
+         return response()->json($payrolls);
+    }
+
+    public function index(Request $request)
+    {
+        $year = (int)$request->input('year', date('Y'));
+        $month = (int)$request->input('month', date('m'));
+        $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
+    
+        if ($calculate) {
+            $this->calculatePayroll($year, $month);
+        }
+    
+        $payrolls = Payroll::where('year', $year)
+            ->where('month', $month)
+            ->whereHas('employee', function($query) use ($year, $month) {
+                $query->whereHas('attendances', function($q) use ($year, $month) {
+                    $q->whereYear('date', $year)
+                      ->whereMonth('date', $month);
+                });
+            })
+            ->get()
+            ->map(function ($payroll, $index) {
+                $payroll->id = $index + 1;
+                return $payroll;
+            });
+    
         return response()->json($payrolls);
     }
 
@@ -34,23 +62,12 @@ class PayrollController extends Controller
             'base_salary' => 'required|numeric',
         ]);
     
-        $payroll = Payroll::where('job_position', $request->job_position)->first();
-    
-        if ($payroll) {
-            $payroll->update([
-                'base_salary' => $request->base_salary,
-            ]);
-        } else {
-            $payroll = Payroll::create([
-                'job_position' => $request->job_position,
-                'base_salary' => $request->base_salary,
-            ]);
-        }
+        Payroll::where('job_position', $request->job_position)
+            ->update(['base_salary' => $request->base_salary]);
     
         return response()->json([
-            'message' => 'Payroll data saved successfully',
-            'payroll' => $payroll,
-        ], 201);
+            'message' => 'Base salary updated for all employees with this job position',
+        ], 200); 
     }
 
     /**
@@ -97,15 +114,24 @@ class PayrollController extends Controller
         //
     }
 
-
-    public function calculate(Request $request)
+    private function calculatePayroll($year, $month)
     {
-        $year = $request->input('year', date('Y'));
-        $month = $request->input('month', date('m'));
-    
-        $attendances = Attendance::whereYear('date', $year)
+        $employeesWithAttendance = Attendance::whereYear('date', $year)
             ->whereMonth('date', $month)
-            ->get();
+            ->with('employee')
+            ->get()
+            ->groupBy('employee_id');
+    
+        if ($employeesWithAttendance->isEmpty()) {
+            return;
+        }
+    
+        $jobPositions = Payroll::select('job_position', 'base_salary')
+            ->distinct()
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->job_position => $item->base_salary];
+            });
     
         $overtimeRate = Rate::where('type', 'overtime_rate')->first();
         $overtimeRateValue = $overtimeRate ? $overtimeRate->rate : 0;
@@ -115,126 +141,98 @@ class PayrollController extends Controller
             ->get()
             ->groupBy('employee_id');
     
-        $employeeMap = [];
+        foreach ($employeesWithAttendance as $employeeId => $attendances) {
+            if (!$attendances->first()->employee) {
+                Log::warning("No employee record found for attendance with employee_id: {$employeeId}");
+                continue;
+            }
     
-        $standardHoursPerDay = 8;
-        $lunchBreakHours = 1;
-        $standardStartTime = strtotime('08:00:00');
-        $standardEndTime = strtotime('17:00:00');
+            $employee = $attendances->first()->employee;
+            
+            $totalRegularHours = 0;
+            $totalOvertimeHours = 0;
+            $totalLateHours = 0;
+            $totalUndertimeHours = 0;
     
-        foreach ($attendances as $attendance) {
-            $employeeId = $attendance->employee_id;
-    
-            if (!isset($employeeMap[$employeeId])) {
-                $existingPayroll = Payroll::where('employee_id', $employeeId)
-                    ->where('year', $year)
-                    ->where('month', $month)
-                    ->first();
-    
-                $employee = Employee::where('employee_id', $employeeId)->first();
-                $payroll = Payroll::where('job_position', $employee->job_position)->first();
-                $baseSalary = $payroll ? $payroll->base_salary : 0;
-    
-                $user = User::where('employee_id', $employeeId)->first();
-    
-                $benefitsTotal = 0;
-                if (isset($benefits[$employeeId])) {
-                    $benefitsTotal = $benefits[$employeeId]->sum('amount');
+            foreach ($attendances as $attendance) {
+                if (!$attendance->time_in || !$attendance->time_out) {
+                    continue;
                 }
-
-
     
-                $employeeMap[$employeeId] = [
-                    'employee_id' => $employeeId,
-                    'name' => $attendance->name,
-                    'department' => $employee ? $employee->department : NULL,
-                    'job_position' => $employee ? $employee->job_position : NULL,
-                    'total_regular_hours' => 0,
-                    'total_overtime_hours' => 0,
-                    'total_late_hours' => 0,
-                    'total_undertime_hours' => 0,
-                    'bonus' => $existingPayroll ? $existingPayroll->bonus : 0,
-                    'deduction' => $existingPayroll ? $existingPayroll->deduction : 0,
-                    'net_salary' => 0,
-                    'total_overtime_amount' => 0,
-                    'base_salary' => $baseSalary,
-                    'daily_rate' => 0,
-                    'user_id' => $user ? $user->id : NULL,
-                    'benefits_total' => $benefitsTotal,
-                    'tax' => 0,
-                ];
-            }
-            
-            $timeIn = strtotime($attendance->time_in);
-            $timeOut = strtotime($attendance->time_out);
+                $timeIn = strtotime($attendance->time_in);
+                $timeOut = strtotime($attendance->time_out);
+                $standardStartTime = strtotime('08:00:00');
+                $standardHoursPerDay = 8;
+                $lunchBreakHours = 1;
     
-            if ($timeIn > $standardStartTime) {
-                $lateHours = ($timeIn - $standardStartTime) / 3600;
-                $employeeMap[$employeeId]['total_late_hours'] += $lateHours;
+                if ($timeIn > $standardStartTime) {
+                    $lateHours = ($timeIn - $standardStartTime) / 3600;
+                    $totalLateHours += $lateHours;
+                }
+    
+                $totalHoursWorked = max(0, ($timeOut - $timeIn) / 3600);
+                $actualHoursWorked = $totalHoursWorked - $lunchBreakHours;
+    
+                $regularHours = min($actualHoursWorked, $standardHoursPerDay);
+                $overtimeHours = max(0, $actualHoursWorked - $standardHoursPerDay);
+                $undertimeHours = max(0, $standardHoursPerDay - $actualHoursWorked);
+    
+                $totalRegularHours += $regularHours;
+                $totalOvertimeHours += $overtimeHours;
+                $totalUndertimeHours += $undertimeHours;
             }
     
-            $totalHoursWorked = max(0, ($timeOut - $timeIn) / 3600);
-            $actualHoursWorked = $totalHoursWorked - $lunchBreakHours;
-            $regularHours = min($actualHoursWorked, $standardHoursPerDay);
-            $overtimeHours = max(0, $actualHoursWorked - $standardHoursPerDay);
-            $undertimeHours = max(0, $standardHoursPerDay - $actualHoursWorked);
+            $existingPayroll = Payroll::where('employee_id', $employeeId)
+                ->where('year', $year)
+                ->where('month', $month)
+                ->first();
     
-            $employeeMap[$employeeId]['total_regular_hours'] += $regularHours;
-            $employeeMap[$employeeId]['total_overtime_hours'] += $overtimeHours;
-            $employeeMap[$employeeId]['total_undertime_hours'] += $undertimeHours;
-        }
+            // Use default base salary if job position not found
+            $baseSalary = $jobPositions[$employee->job_position] ?? 0;
+            $dailyRate = $baseSalary / 22;
+            $hourlyRate = $dailyRate / 8;
     
-        $payrollData = array_values($employeeMap);
+            $user = User::where('name', $employee->name)->first();
+            $userId = $user ? $user->id : null;
     
-        foreach ($payrollData as &$data) {
-            $dailyRate = $data['base_salary'] / ($data['total_regular_hours'] ?: 1);
-            $totalOvertimeAmount = $data['total_overtime_hours'] * $overtimeRateValue;
-            $grossSalary = ($data['total_regular_hours'] * $dailyRate) + $totalOvertimeAmount;
+            $totalOvertimeAmount = $totalOvertimeHours * $overtimeRateValue;
+            $benefitsTotal = isset($benefits[$employeeId]) ? $benefits[$employeeId]->sum('amount') : 0;
+    
+            $grossSalary = $baseSalary + $totalOvertimeAmount;
             $tax = $this->calculateProgressiveTax($grossSalary);
-            
-            $netSalary = $grossSalary
-                       + $data['bonus']
-                       - $data['deduction']
-                       - $tax
-                       - $data['benefits_total'];
     
-            $payrollDataToSave = [
-                'name' => $data['name'],
-                'department' => $data['department'],
-                'job_position' => $data['job_position'],
-                'total_regular_hours' => $data['total_regular_hours'],
-                'total_overtime_hours' => $data['total_overtime_hours'],
-                'total_late_hours' => $data['total_late_hours'],
-                'total_undertime_hours' => $data['total_undertime_hours'],
-                'bonus' => $data['bonus'],
-                'deduction' => $data['deduction'],
-                'net_salary' => $netSalary,
-                'total_overtime_amount' => $totalOvertimeAmount,
-                'year' => $year,
-                'gross_salary' => $grossSalary,
-                'month' => $month,
-                'base_salary' => $data['base_salary'],
-                'daily_rate' => $dailyRate,
-                'user_id' => $data['user_id'],
-                'benefits_total' => $data['benefits_total'],
-                'tax' => $tax,
-            ];
+            $netSalary = $grossSalary 
+                       + ($existingPayroll->bonus ?? 0)
+                       - $tax
+                       - $benefitsTotal;
     
             Payroll::updateOrCreate(
                 [
-                    'employee_id' => $data['employee_id'],
+                    'employee_id' => $employeeId,
                     'year' => $year,
                     'month' => $month,
                 ],
-                $payrollDataToSave
+                [
+                    'name' => $employee->name,
+                    'department' => $employee->department,
+                    'job_position' => $employee->job_position,
+                    'total_regular_hours' => $totalRegularHours,
+                    'total_overtime_hours' => $totalOvertimeHours,
+                    'total_late_hours' => $totalLateHours,
+                    'total_undertime_hours' => $totalUndertimeHours,
+                    'bonus' => $existingPayroll->bonus ?? 0,
+                    'net_salary' => $netSalary,
+                    'total_overtime_amount' => $totalOvertimeAmount,
+                    'base_salary' => $baseSalary,
+                    'daily_rate' => $dailyRate,
+                    'benefits_total' => $benefitsTotal,
+                    'tax' => $tax,
+                    'gross_salary' => $grossSalary,
+                    'status' => $existingPayroll ? $existingPayroll->status : 'Pending',
+                    'user_id' => $userId,
+                ]
             );
         }
-    
-        $savedPayrollData = Payroll::where('year', $year)
-            ->where('month', $month)
-            ->get();
-    
-        return response()->json($savedPayrollData);
     }
     
     /**
@@ -281,6 +279,7 @@ class PayrollController extends Controller
         return $pdf->download("payroll-report-{$year}-{$month}.pdf");
     }
 
+
     public function releasePayslips(Request $request)
     {
         $selectedMonth = $request->input('month');
@@ -302,28 +301,25 @@ class PayrollController extends Controller
             ], 200);
         }
     
-        $employees = User::where('role', 'employee')->get();
+        $paidPayrolls = Payroll::where('status', 'Paid')
+            ->where('month', $selectedMonth)
+            ->where('year', $selectedYear)
+            ->with('user')
+            ->get();
     
-        if ($employees->isEmpty()) {
+        if ($paidPayrolls->isEmpty()) {
             return response()->json([
-                'message' => 'No employees found.',
-            ], 404);
+                'message' => 'No payroll records with Paid status found for this period.',
+                'count' => 0
+            ], 200);
         }
     
-        foreach ($employees as $employee) {
-            $payroll = Payroll::where('user_id', $employee->id)
-                ->where('month', $selectedMonth)
-                ->where('year', $selectedYear)
-                ->first();
-    
-            if (!$payroll) {
-                continue;
-            }
-    
+        $createdCount = 0;
+        foreach ($paidPayrolls as $payroll) {
             Payslip::create([
-                'user_id' => $employee->id,
-                'employee_id' => $employee->employee_id,
-                'name' => $employee->name,
+                'user_id' => $payroll->user_id,
+                'employee_id' => $payroll->employee_id,
+                'name' => $payroll->user->name,
                 'department' => $payroll->department,
                 'job_position' => $payroll->job_position,
                 'month' => $selectedMonth,
@@ -333,15 +329,69 @@ class PayrollController extends Controller
                 'benefits_total' => $payroll->benefits_total,
                 'base_salary' => $payroll->base_salary,
                 'bonus' => $payroll->bonus,
-                'deduction' => $payroll->deduction,
                 'total_overtime_amount' => $payroll->total_overtime_amount,
                 'status' => 'Paid',
                 'issued_at' => now(),
             ]);
+            $createdCount++;
         }
     
         return response()->json([
-            'message' => 'Payslips released successfully for all employees!',
+            'message' => 'Payslips released successfully for employees with Paid status!',
+            'count' => $createdCount
         ], 200);
+    }
+
+    /**
+     * Save bonus for all employees in a specific month/year
+     */
+    public function save(Request $request)
+    {
+        $request->validate([
+                'year' => 'required|integer',
+                'month' => 'required|integer',
+                'bonus' => 'required|numeric',
+            ]);
+        
+            $year = $request->input('year');
+            $month = $request->input('month');
+            $bonus = $request->input('bonus');
+        
+            $payrollRecords = Payroll::where('year', $year)
+                ->where('month', $month)
+                ->get();
+        
+            foreach ($payrollRecords as $payroll) {
+                $payroll->bonus = $bonus;
+                $payroll->net_salary = ($payroll->total_regular_hours * $payroll->salary_rate) +
+                                        ($payroll->total_overtime_hours * $payroll->overtime_rate)
+                                         +
+                                        $bonus;
+                $payroll->save();
+            }
+            return response()->json(['message' => ' bonus saved successfully']);
+        }
+        
+
+    /**
+     * Get the current bonus amount for a specific month/year
+     */
+    public function getBonus(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer',
+            'month' => 'required|integer|between:1,12',
+        ]);
+
+        $year = $request->input('year');
+        $month = $request->input('month');
+
+        $payroll = Payroll::where('year', $year)
+            ->where('month', $month)
+            ->first();
+
+        return response()->json([
+            'bonus' => $payroll ? $payroll->bonus : 0
+        ]);
     }
 }

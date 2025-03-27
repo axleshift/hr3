@@ -30,4 +30,19 @@ class Payroll extends Model
         'gross_salary',
         'tax'
     ];
+
+    public function payslip()
+    {
+        return $this->belongsTo(Payslip::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
+    }
 }
