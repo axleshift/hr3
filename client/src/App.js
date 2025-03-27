@@ -38,9 +38,9 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/Login" name="Login" element={<Login />} />
-          <Route path="/Register" name="Register" element={<Register />} />
-          <Route path="/ForgotPassword" name="Forgot Password" element={<ForgotPassword />} />
+          <Route exact path="/login" name="Login" element={<Login />} />
+          <Route path="/register" name="Register" element={<Register />} />
+          <Route path="/forgot-password" name="Forgot Password" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="*" element={<DefaultLayout />} />
           </Route>
