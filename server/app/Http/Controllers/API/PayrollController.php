@@ -48,6 +48,11 @@ class PayrollController extends Controller
             ->orderBy('department')
             ->orderBy('name')
             ->get();
+        
+        $payrolls->transform(function ($item, $key) {
+        $item->display_id = $key + 1;
+        return $item;
+    });
 
         return response()->json($payrolls);
     }

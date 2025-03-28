@@ -83,49 +83,6 @@ const Payroll = () => {
     }
   }
 
-  // const fetchPayrollData = async () => {
-  //   try {
-  //     setLoading(true)
-  //     setHasAttendanceData(false)
-  //     const calculate = true
-  //     const response = await api.get('/api/payrolls', {
-  //       params: {
-  //         year: selectedYear,
-  //         month: selectedMonth,
-  //         calculate: calculate,
-  //       },
-  //       paramsSerializer: (params) => {
-  //         return Object.entries(params)
-  //           .map(([key, value]) => {
-  //             if (typeof value === 'boolean') {
-  //               return `${key}=${value ? 'true' : 'false'}`
-  //             }
-  //             return `${key}=${value}`
-  //           })
-  //           .join('&')
-  //       },
-  //     })
-
-  //     if (response.data?.length > 0) {
-  //       setEmployees(response.data)
-  //       setFilteredEmployees(response.data)
-  //       setHasAttendanceData(true)
-  //       const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
-  //       setDepartments(uniqueDepartments)
-  //     } else {
-  //       setEmployees([])
-  //       setFilteredEmployees([])
-  //       setHasAttendanceData(false)
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error.response?.data)
-  //     setError(error.response?.data?.message || 'Failed to fetch payroll')
-  //     setHasAttendanceData(false)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
@@ -382,11 +339,11 @@ const Payroll = () => {
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {filteredEmployees.map((employee) => {
+                  {filteredEmployees.map((employee, index) => {
                     const employeeStatus = employee.status || 'Pending'
                     return (
                       <CTableRow key={employee.employee_id}>
-                        <CTableDataCell>{employee.id}</CTableDataCell>
+                        <CTableDataCell>{index + 1}</CTableDataCell>
                         <CTableDataCell>{employee.employee_id}</CTableDataCell>
                         <CTableDataCell>{employee.name}</CTableDataCell>
                         <CTableDataCell>{employee.department}</CTableDataCell>
