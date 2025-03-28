@@ -88,15 +88,29 @@ const Payroll = () => {
       setLoading(true)
       setHasAttendanceData(false)
 
-      const params = new URLSearchParams({
-        year: selectedYear,
-        month: selectedMonth,
-        calculate: true,
+      // Convert to proper boolean value
+      const calculate = true // or false based on your needs
+
+      // Using params config with axios
+      const response = await api.get('/api/payrolls', {
+        params: {
+          year: selectedYear,
+          month: selectedMonth,
+          calculate: calculate, // Proper boolean value
+        },
+        paramsSerializer: (params) => {
+          return Object.entries(params)
+            .map(([key, value]) => {
+              if (typeof value === 'boolean') {
+                return `${key}=${value ? 'true' : 'false'}`
+              }
+              return `${key}=${value}`
+            })
+            .join('&')
+        },
       })
 
-      const response = await api.get(`/api/payrolls?${params.toString()}`)
-
-      if (response.data && response.data.length > 0) {
+      if (response.data?.length > 0) {
         setEmployees(response.data)
         setFilteredEmployees(response.data)
         setHasAttendanceData(true)
