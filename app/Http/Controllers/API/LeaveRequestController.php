@@ -82,7 +82,7 @@ class LeaveRequestController extends Controller
         ]);
     
         $employee = Employee::where('name', $request->name)->first();
-        $type = Leave::where('name', $request->type)->first();
+        $type = Leave::where('name', $request->leave_type)->first();
     
         if (!$employee) {
             return response()->json([
