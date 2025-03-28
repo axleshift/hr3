@@ -83,73 +83,40 @@ const Payroll = () => {
     }
   }
 
-  const fetchPayrollData = async () => {
-    try {
-      setLoading(true)
-      setHasAttendanceData(false)
-
-      // Convert to proper boolean value
-      const calculate = true // or false based on your needs
-
-      // Using params config with axios
-      const response = await api.get('/api/payrolls', {
-        params: {
-          year: selectedYear,
-          month: selectedMonth,
-          calculate: calculate, // Proper boolean value
-        },
-        paramsSerializer: (params) => {
-          return Object.entries(params)
-            .map(([key, value]) => {
-              if (typeof value === 'boolean') {
-                return `${key}=${value ? 'true' : 'false'}`
-              }
-              return `${key}=${value}`
-            })
-            .join('&')
-        },
-      })
-
-      if (response.data?.length > 0) {
-        setEmployees(response.data)
-        setFilteredEmployees(response.data)
-        setHasAttendanceData(true)
-        const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
-        setDepartments(uniqueDepartments)
-      } else {
-        setEmployees([])
-        setFilteredEmployees([])
-        setHasAttendanceData(false)
-      }
-    } catch (error) {
-      console.error('Error:', error.response?.data)
-      setError(error.response?.data?.message || 'Failed to fetch payroll')
-      setHasAttendanceData(false)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // const fetchPayrollData = async () => {
   //   try {
   //     setLoading(true)
   //     setHasAttendanceData(false)
-
-  //     const params = new URLSearchParams({
-  //       year: selectedYear,
-  //       month: selectedMonth,
-  //       calculate: true,
+  //     const calculate = true
+  //     const response = await api.get('/api/payrolls', {
+  //       params: {
+  //         year: selectedYear,
+  //         month: selectedMonth,
+  //         calculate: calculate,
+  //       },
+  //       paramsSerializer: (params) => {
+  //         return Object.entries(params)
+  //           .map(([key, value]) => {
+  //             if (typeof value === 'boolean') {
+  //               return `${key}=${value ? 'true' : 'false'}`
+  //             }
+  //             return `${key}=${value}`
+  //           })
+  //           .join('&')
+  //       },
   //     })
 
-  //     const response = await api.get(`/api/payrolls?${params.toString()}`)
-
-  //     setEmployees(response.data)
-  //     setFilteredEmployees(response.data)
-  //     setHasAttendanceData(response.data.length > 0)
-
-  //     // Extract unique departments from the response
-  //     const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
-  //     setDepartments(uniqueDepartments)
+  //     if (response.data?.length > 0) {
+  //       setEmployees(response.data)
+  //       setFilteredEmployees(response.data)
+  //       setHasAttendanceData(true)
+  //       const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
+  //       setDepartments(uniqueDepartments)
+  //     } else {
+  //       setEmployees([])
+  //       setFilteredEmployees([])
+  //       setHasAttendanceData(false)
+  //     }
   //   } catch (error) {
   //     console.error('Error:', error.response?.data)
   //     setError(error.response?.data?.message || 'Failed to fetch payroll')
@@ -158,6 +125,34 @@ const Payroll = () => {
   //     setLoading(false)
   //   }
   // }
+
+  const fetchPayrollData = async () => {
+    try {
+      setLoading(true)
+      setHasAttendanceData(false)
+
+      const params = new URLSearchParams({
+        year: selectedYear,
+        month: selectedMonth,
+        calculate: true,
+      })
+
+      const response = await api.get(`/api/payrolls?${params.toString()}`)
+
+      setEmployees(response.data)
+      setFilteredEmployees(response.data)
+      setHasAttendanceData(response.data.length > 0)
+
+      const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
+      setDepartments(uniqueDepartments)
+    } catch (error) {
+      console.error('Error:', error.response?.data)
+      setError(error.response?.data?.message || 'Failed to fetch payroll')
+      setHasAttendanceData(false)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     console.log(`Fetching payroll for ${selectedMonth}/${selectedYear}`)
