@@ -22,8 +22,6 @@ import {
   CFormSelect,
   CFormTextarea,
   CAlert,
-  CPagination,
-  CPaginationItem,
   CCol,
   CRow,
   CFormInput,
@@ -43,8 +41,6 @@ const EmployeeLeave = () => {
   const [file, setFile] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
   const [alert, setAlert] = useState({ visible: false, type: '', message: '' })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedLeave, setSelectedLeave] = useState(null)
   const [leaveTypes, setLeaveTypes] = useState([])
   const userId = sessionStorage.getItem('user_id')
@@ -147,7 +143,7 @@ const EmployeeLeave = () => {
     }
 
     try {
-      const response = await api.post('/api/leave-request', formData, {
+      const response = await api.post('/api/leave-requests', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -170,12 +166,6 @@ const EmployeeLeave = () => {
       })
     }
   }
-
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = leave.slice(indexOfFirstItem, indexOfLastItem)
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
   return (
     <CCard>
@@ -213,25 +203,29 @@ const EmployeeLeave = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody className="text-center">
-                {currentItems.length === 0 ? (
+                {leave.length === 0 ? (
                   <CTableRow>
                     <CTableDataCell colSpan="5" className="text-center">
                       No leave requests available.
                     </CTableDataCell>
                   </CTableRow>
                 ) : (
-                  currentItems.map((leave, index) => (
-                    <CTableRow key={leave.id}>
-                      <CTableDataCell>{indexOfFirstItem + index + 1}</CTableDataCell>
-                      <CTableDataCell>{leave.leave_type}</CTableDataCell>
+                  leave.map((leaveItem, index) => (
+                    <CTableRow key={leaveItem.id}>
+                      <CTableDataCell>{index + 1}</CTableDataCell>
+                      <CTableDataCell>{leaveItem.leave_type}</CTableDataCell>
                       <CTableDataCell>
-                        {new Date(leave.created_at).toLocaleDateString()}
+                        {new Date(leaveItem.created_at).toLocaleDateString()}
                       </CTableDataCell>
                       <CTableDataCell>
-                        <CBadge color={getStatusBadge(leave.status)}>{leave.status}</CBadge>
+                        <CBadge color={getStatusBadge(leaveItem.status)}>{leaveItem.status}</CBadge>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <CButton color="info" size="sm" onClick={() => setSelectedLeave(leave)}>
+                        <CButton
+                          color="info"
+                          component="span"
+                          onClick={() => setSelectedLeave(leaveItem)}
+                        >
                           <FontAwesomeIcon icon={faInfoCircle} />
                         </CButton>
                       </CTableDataCell>
@@ -240,18 +234,6 @@ const EmployeeLeave = () => {
                 )}
               </CTableBody>
             </CTable>
-
-            <CPagination className="mt-3">
-              {Array.from({ length: Math.ceil(leave.length / itemsPerPage) }, (_, i) => (
-                <CPaginationItem
-                  key={i + 1}
-                  active={i + 1 === currentPage}
-                  onClick={() => paginate(i + 1)}
-                >
-                  {i + 1}
-                </CPaginationItem>
-              ))}
-            </CPagination>
           </>
         )}
       </CCardBody>
