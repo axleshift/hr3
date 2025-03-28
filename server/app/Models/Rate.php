@@ -11,7 +11,7 @@ class Rate extends Model
     
     protected $table = 'rates';
     protected $fillable = [
-        'type',
+        'name',
         'rate',
     ];
 }

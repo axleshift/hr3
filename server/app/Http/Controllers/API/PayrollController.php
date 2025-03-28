@@ -133,7 +133,7 @@ class PayrollController extends Controller
                 return [$item->job_position => $item->base_salary];
             });
     
-        $overtimeRate = Rate::where('type', 'overtime_rate')->first();
+        $overtimeRate = Rate::where('name', 'overtime')->first();
         $overtimeRateValue = $overtimeRate ? $overtimeRate->rate : 0;
     
         $benefits = Benefit::whereYear('created_at', $year)

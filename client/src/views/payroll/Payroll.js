@@ -83,7 +83,6 @@ const Payroll = () => {
     }
   }
 
-  // In your fetchPayrollData function
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
@@ -101,8 +100,6 @@ const Payroll = () => {
         setEmployees(response.data)
         setFilteredEmployees(response.data)
         setHasAttendanceData(true)
-
-        // Extract unique departments
         const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
         setDepartments(uniqueDepartments)
       } else {
@@ -215,7 +212,7 @@ const Payroll = () => {
       return
     }
     try {
-      await api.post('/api/rates', { overtime_rate: parseFloat(overtimeRate) })
+      await api.put(`/api/rates/overtime`, { rate: parseFloat(overtimeRate) })
       setModalVisible(false)
       setValidationError('')
       fetchPayrollData()

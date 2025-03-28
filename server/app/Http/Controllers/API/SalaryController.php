@@ -13,7 +13,7 @@ class SalaryController extends Controller
      */
     public function index()
     {
-        $overtimeRate = Rate::where('type', 'overtime_rate')->first();
+        $overtimeRate = Rate::where('name', 'overtime')->first();
 
         return response()->json([
             'overtime_rate' => $overtimeRate ? $overtimeRate->rate : null,
@@ -25,17 +25,30 @@ class SalaryController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'overtime_rate' => 'required|numeric|min:0',
+        $request->validate([
+            'rate' => 'required|numeric|min:0',
         ]);
     
-        Rate::updateOrCreate(
-            ['type' => 'overtime_rate'],
-            ['rate' => $validated['overtime_rate']]
-        );
-        return response()->json(['message' => 'Rates saved successfully'], 201);
+        $rate = Rate::create([
+            'name' => $request->name ?? 'overtime',
+            'rate' => $request->rate,
+        ]);
+    
+        return response()->json([
+            'message' => 'Rate added successfully',
+            'data' => $rate
+        ], 201);
     }
-
+        // $validated = $request->validate([
+        //     'overtime_rate' => 'required|numeric|min:0',
+        // ]);
+    
+        // Rate::updateOrCreate(
+        //     ['type' => 'overtime_rate'],
+        //     ['rate' => $validated['overtime_rate']]
+        // );
+        // return response()->json(['message' => 'Rates saved successfully'], 201);
+    
     /**
      * Display the specified resource.
      */
@@ -47,9 +60,28 @@ class SalaryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $name)
     {
-        //
+        $request->validate([
+            'rate' => 'required|numeric|min:0',
+        ]);
+    
+        $rate = Rate::where('name', $name)->first();
+    
+        if (!$rate) {
+            return response()->json([
+                'message' => 'Rate not found',
+            ], 404);
+        }
+    
+        $rate->update([
+            'rate' => $request->rate,
+        ]);
+    
+        return response()->json([
+            'message' => 'Rate updated successfully',
+            'data' => $rate
+        ]);
     }
 
     /**
