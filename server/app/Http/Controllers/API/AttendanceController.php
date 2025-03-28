@@ -8,10 +8,7 @@ class AttendanceController extends Controller
 {
     public function index()
     {
-        $attendances = Attendance::paginate(10);
-        return response()->json([
-            'attendances' => $attendances->items(),
-            'totalPages' => $attendances->lastPage(),
-        ]);
+        $attendance = Attendance::all();
+         return response()->json($attendance);
     }
 }
