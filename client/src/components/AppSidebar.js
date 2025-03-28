@@ -12,6 +12,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { AppSidebarNav } from './AppSidebarNav'
 import navigation from '../_nav'
+import logo from 'src/assets/images/hr3.png'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
@@ -34,19 +35,10 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
-          <CImage
-            fluid
-            src="/images/logo.png"
-            className="sidebar-brand-full"
-            height={30}
-            loading="lazy"
-          />
-          <CImage
-            src="/images/favicon.png"
-            className="sidebar-brand-narrow"
-            height={30}
-            loading="lazy"
-          />
+          <CSidebarBrand to="/">
+            <img src={logo} alt="Logo" className="sidebar-brand-full" height={32} />
+            <img src={logo} alt="Logo" className="sidebar-brand-narrow" height={32} />
+          </CSidebarBrand>
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
