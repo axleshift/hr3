@@ -26,33 +26,32 @@ class PayrollController extends Controller
          return response()->json($payrolls);
     }
 
-    // public function index(Request $request)
-    // {
-    //     $year = (int)$request->input('year', date('Y'));
-    //     $month = (int)$request->input('month', date('m'));
-    //     $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
-    
-    //     if ($calculate) {
-    //         $this->calculatePayroll($year, $month);
-    //     }
-    
-    //     $payrolls = Payroll::where('year', $year)
-    //         ->where('month', $month)
-    //         ->whereHas('employee', function($query) use ($year, $month) {
-    //             $query->whereHas('attendances', function($q) use ($year, $month) {
-    //                 $q->whereYear('date', $year)
-    //                   ->whereMonth('date', $month);
-    //             });
-    //         })
-    //         ->get()
-    //         ->map(function ($payroll, $index) {
-    //             $payroll->id = $index + 1;
-    //             return $payroll;
-    //         });
-    
-    //     return response()->json($payrolls);
-    // }
+    public function index(Request $request)
+    {
+        $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
+        
+        $validated = $request->validate([
+            'year' => 'sometimes|integer|min:2000|max:2100',
+            'month' => 'sometimes|integer|min:1|max:12',
+        ]);
 
+        $year = $validated['year'] ?? date('Y');
+        $month = $validated['month'] ?? date('m');
+
+        if ($calculate) {
+            $this->calculatePayroll($year, $month);
+        }
+
+        $payrolls = Payroll::with(['employee', 'user'])
+            ->where('year', $year)
+            ->where('month', $month)
+            ->orderBy('department')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($payrolls);
+    }
+    
     /**
      * Store a newly created resource in storage.
      */
@@ -415,37 +414,4 @@ class PayrollController extends Controller
             'bonus' => $payroll ? $payroll->bonus : 0
         ]);
     }
-
-
-    /**
-     * Get payroll data for a specific month/year
-     */
-    public function index(Request $request)
-{
-    // Manually handle boolean conversion
-    $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
-    
-    $validated = $request->validate([
-        'year' => 'sometimes|integer|min:2000|max:2100',
-        'month' => 'sometimes|integer|min:1|max:12',
-        // Remove boolean validation since we're handling it manually
-    ]);
-
-    $year = $validated['year'] ?? date('Y');
-    $month = $validated['month'] ?? date('m');
-
-    if ($calculate) {
-        $this->calculatePayroll($year, $month);
-    }
-
-    $payrolls = Payroll::with(['employee', 'user'])
-        ->where('year', $year)
-        ->where('month', $month)
-        ->orderBy('department')
-        ->orderBy('name')
-        ->get();
-
-    return response()->json($payrolls);
-}
-
 }
