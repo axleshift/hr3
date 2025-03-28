@@ -51,7 +51,6 @@ const LeaveType = () => {
     try {
       const response = await api.get('/api/leave-types')
       if (Array.isArray(response.data)) {
-        // Convert pay_rate to numbers if they come as strings
         const formattedData = response.data.map((type) => ({
           ...type,
           pay_rate: parseFloat(type.pay_rate) || 0,
@@ -69,7 +68,6 @@ const LeaveType = () => {
     const { name, value } = e.target
     const updatedLeaveType = { ...newLeaveType, [name]: value }
 
-    // Reset pay rate to 0 if changing to unpaid
     if (name === 'type' && value === 'Unpaid') {
       updatedLeaveType.pay_rate = 0
     }
@@ -81,7 +79,6 @@ const LeaveType = () => {
     const { name, value } = e.target
     const updatedLeaveType = { ...editLeaveType, [name]: value }
 
-    // Reset pay rate to 0 if changing to unpaid
     if (name === 'type' && value === 'Unpaid') {
       updatedLeaveType.pay_rate = 0
     }
@@ -111,7 +108,6 @@ const LeaveType = () => {
     try {
       const response = await api.post('/api/leave-types', {
         ...newLeaveType,
-        // Ensure pay_rate is 0 for unpaid leave
         pay_rate: newLeaveType.type === 'Unpaid' ? 0 : newLeaveType.pay_rate,
       })
       setLeaveTypes([...leaveTypes, response.data])
@@ -134,7 +130,6 @@ const LeaveType = () => {
     try {
       const response = await api.put(`/api/leave-types/${editLeaveType.id}`, {
         ...editLeaveType,
-        // Ensure pay_rate is 0 for unpaid leave
         pay_rate: editLeaveType.type === 'Unpaid' ? 0 : editLeaveType.pay_rate,
       })
       const updatedLeaveTypes = leaveTypes.map((type) =>
@@ -240,7 +235,6 @@ const LeaveType = () => {
         </div>
       </CCardBody>
 
-      {/* Create Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader>
           <CModalTitle>Create New Leave Type</CModalTitle>

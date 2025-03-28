@@ -77,9 +77,21 @@ const EmployeeLeave = () => {
   const fetchLeaveTypes = useCallback(async () => {
     try {
       const response = await api.get('/api/leave-types')
-      setLeaveTypes(response.data)
+      console.log('Leave types response:', response.data) // Add this for debugging
+      if (response.data && Array.isArray(response.data)) {
+        setLeaveTypes(response.data)
+      } else {
+        console.error('Leave types data is not an array:', response.data)
+        setLeaveTypes([])
+      }
     } catch (error) {
       console.error('Error fetching leave types:', error)
+      setAlert({
+        visible: true,
+        type: 'danger',
+        message: 'Failed to load leave types. Please try again later.',
+      })
+      setLeaveTypes([])
     }
   }, [])
 
@@ -254,8 +266,11 @@ const EmployeeLeave = () => {
               value={leaveType}
               onChange={(e) => setLeaveType(e.target.value)}
               required
+              disabled={leaveTypes.length === 0}
             >
-              <option value="">Select Leave Type</option>
+              <option value="">
+                {leaveTypes.length === 0 ? 'Loading leave types...' : 'Select Leave Type'}
+              </option>
               {leaveTypes.map((type) => (
                 <option key={type.id} value={type.name}>
                   {type.name}
