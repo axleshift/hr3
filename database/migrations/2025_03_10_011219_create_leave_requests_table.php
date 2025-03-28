@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('reason');
             $table->integer('total_days');
             $table->integer('month')->nullable();
+            $table->decimal('paid_amount')->nullable();
             $table->enum('is_paid', ['Paid', 'Unpaid'])->default('Unpaid');
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->string('document_path')->nullable();

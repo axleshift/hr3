@@ -29,6 +29,7 @@ return new class extends Migration
             $table->decimal('daily_rate', 10, 2);
             $table->decimal('bonus', 8, 2)->default(0);
             $table->decimal('benefits_total', 10, 2)->nullable();
+            $table->decimal('paid_leave_amount', 10, 2)->default(0);
             $table->integer('year')->nullable();
             $table->integer('month')->nullable();
             $table->enum('status', ['Pending', 'Paid'])->default('Pending');

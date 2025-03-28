@@ -17,10 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
         ]);
         
-       $middleware->alias([
-            'verify.session' => \App\Http\Middleware\VerifySession::class,
-        ]);
-        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

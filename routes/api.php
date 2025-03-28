@@ -28,6 +28,7 @@ Route::apiResource('rates', SalaryController::class);
 
 Route::apiResource('employees', EmployeeController::class);
 Route::get('/job-positions', [EmployeeController::class, 'getJobPositions']);
+Route::get('/departments', [EmployeeController::class, 'getDepartments']);
 Route::get('/employees/${employeeId}', [EmployeeController::class, 'getLeaveHistory']);
 
 Route::apiResource('benefits', BenefitController::class);
@@ -36,7 +37,6 @@ Route::apiResource('payrolls', PayrollController::class);
 Route::post('/payrolls/calculate', [PayrollController::class, 'calculate']);
 Route::post('/bonus', [PayrollController::class, 'save']);
 Route::post('/release', [PayrollController::class, 'releasePayslips']);
-Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
 Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
 Route::get('/bonus', [PayrollController::class, 'getBonus']);
 Route::get('/payroll', [PayrollController::class, 'all']);
