@@ -80,7 +80,7 @@ class LeaveRequestController extends Controller
             'reason' => 'required|string',
             'document' => 'sometimes|file|mimes:jpg,jpeg,png,pdf,doc,docx,txt|max:500',
         ]);
-    
+        $users = Employee::where('user_id', $request->user_id)->first();
         $employee = Employee::where('name', $request->name)->first();
         $type = Leave::where('name', $request->leave_type)->first();
     
@@ -109,7 +109,7 @@ class LeaveRequestController extends Controller
         }
     
         $leave = LeaveRequest::create([
-            'user_id' => $request->user_id,
+            'user_id' => $users->user_id,
             'name' => $request->name,
             'leave_type' => $request->leave_type,
             'start_date' => $request->start_date,
@@ -121,6 +121,7 @@ class LeaveRequestController extends Controller
             'document_path' => $filePath,
             'month' => $month,
             'department' => $employee->department,
+            'job_position' => $employee->job_position,
         ]);
     
         return response()->json([
