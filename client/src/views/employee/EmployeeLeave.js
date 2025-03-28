@@ -77,7 +77,7 @@ const EmployeeLeave = () => {
   const fetchLeaveTypes = useCallback(async () => {
     try {
       const response = await api.get('/api/leave-types')
-      console.log('Leave types response:', response.data) // Add this for debugging
+      console.log('Leave types response:', response.data)
       if (response.data && Array.isArray(response.data)) {
         setLeaveTypes(response.data)
       } else {
