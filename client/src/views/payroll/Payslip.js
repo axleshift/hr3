@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import api from '../../util/api'
 import {
   CCard,
@@ -13,51 +13,54 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CToaster,
-  CToast,
-  CToastHeader,
-  CToastBody,
   CFormSelect,
+  CBadge,
+  CAlert,
+  CSpinner,
+  CContainer,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
 } from '@coreui/react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFile, faChevronDown, faPaperPlane } from '@fortawesome/free-solid-svg-icons'
 
 const Payslip = () => {
   const [payslips, setPayslips] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [toast, addToast] = useState(null)
-  const toaster = useRef(null)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [monthName, setMonthName] = useState(
     new Date().toLocaleString('default', { month: 'long' }),
   )
+  const [departments, setDepartments] = useState([])
+  const [selectedDepartment, setSelectedDepartment] = useState('all')
+
+  const fetchPayslips = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await api.get(`/api/payslip`, {
+        params: {
+          year: selectedYear,
+          month: selectedMonth,
+        },
+      })
+      setPayslips(Array.isArray(response.data) ? response.data : [])
+    } catch (err) {
+      console.error('Error fetching payslips:', err)
+      setError('Failed to fetch payslips')
+      setPayslips([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchPayslips = async () => {
-      try {
-        setLoading(true)
-        const response = await api.get(`/api/payroll`, {
-          params: {
-            year: selectedYear,
-            month: selectedMonth,
-          },
-        })
-        setPayslips(Array.isArray(response.data) ? response.data : [])
-      } catch (err) {
-        console.error('Error fetching payslips:', err)
-        setError('Failed to fetch payslips')
-        addToast({
-          message: 'Failed to fetch payslips',
-          color: 'danger',
-        })
-        setPayslips([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchPayslips()
-  }, [selectedYear, selectedMonth])
+  }, [selectedYear, selectedMonth, selectedDepartment])
 
   useEffect(() => {
     const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('default', {
@@ -66,7 +69,13 @@ const Payslip = () => {
     setMonthName(monthName)
   }, [selectedMonth, selectedYear])
 
-  const handleReleasePayslips = async () => {
+  const handleSendPayslips = async () => {
+    if (
+      !window.confirm(`Are you sure you want to send payslips for ${monthName} ${selectedYear}?`)
+    ) {
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -75,30 +84,16 @@ const Payslip = () => {
         month: selectedMonth,
         year: selectedYear,
       })
-      console.log('Release Payslips Response:', response.data)
 
-      if (response.data.message === 'All payslips for this month have already been released.') {
-        addToast({
-          message: response.data.message,
-          color: 'info',
-        })
+      if (response.data.count === 0) {
+        setError('No payroll records available to send as payslips')
       } else {
-        setPayslips(response.data.data || [])
-        addToast({
-          message: 'Payslips released successfully for all employees!',
-          color: 'success',
-        })
+        await fetchPayslips()
+        setError(null)
       }
     } catch (err) {
-      console.error('Error releasing payslips:', err)
-      console.error('Error details:', err.response?.data || err.message)
-
-      setError('Failed to release payslips')
-      addToast({
-        message: err.response?.data?.message || 'Failed to release payslips',
-        color: 'danger',
-      })
-      console.error('Full error response:', err.response)
+      console.error('Error sending payslips:', err)
+      setError(err.response?.data?.message || 'Failed to send payslips')
     } finally {
       setLoading(false)
     }
@@ -107,113 +102,127 @@ const Payslip = () => {
   const years = Array.from({ length: new Date().getFullYear() - 2020 + 1 }, (_, i) => 2020 + i)
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Invalid Date'
-    const date = new Date(dateString)
-    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString()
+    if (!dateString) return 'Not sent yet'
+    try {
+      const date = new Date(dateString)
+      return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString()
+    } catch (e) {
+      return 'Invalid Date'
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Sent':
+        return 'success'
+      case 'Pending':
+        return 'warning'
+      case 'Paid':
+        return 'primary'
+      default:
+        return 'secondary'
+    }
   }
 
   return (
-    <CRow>
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>
-            <strong>Payslip</strong>
-          </CCardHeader>
-          <CCardBody>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+    <CContainer fluid>
+      <CCard>
+        <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap">
+          <strong>Payslip Management</strong>
+          <div className="d-flex flex-wrap gap-2">
+            <CFormSelect
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              style={{ width: '120px' }}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(2023, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </CFormSelect>
+            <CFormSelect
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              style={{ width: '100px' }}
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </CFormSelect>
+            <CButton color="primary" onClick={handleSendPayslips} disabled={loading}>
+              {loading ? (
+                <>
+                  <CSpinner size="sm" /> Sending...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faPaperPlane} className="me-2" />
+                </>
+              )}
+            </CButton>
+          </div>
+        </CCardHeader>
+        <CCardBody>
+          {error && (
+            <CAlert color="danger" dismissible onClose={() => setError(null)}>
+              {error}
+            </CAlert>
+          )}
 
-            <CRow className="mb-3 align-items-center">
-              <CCol xs={12} md={3} className="mb-2 mb-md-0">
-                <CFormSelect
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  style={{ width: '100%' }}
-                  className="custom-select"
-                >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {new Date(2023, i).toLocaleString('default', { month: 'long' })}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol xs={12} md={3} className="mb-2 mb-md-0">
-                <CFormSelect
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  style={{ width: '100%' }}
-                  className="custom-select"
-                >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol xs={12} md={6} className="text-md-start text-center">
-                <CButton color="success" onClick={handleReleasePayslips} disabled={loading}>
-                  {loading ? 'Processing...' : 'Send Payslips'}
-                </CButton>
-              </CCol>
-            </CRow>
-
-            {/* <h5 className="mt-3">
-              Released Payslips for {monthName} {selectedYear}
-            </h5> */}
-            <CTable striped hover responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Employee Name</CTableHeaderCell>
-                  <CTableHeaderCell>Net Salary</CTableHeaderCell>
-                  <CTableHeaderCell>Date Issued</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {(payslips || []).length > 0 ? (
-                  payslips.map((payslip) => (
+          {loading && payslips.length === 0 ? (
+            <div className="text-center py-5">
+              <CSpinner color="primary" />
+            </div>
+          ) : payslips.length === 0 ? (
+            <div className="text-center py-5">
+              <p>
+                No payslips found for {monthName} {selectedYear}
+              </p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <CTable hover responsive>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>#</CTableHeaderCell>
+                    <CTableHeaderCell>Employee ID</CTableHeaderCell>
+                    <CTableHeaderCell>Name</CTableHeaderCell>
+                    <CTableHeaderCell>Department</CTableHeaderCell>
+                    <CTableHeaderCell>Amount</CTableHeaderCell>
+                    <CTableHeaderCell>Status</CTableHeaderCell>
+                    <CTableHeaderCell>Sent Date</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  {payslips.map((payslip, index) => (
                     <CTableRow key={payslip.id}>
-                      <CTableDataCell>{payslip.name || 'Unknown'}</CTableDataCell>
+                      <CTableDataCell>{index + 1}</CTableDataCell>
+                      <CTableDataCell>{payslip.employee_id}</CTableDataCell>
+                      <CTableDataCell>{payslip.name}</CTableDataCell>
+                      <CTableDataCell>{payslip.department}</CTableDataCell>
                       <CTableDataCell>
-                        {parseFloat(payslip.net_salary || 0).toLocaleString('en-US', {
-                          style: 'currency',
-                          currency: 'PHP',
+                        ₱
+                        {parseFloat(payslip.net_salary || 0).toLocaleString('en-PH', {
                           minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
                         })}
                       </CTableDataCell>
-                      <CTableDataCell>{formatDate(payslip.created_at)}</CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge color={getStatusBadge(payslip.status)}>{payslip.status}</CBadge>
+                      </CTableDataCell>
+                      <CTableDataCell>{formatDate(payslip.issued_at)}</CTableDataCell>
                     </CTableRow>
-                  ))
-                ) : (
-                  <CTableRow>
-                    <CTableDataCell colSpan="3" className="text-center">
-                      No payslips available
-                    </CTableDataCell>
-                  </CTableRow>
-                )}
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-        </CCard>
-      </CCol>
-
-      <CToaster ref={toaster} placement="top-end">
-        {toast && (
-          <CToast
-            autohide={true}
-            delay={3000}
-            show={true}
-            color={toast.color}
-            onClose={() => addToast(null)}
-          >
-            <CToastHeader closeButton>
-              <strong className="me-auto">Notification</strong>
-            </CToastHeader>
-            <CToastBody>{toast.message}</CToastBody>
-          </CToast>
-        )}
-      </CToaster>
-    </CRow>
+                  ))}
+                </CTableBody>
+              </CTable>
+            </div>
+          )}
+        </CCardBody>
+      </CCard>
+    </CContainer>
   )
 }
 

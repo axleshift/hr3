@@ -82,36 +82,6 @@ class LeaveController extends Controller
             'message' => 'Leave type deleted successfully']);
     }
 
-    public function computeLeave(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:user_id,id',
-            'leave_type_id' => 'required|exists:leave_types,id',
-            'leave_days_used' => 'required|integer|min:1',
-        ]);
-
-        $employee = Employee::find($request->employee_id);
-        $leaveType = Leave::find($request->leave_type_id);
-
-        if ($leaveType->type !== 'Paid') {
-            return response()->json([
-                'message' => 'Leave type is not paid.',
-            ], 400);
-        }
-
-        $monthlySalary = $employee->monthly_salary;
-        $workingDaysPerMonth = 22;
-        $leaveDaysUsed = $request->leave_days_used;
-        $paidLeavePay = ($monthlySalary / $workingDaysPerMonth) * $leaveDaysUsed;
-
-        return response()->json([
-            'user_id' => $employee->id,
-            'leave_type_id' => $leaveType->id,
-            'leave_days_used' => $leaveDaysUsed,
-            'paid_leave_pay' => number_format($paidLeavePay, 2),
-        ]);
-    }
-
     // public function getLeaveUsed($userId, $month, $year)
     // {
     //     $totalLeaveUsed = Leave::where('user_id', $userId)

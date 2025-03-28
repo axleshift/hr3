@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Benefit;
 use App\Models\BenefitTypes;
 use App\Models\LeaveRequest;
+use App\Models\Payroll;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -95,5 +96,15 @@ class EmployeeController extends Controller
             'message' => 'Employee benefits updated successfully',
             'employee' => $employee->load('benefits')
         ]);
+    }
+
+    public function getDepartments()
+    {
+        
+        $department = Payroll::select('department')
+            ->distinct()
+            ->pluck('department');
+
+        return response()->json($department);
     }
 }

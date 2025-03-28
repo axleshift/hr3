@@ -24,9 +24,10 @@ class LeaveRequest extends Model
         'document_path',
         'month',
         'leave_used',
-        'department'
+        'department',
         // 'rejected_date',
         // 'approved_date',
+        'paid_amount'
     ];
 
     public function employee()
@@ -37,10 +38,5 @@ class LeaveRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function leaveType()
-    {
-        return $this->belongsTo(Leave::class);
     }
 }

@@ -234,6 +234,124 @@ class PayrollController extends Controller
             );
         }
     }
+
+    // private function calculatePayroll($year, $month)
+    // {
+    //     $employeesWithAttendance = Attendance::whereYear('date', $year)
+    //     ->whereMonth('date', $month)
+    //     ->with('employee') // Eager load employee relationship
+    //     ->get()
+    //     ->groupBy('employee_id');
+
+    // if ($employeesWithAttendance->isEmpty()) {
+    //     return;
+    // }
+    //     $jobPositions = Payroll::select('job_position', 'base_salary')
+    //         ->distinct()
+    //         ->get()
+    //         ->mapWithKeys(function ($item) {
+    //             return [$item->job_position => $item->base_salary];
+    //         });
+    
+    //     $employees = Employee::all();
+    
+    //     $overtimeRate = Rate::where('type', 'overtime_rate')->first();
+    //     $overtimeRateValue = $overtimeRate ? $overtimeRate->rate : 0;
+    
+    //     $benefits = Benefit::whereYear('created_at', $year)
+    //         ->whereMonth('created_at', $month)
+    //         ->get()
+    //         ->groupBy('employee_id');
+    
+    //     $attendances = Attendance::whereYear('date', $year)
+    //         ->whereMonth('date', $month)
+    //         ->get()
+    //         ->groupBy('employee_id');
+    
+    //     foreach ($employees as $employee) {
+    //         $employeeId = $employee->employee_id;
+            
+    //         $totalRegularHours = 0;
+    //         $totalOvertimeHours = 0;
+    //         $totalLateHours = 0;
+    //         $totalUndertimeHours = 0;
+    
+    //         if (isset($attendances[$employeeId])) {
+    //             foreach ($attendances[$employeeId] as $attendance) {
+    //                 $timeIn = strtotime($attendance->time_in);
+    //                 $timeOut = strtotime($attendance->time_out);
+    //                 $standardStartTime = strtotime('08:00:00');
+    //                 $standardHoursPerDay = 8;
+    //                 $lunchBreakHours = 1;
+    
+    //                 if ($timeIn > $standardStartTime) {
+    //                     $lateHours = ($timeIn - $standardStartTime) / 3600;
+    //                     $totalLateHours += $lateHours;
+    //                 }
+    
+    //                 $totalHoursWorked = max(0, ($timeOut - $timeIn) / 3600);
+    //                 $actualHoursWorked = $totalHoursWorked - $lunchBreakHours;
+    //                 $regularHours = min($actualHoursWorked, $standardHoursPerDay);
+    //                 $overtimeHours = max(0, $actualHoursWorked - $standardHoursPerDay);
+    //                 $undertimeHours = max(0, $standardHoursPerDay - $actualHoursWorked);
+    
+    //                 $totalRegularHours += $regularHours;
+    //                 $totalOvertimeHours += $overtimeHours;
+    //                 $totalUndertimeHours += $undertimeHours;
+    //             }
+    //         }
+    
+    //         $existingPayroll = Payroll::where('employee_id', $employeeId)
+    //             ->where('year', $year)
+    //             ->where('month', $month)
+    //             ->first();
+    
+    //         $baseSalary = $jobPositions[$employee->job_position] ?? 0;
+    //         $dailyRate = $baseSalary / 22;
+    //         $hourlyRate = $dailyRate / 8;
+            
+    //         $user = User::where('name', $employee->name)->first();
+    //             $userId = $user ? $user->id : null;
+
+    //         $totalOvertimeAmount = $totalOvertimeHours * $overtimeRateValue;
+    //         $benefitsTotal = isset($benefits[$employeeId]) ? $benefits[$employeeId]->sum('amount') : 0;
+            
+    //         $grossSalary = $baseSalary + $totalOvertimeAmount;
+    //         $tax = $this->calculateProgressiveTax($grossSalary);
+            
+    //         $netSalary = $grossSalary 
+    //                    + ($existingPayroll->bonus ?? 0)
+    //                    - $tax
+    //                    - $benefitsTotal;
+    
+    //         Payroll::updateOrCreate(
+    //             [
+    //                 'employee_id' => $employeeId,
+    //                 'year' => $year,
+    //                 'month' => $month,
+    //             ],
+    //             [
+    //                 'name' => $employee->name,
+    //                 'department' => $employee->department,
+    //                 'job_position' => $employee->job_position,
+    //                 'total_regular_hours' => $totalRegularHours,
+    //                 'total_overtime_hours' => $totalOvertimeHours,
+    //                 'total_late_hours' => $totalLateHours,
+    //                 'total_undertime_hours' => $totalUndertimeHours,
+    //                 'bonus' => $existingPayroll->bonus ?? 0,
+    //                 'net_salary' => $netSalary,
+    //                 'total_overtime_amount' => $totalOvertimeAmount,
+    //                 'base_salary' => $baseSalary,
+    //                 'daily_rate' => $dailyRate,
+    //                 'benefits_total' => $benefitsTotal,
+    //                 'tax' => $tax,
+    //                 'gross_salary' => $grossSalary,
+    //                 'status' => $existingPayroll ? $existingPayroll->status : 'Pending',
+    //                 'user_id' => $userId,
+    //             ]
+    //         );
+    //     }
+    // }
     
     /**
      * Calculate progressive tax based on Philippine tax brackets

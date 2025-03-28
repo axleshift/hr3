@@ -35,7 +35,7 @@ const Attendances = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get('/api/attendances', {
+      const response = await api.get('/attendances', {
         params: {
           year: selectedYear,
           month: selectedMonth,

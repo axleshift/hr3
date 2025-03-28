@@ -15,11 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', '/login'],
+    'paths' => ['api/*', '/Login'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'https://hr3.axleshift.com')],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
     'allowed_origins_patterns' => [],
 

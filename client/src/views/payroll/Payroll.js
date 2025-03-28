@@ -33,21 +33,24 @@ import {
   faClock,
   faGift,
   faCalculator,
+  faFilter,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const Payroll = () => {
   const [employees, setEmployees] = useState([])
+  const [filteredEmployees, setFilteredEmployees] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedDepartment, setSelectedDepartment] = useState('all')
+  const [departments, setDepartments] = useState([])
   const [monthName, setMonthName] = useState(
     new Date().toLocaleString('default', { month: 'long' }),
   )
   const [modalVisible, setModalVisible] = useState(false)
   const [overtimeRate, setOvertimeRate] = useState('')
   const [bonusModalVisible, setBonusModalVisible] = useState(false)
-  //  const [deduction, setDeduction] = useState(0)
   const [bonus, setBonus] = useState(0)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [salaryModalVisible, setSalaryModalVisible] = useState(false)
@@ -70,6 +73,17 @@ const Payroll = () => {
     }
   }
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await api.get('/api/departments')
+      setDepartments(response.data)
+    } catch (error) {
+      console.error('Error fetching departments:', error)
+      setError('Failed to fetch departments')
+    }
+  }
+
+  // In your fetchPayrollData function
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
@@ -83,8 +97,19 @@ const Payroll = () => {
 
       const response = await api.get(`/api/payrolls?${params.toString()}`)
 
-      setEmployees(response.data)
-      setHasAttendanceData(response.data.length > 0)
+      if (response.data && response.data.length > 0) {
+        setEmployees(response.data)
+        setFilteredEmployees(response.data)
+        setHasAttendanceData(true)
+
+        // Extract unique departments
+        const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
+        setDepartments(uniqueDepartments)
+      } else {
+        setEmployees([])
+        setFilteredEmployees([])
+        setHasAttendanceData(false)
+      }
     } catch (error) {
       console.error('Error:', error.response?.data)
       setError(error.response?.data?.message || 'Failed to fetch payroll')
@@ -94,26 +119,48 @@ const Payroll = () => {
     }
   }
 
-  useEffect(() => {
-    console.log(`Fetching payroll for ${selectedMonth}/${selectedYear}`)
-    fetchPayrollData()
-  }, [selectedMonth, selectedYear])
-
-  // const handleCalculatePayroll = async () => {
+  // const fetchPayrollData = async () => {
   //   try {
   //     setLoading(true)
-  //     await api.post('/api/calculate', {
+  //     setHasAttendanceData(false)
+
+  //     const params = new URLSearchParams({
   //       year: selectedYear,
   //       month: selectedMonth,
+  //       calculate: true,
   //     })
-  //     fetchPayrollData()
+
+  //     const response = await api.get(`/api/payrolls?${params.toString()}`)
+
+  //     setEmployees(response.data)
+  //     setFilteredEmployees(response.data)
+  //     setHasAttendanceData(response.data.length > 0)
+
+  //     // Extract unique departments from the response
+  //     const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
+  //     setDepartments(uniqueDepartments)
   //   } catch (error) {
-  //     console.error('Error calculating payroll:', error)
-  //     setError('Failed to calculate payroll')
+  //     console.error('Error:', error.response?.data)
+  //     setError(error.response?.data?.message || 'Failed to fetch payroll')
+  //     setHasAttendanceData(false)
   //   } finally {
   //     setLoading(false)
   //   }
   // }
+
+  useEffect(() => {
+    console.log(`Fetching payroll for ${selectedMonth}/${selectedYear}`)
+    fetchPayrollData()
+    fetchDepartments()
+  }, [selectedMonth, selectedYear])
+
+  useEffect(() => {
+    if (selectedDepartment === 'all') {
+      setFilteredEmployees(employees)
+    } else {
+      setFilteredEmployees(employees.filter((emp) => emp.department === selectedDepartment))
+    }
+  }, [selectedDepartment, employees])
 
   const handleSaveSalary = async () => {
     if (!jobPosition || !baseSalary) {
@@ -271,19 +318,17 @@ const Payroll = () => {
               ))}
             </CFormSelect>
             <CFormSelect
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              style={{ width: '90px' }}
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              style={{ width: '150px' }}
             >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
+              <option value="all">All Departments</option>
+              {departments.map((dept, index) => (
+                <option key={index} value={dept}>
+                  {dept}
                 </option>
               ))}
             </CFormSelect>
-            {/* <CButton color="primary" onClick={handleCalculatePayroll}>
-              <FontAwesomeIcon icon={faCalculator} />
-            </CButton> */}
             <CButton color="primary" onClick={() => setModalVisible(true)}>
               <FontAwesomeIcon icon={faClock} />
             </CButton>
@@ -331,7 +376,7 @@ const Payroll = () => {
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {employees.map((employee) => {
+                  {filteredEmployees.map((employee) => {
                     const employeeStatus = employee.status || 'Pending'
                     return (
                       <CTableRow key={employee.employee_id}>
@@ -434,7 +479,7 @@ const Payroll = () => {
             onChange={(e) => setDeduction(parseFloat(e.target.value))}
             placeholder="Enter deduction"
           /> */}
-          <CFormLabel className="mt-3">Bonus</CFormLabel>
+          <CFormLabel>Bonus</CFormLabel>
           <CFormInput
             type="number"
             value={bonus}
@@ -506,6 +551,9 @@ const Payroll = () => {
                 </p>
                 <p>
                   <strong>Employee ID:</strong> {selectedEmployee.employee_id}
+                </p>
+                <p>
+                  <strong>Department:</strong> {selectedEmployee.department}
                 </p>
                 <p>
                   <strong>Position:</strong> {selectedEmployee.job_position}

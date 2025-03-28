@@ -44,7 +44,7 @@ jobs:
           source-directory: server/
           destination-github-username: 'freight-capstone'
           destination-repository-name: 'hr3'
-          user-email: mrepol742@gmail.com
+          user-email: ttine953@gmail.com
           commit-message: Production
           target-branch: build
           

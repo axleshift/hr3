@@ -28,7 +28,8 @@ class Payroll extends Model
         'job_position',
         'daily_rate',
         'gross_salary',
-        'tax'
+        'tax',
+        'paid_leave_amount'
     ];
 
     public function payslip()

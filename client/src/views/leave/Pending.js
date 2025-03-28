@@ -37,7 +37,7 @@ const Pending = () => {
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests', {
+      const response = await api.get('/api/leave-requests', {
         params: { page: currentPage, limit: itemsPerPage },
       })
       const data = response.data || {}

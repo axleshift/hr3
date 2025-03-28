@@ -17,14 +17,21 @@ class PayslipController extends Controller
 {
     public function index()
     {
-        $payslips = Payroll::where('user_id', Auth::id())->get();
+        $payslips = Payslip::where('user_id', Auth::id())->get();
         return response()->json($payslips);
     }
 
-    public function all()
+    public function all(Request $request)
     {
-        $payslips = Payroll::all();
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month', date('m'));
+        
+        $payslips = Payslip::where('year', $year)
+            ->where('month', $month)
+            ->get();
+            
         return response()->json($payslips);
+
     }
 
     public function getPayslipsByUserId(Request $request)
@@ -44,7 +51,7 @@ class PayslipController extends Controller
             $payslips = Payslip::where('user_id', $userId)->get();
 
             return response()->json([
-                'message' => 'Payslips retrieved successfully.',
+                'message' => 'Payslips fetched successfully.',
                 'payslips' => $payslips,
             ], 200);
         

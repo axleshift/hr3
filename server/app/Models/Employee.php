@@ -27,4 +27,14 @@ class Employee extends Model
     {
         return $this->hasMany(Benefit::class, 'employee_id', 'employee_id');
     }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'employee_id', 'employee_id');
+    }
+
+    public function payrolls()
+    {
+        return $this->hasMany(Payroll::class, 'employee_id', 'employee_id');
+    }
 }

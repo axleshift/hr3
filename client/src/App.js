@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, HashRouter, Routes, Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
@@ -29,7 +29,7 @@ const App = () => {
   }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
-    <HashRouter>
+    <Router>
       <Suspense
         fallback={
           <div className="text-center pt-3">
@@ -46,7 +46,7 @@ const App = () => {
           </Route>
         </Routes>
       </Suspense>
-    </HashRouter>
+    </Router>
   )
 }
 

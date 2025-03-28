@@ -49,16 +49,6 @@ class AttendanceSeeder extends Seeder
                     $timeIn = $date->copy()->setTime(8, 0, 0);
                     $timeOut = $date->copy()->setTime(17, 0, 0);
 
-                    // DB::table('attendances')->insert([
-                    //     'employee_id' => $employee['employee_id'],
-                    //     'name' => $employee['name'],
-                    //     'date' => $date->toDateString(),
-                    //     'time_in' => $timeIn->toDateTimeString(),
-                    //     'time_out' => $timeOut->toDateTimeString(),
-                    //     'created_at' => now(),
-                    //     'updated_at' => now(),
-                    // ]);
-
                     Attendance::insert([
                         'employee_id' => $employee['employee_id'],
                         'name' => $employee['name'],

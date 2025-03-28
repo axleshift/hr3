@@ -33,7 +33,7 @@ const Report = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get(`/api/payroll`, {
+      const response = await api.get(`/api/payrolls`, {
         params: {
           year: selectedYear,
           month: selectedMonth,
@@ -223,7 +223,7 @@ const Report = () => {
                             </CTableRow>
                           ))}
                           <CTableRow style={departmentTotalStyle}>
-                            <CTableDataCell colSpan="6">
+                            <CTableDataCell colSpan="6" className="text-center">
                               <strong>Department Total</strong>
                             </CTableDataCell>
                             <CTableDataCell colSpan="2">
@@ -260,10 +260,10 @@ const Report = () => {
                 {payroll.length > 0 && (
                   <CTableFoot>
                     <CTableRow style={{ backgroundColor: '#dee2e6' }}>
-                      <CTableHeaderCell colSpan="6">
+                      <CTableHeaderCell colSpan="6" className="text-center">
                         <strong>Grand Total</strong>
                       </CTableHeaderCell>
-                      <CTableHeaderCell colSpan="2">
+                      <CTableHeaderCell colSpan="2" className="text-center">
                         <strong>{formatCurrency(calculateTotalNetSalary())}</strong>
                       </CTableHeaderCell>
                     </CTableRow>

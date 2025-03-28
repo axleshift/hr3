@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\LeaveRequest;
 use App\Models\Leave;
 use App\Models\Employee;
+use App\Models\Payroll;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -81,17 +82,25 @@ class LeaveRequestController extends Controller
         ]);
     
         $employee = Employee::where('name', $request->name)->first();
+        $type = Leave::where('name', $request->type)->first();
     
         if (!$employee) {
             return response()->json([
                 'message' => 'Employee not found.',
             ], 404);
         }
+
+        if (!$type) {
+            return response()->json(['message' => 'Leave type not found.'], 404);
+        }
     
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         $total_days = $startDate->diffInDays($endDate) + 1;
         $month = $startDate->format('m');
+
+        $is_paid = $type->pay_rate > 0 ? 'Paid' : 'Unpaid';
+        $paid_amount = ($type->pay_rate / 100) * $employee->salary * $total_days;
     
         $filePath = null;
         if ($request->hasFile('document')) {
@@ -108,7 +117,7 @@ class LeaveRequestController extends Controller
             'reason' => $request->reason,
             'total_days' => $total_days,
             'status' => 'Pending',
-            'is_paid' => 'Unpaid',
+            'is_paid' => $is_paid,
             'document_path' => $filePath,
             'month' => $month,
             'department' => $employee->department,
@@ -217,17 +226,100 @@ class LeaveRequestController extends Controller
         return response()->json($statistics);
     }
 
-    public function approveLeaveRequest($id)
+    public function approveLeaveRequest(Request $request, $id)
     {
-        $leave = Leave::findOrFail($id);
-        if ($leave->status === 'Approved') {
-            return response()->json(['message' => 'Leave request is already approved.'], 400);
+        $leaveRequest = LeaveRequest::findOrFail($id);
+        
+        // Update leave request status
+        $leaveRequest->update(['status' => 'Approved']);
+        
+        // Calculate and store paid leave if applicable
+        if ($leaveRequest->leave->type === 'Paid') {
+            $leaveDays = $leaveRequest->total_days; // Assuming you have this field
+            
+            // Call the computeLeave method
+            $response = app(LeaveController::class)->computeLeave(new Request([
+                'user_id' => $leaveRequest->user_id,
+                'leave_type_id' => $leaveRequest->leave_id,
+                'leave_days_used' => $leaveDays,
+                'month' => $leaveRequest->start_date->month,
+                'year' => $leaveRequest->start_date->year,
+            ]));
+            
+            // You might want to handle the response here
+        }
+        
+        return response()->json(['message' => 'Leave request approved']);
+    }
+
+    public function computeLeave(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'leave_type_id' => 'required|exists:leaves,id',
+            'leave_days_used' => 'required|integer|min:1',
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer',
+        ]);
+    
+        $employee = Employee::where('user_id', $request->user_id)->first();
+        $leaveType = Leave::find($request->leave_type_id);
+    
+        if (!$employee || !$leaveType) {
+            return response()->json(['message' => 'Employee or leave type not found'], 404);
         }
     
-        $leave->leave_used += $leave->total_days;
-        $leave->status = 'Approved';
-        $leave->save();
-        return response()->json(['message' => 'Leave request approved successfully.'], 200);
+        if ($leaveType->type !== 'Paid') {
+            return response()->json(['message' => 'Leave type is not paid'], 400);
+        }
+    
+        // Find or create payroll record for this employee/month/year
+        $payroll = Payroll::firstOrCreate(
+            [
+                'user_id' => $request->user_id,
+                'month' => $request->month,
+                'year' => $request->year,
+            ],
+            [
+                'employee_id' => $employee->id,
+                'name' => $employee->name,
+                'department' => $employee->department,
+                'job_position' => $employee->job_position,
+                'base_salary' => $employee->monthly_salary,
+                'status' => 'Pending',
+            ]
+        );
+    
+        // Calculate hourly rate based on monthly salary and total regular hours
+        if ($payroll->total_regular_hours > 0) {
+            $hourlyRate = $employee->monthly_salary / $payroll->total_regular_hours;
+        } else {
+            // Fallback to standard calculation if no regular hours recorded
+            $standardWorkingHoursPerMonth = 22 * 8; // 22 days * 8 hours/day as default
+            $hourlyRate = $employee->monthly_salary / $standardWorkingHoursPerMonth;
+        }
+    
+        // Calculate paid leave amount (convert leave days to hours: 1 day = 8 hours)
+        $leaveHours = $request->leave_days_used * 8;
+        $paidLeaveAmount = ($hourlyRate * $leaveHours) * ($leaveType->pay_rate / 100);
+    
+        // Update the payroll with only the paid leave amount
+        $payroll->update([
+            'daily_rate' => $hourlyRate * 8, // Store daily rate (8 hours)
+            'paid_leave_amount' => $paidLeaveAmount,
+            // Update gross salary to include the paid leave amount
+            'gross_salary' => ($payroll->gross_salary ?? $employee->monthly_salary) + $paidLeaveAmount,
+        ]);
+    
+        return response()->json([
+            'user_id' => $employee->user_id,
+            'leave_type_id' => $leaveType->id,
+            'leave_days_used' => $request->leave_days_used,
+            'leave_hours' => $leaveHours,
+            'hourly_rate' => number_format($hourlyRate, 2),
+            'paid_leave_amount' => number_format($paidLeaveAmount, 2),
+            'message' => 'Paid leave calculated and payroll updated',
+        ]);
     }
 
     public function generateReport(Request $request)

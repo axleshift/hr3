@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
        $middleware->alias([
-            'verify.session' => \App\Http\Middleware\VerifySession::class,
+            'verify.session' => \App\Http\Middleware\ValidateSession::class,
         ]);
         
     })
