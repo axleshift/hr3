@@ -13,6 +13,7 @@ use App\Http\Controllers\API\SalaryController;
 use App\Http\Controllers\API\PayslipController;
 use App\Http\Controllers\API\BenefitTypesController;
 use App\Http\Controllers\API\ComplianceController;
+use App\Models\Attendance;
 
 // Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
@@ -25,6 +26,7 @@ Route::apiResource('salaries', PayrollController::class);
 Route::apiResource('profiles', ProfileController::class);
 
 Route::apiResource('rates', SalaryController::class);
+Route::get('/attendances', [AttendanceController::class, 'index']);
 
 Route::apiResource('employees', EmployeeController::class);
 Route::get('/job-positions', [EmployeeController::class, 'getJobPositions']);
@@ -42,7 +44,7 @@ Route::get('/bonus', [PayrollController::class, 'getBonus']);
 Route::get('/payroll', [PayrollController::class, 'all']);
 
 Route::apiResource('leave-types', LeaveController::class);
-Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
+// Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
 Route::post('/leaves', [LeaveController::class, 'computeLeave']);
 Route::get('/generate-leave', [LeaveRequestController::class, 'generateReport']);
 
@@ -54,7 +56,7 @@ Route::get('/leave-requests', [LeaveRequestController::class, 'index']);
 Route::get('/leave-requests/{userId}', [LeaveRequestController::class, 'show']);  
 Route::put('/leave-requests/{id}', [LeaveRequestController::class, 'update']);
 Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
-Route::post('/leave-request', [LeaveRequestController::class, 'store']);
+Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
 Route::put('/leave/{id}/approve', [LeaveRequestController::class, 'approveLeave']);
 
 // Payslip
