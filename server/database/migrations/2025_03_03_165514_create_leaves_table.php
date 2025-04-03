@@ -16,8 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('type')->default('Unpaid');
             $table->decimal('pay_rate', 8, 2)->default(0);
-            $table->decimal('leave_balance', 8, 2)->nullable();
-            $table->decimal('leave_used', 8, 2)->default(0);
+            // $table->decimal('leave_balance', 8, 2)->nullable();
+            // $table->decimal('leave_used', 8, 2)->default(0);
+            // $table->integer('max_days_per_year')->nullable(); 
             $table->timestamps();
         });
     }

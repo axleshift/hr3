@@ -188,3 +188,14 @@
     border-radius: 50%;
   }
   
+  .document-thumbnail {
+    transition: transform 0.2s;
+  }
+  
+  .document-thumbnail:hover {
+    transform: scale(1.05);
+  }
+  
+  .img-thumbnail {
+    object-fit: contain;
+  }

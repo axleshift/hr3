@@ -16,16 +16,18 @@ return new class extends Migration
             $table->string('user_id');
             $table->string('name')->index();
             $table->string('department');
+            $table->string('job_position');
             $table->string('leave_type');
             $table->date('start_date');
             $table->date('end_date');
             $table->text('reason');
+            $table->text('remarks')->nullable();
             $table->integer('total_days');
             $table->integer('month')->nullable();
             $table->decimal('paid_amount')->nullable();
             $table->enum('is_paid', ['Paid', 'Unpaid'])->default('Unpaid');
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
-            $table->string('document_path')->nullable();
+            $table->json('document_path')->nullable();
             $table->timestamps();
         });
     }

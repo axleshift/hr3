@@ -48,13 +48,6 @@ const navItems = [
   // },
   {
     component: CNavItem,
-    name: 'Leave Requests',
-    to: '/Pending',
-    icon: <FontAwesomeIcon icon={faCalendarAlt} className="nav-icon" />,
-    permission: ['superAdmin'],
-  },
-  {
-    component: CNavItem,
     name: 'Leave List',
     to: '/List',
     icon: <FontAwesomeIcon icon={faCheckCircle} className="nav-icon" />,

@@ -49,7 +49,7 @@ const LeaveType = () => {
 
   const fetchLeaveTypes = async () => {
     try {
-      const response = await api.get('/api/leave-types')
+      const response = await api.get('/leave-types')
       if (Array.isArray(response.data)) {
         const formattedData = response.data.map((type) => ({
           ...type,
@@ -106,7 +106,7 @@ const LeaveType = () => {
     }
 
     try {
-      const response = await api.post('/api/leave-types', {
+      const response = await api.post('/leave-types', {
         ...newLeaveType,
         pay_rate: newLeaveType.type === 'Unpaid' ? 0 : newLeaveType.pay_rate,
       })
@@ -128,7 +128,7 @@ const LeaveType = () => {
     }
 
     try {
-      const response = await api.put(`/api/leave-types/${editLeaveType.id}`, {
+      const response = await api.put(`/leave-types/${editLeaveType.id}`, {
         ...editLeaveType,
         pay_rate: editLeaveType.type === 'Unpaid' ? 0 : editLeaveType.pay_rate,
       })
@@ -146,7 +146,7 @@ const LeaveType = () => {
 
   const handleDeleteLeaveType = async (id) => {
     try {
-      await api.delete(`/api/leave-types/${id}`)
+      await api.delete(`/leave-types/${id}`)
       setLeaveTypes(leaveTypes.filter((type) => type.id !== id))
     } catch (error) {
       console.error('Error deleting leave type:', error)
@@ -177,8 +177,7 @@ const LeaveType = () => {
       <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap">
         <strong>Leave Type List</strong>
         <CButton color="primary" onClick={() => setModalVisible(true)}>
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Add Leave Type
+          <FontAwesomeIcon icon={faPlus} />
         </CButton>
       </CCardHeader>
       <CCardBody>

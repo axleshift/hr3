@@ -27,9 +27,9 @@ const Dashboard = () => {
       try {
         setLoading(true)
         const [pendingRequests, approvedLeaves, rejectedLeaves] = await Promise.all([
-          api.get('/api/leave-requests/count/Pending'),
-          api.get('/api/leave-requests/count/Approved'),
-          api.get('/api/leave-requests/count/Rejected'),
+          api.get('/leave-requests/count/Pending'),
+          api.get('/leave-requests/count/Approved'),
+          api.get('/leave-requests/count/Rejected'),
         ])
 
         setLeaveStats({
@@ -99,7 +99,7 @@ export default Dashboard
 // import axios from 'axios'
 // import { WidgetStats } from './WidgetStats'
 
-// const API_URL = 'http://localhost:8000/api'
+// const API_URL = 'http://localhost:8000'
 
 // const getLeaveCountByStatus = async (status) => {
 //   try {

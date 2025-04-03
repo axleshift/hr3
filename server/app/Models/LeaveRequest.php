@@ -13,6 +13,7 @@ class LeaveRequest extends Model
     protected $fillable = [
         'user_id',
         'department',
+        'job_position',
         'name', 
         'leave_type',
         'start_date',
@@ -25,9 +26,14 @@ class LeaveRequest extends Model
         'month',
         'leave_used',
         'department',
-        // 'rejected_date',
-        // 'approved_date',
-        'paid_amount'
+        'paid_amount',
+        'remarks'
+    ];
+    
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'document_path' => 'array'
     ];
 
     public function employee()

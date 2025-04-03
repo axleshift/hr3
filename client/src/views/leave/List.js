@@ -25,8 +25,9 @@ import {
   CFormSelect,
 } from '@coreui/react'
 import api from '../../util/api'
+import LeaveCalendar from './LeaveCalendar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faInfoCircle, faEye } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faInfoCircle, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'
 
 const List = () => {
   const [leave, setLeave] = useState([])
@@ -41,6 +42,7 @@ const List = () => {
   const [leaveModalVisible, setLeaveModalVisible] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false)
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -50,7 +52,7 @@ const List = () => {
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/api/leave-requests/page', {
+      const response = await api.get('/leave-requests/page', {
         params: {
           page: currentPage,
           limit: itemsPerPage,
@@ -111,24 +113,39 @@ const List = () => {
 
   const fetchEmployeeInfo = async (userId, employeeName) => {
     try {
-      const leaveHistoryResponse = await api.get(`/api/leaves/${userId}`)
-      const leaveHistory = leaveHistoryResponse.data.leaveRequests || []
+      const leaveHistoryResponse = await api.get(`/leaves/${userId}`)
+      let leaveHistory = []
+      if (Array.isArray(leaveHistoryResponse.data)) {
+        leaveHistory = leaveHistoryResponse.data
+      } else if (Array.isArray(leaveHistoryResponse.data?.leaveRequests)) {
+        leaveHistory = leaveHistoryResponse.data.leaveRequests
+      } else if (leaveHistoryResponse.data) {
+        leaveHistory = [leaveHistoryResponse.data]
+      }
 
       const department = leaveHistory.length > 0 ? leaveHistory[0].department : 'Unknown'
+
       setSelectedEmployee({
         name: employeeName,
         department: department,
         leaveHistory: leaveHistory,
       })
+
       setEmployeeModalVisible(true)
     } catch (error) {
       console.error('Error fetching employee info:', error)
+      setSelectedEmployee({
+        name: employeeName,
+        department: 'Unknown',
+        leaveHistory: [],
+      })
+      setEmployeeModalVisible(true)
     }
   }
 
   const fetchLeaveDetails = async (id) => {
     try {
-      const response = await api.get(`/api/leave-requests/${id}`)
+      const response = await api.get(`/leave-requests/${id}`)
       if (response.data.leaveRequests && response.data.leaveRequests.length > 0) {
         setSelectedLeave(response.data.leaveRequests[0])
       } else {
@@ -158,6 +175,9 @@ const List = () => {
       <CCardHeader className="d-flex justify-content-between align-items-center">
         <strong>Leave List</strong>
         <div className="d-flex gap-2 flex-wrap">
+          <CButton color="secondary" onClick={() => setCalendarModalVisible(true)} className="me-2">
+            <FontAwesomeIcon icon={faCalendarAlt} />
+          </CButton>
           <CFormSelect
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
@@ -220,7 +240,12 @@ const List = () => {
                 </CTableHead>
                 <CTableBody>
                   {filteredLeave.map((leave, index) => (
-                    <CTableRow key={leave.id}>
+                    <CTableRow
+                      key={leave.id}
+                      onClick={() => fetchLeaveDetails(leave.id)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-row"
+                    >
                       <CTableDataCell>
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </CTableDataCell>
@@ -237,17 +262,13 @@ const List = () => {
                         <CButton
                           color="info"
                           size="sm"
-                          onClick={() => fetchEmployeeInfo(leave.user_id, leave.name)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            fetchEmployeeInfo(leave.user_id, leave.name)
+                          }}
                           className="me-2"
                         >
                           <FontAwesomeIcon icon={faInfoCircle} />
-                        </CButton>
-                        <CButton
-                          color="primary"
-                          size="sm"
-                          onClick={() => fetchLeaveDetails(leave.id)}
-                        >
-                          <FontAwesomeIcon icon={faEye} />
                         </CButton>
                       </CTableDataCell>
                     </CTableRow>
@@ -283,51 +304,69 @@ const List = () => {
         )}
       </CCardBody>
 
-      <CModal visible={employeeModalVisible} onClose={() => setEmployeeModalVisible(false)}>
+      <CModal
+        visible={employeeModalVisible}
+        onClose={() => setEmployeeModalVisible(false)}
+        size="lg"
+      >
         <CModalHeader>
           <CModalTitle>Employee Information</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedEmployee ? (
             <>
-              <p>
-                <strong>Name:</strong> {selectedEmployee.name}
-              </p>
-              <p>
-                <strong>Department:</strong> {selectedEmployee.department}
-              </p>
-              <p>
-                <strong>Leave History:</strong>
-              </p>
-              <div className="table-responsive">
-                <CTable hover responsive>
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>Leave Type</CTableHeaderCell>
-                      <CTableHeaderCell>Date</CTableHeaderCell>
-                      <CTableHeaderCell>Status</CTableHeaderCell>
-                      <CTableHeaderCell>Days</CTableHeaderCell>
-                      {/* <CTableHeaderCell>Leave Used</CTableHeaderCell> */}
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {selectedEmployee.leaveHistory.map((history, index) => (
-                      <CTableRow key={history.id}>
-                        <CTableDataCell>{index + 1}</CTableDataCell>
-                        <CTableDataCell>{history.leave_type}</CTableDataCell>
-                        <CTableDataCell>
-                          {formatDateRange(history.start_date, history.end_date)}
-                        </CTableDataCell>
-                        <CTableDataCell>{history.total_days}</CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={getBadgeColor(history.status)}>{history.status}</CBadge>
-                        </CTableDataCell>
-                        {/* <CTableDataCell>{history.leave_used || 0}</CTableDataCell> */}
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
+              <div className="mb-3">
+                <p>
+                  <strong>Name:</strong> {selectedEmployee.name}
+                </p>
+                <p>
+                  <strong>Department:</strong> {selectedEmployee.department}
+                </p>
+                <p className="mb-3">
+                  <strong>Leave History:</strong>
+                </p>
+
+                {selectedEmployee.leaveHistory && selectedEmployee.leaveHistory.length > 0 ? (
+                  <div className="table-responsive">
+                    <CTable hover responsive>
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>#</CTableHeaderCell>
+                          <CTableHeaderCell>Leave Type</CTableHeaderCell>
+                          <CTableHeaderCell>Date</CTableHeaderCell>
+                          <CTableHeaderCell>Days</CTableHeaderCell>
+                          <CTableHeaderCell>Status</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {selectedEmployee.leaveHistory.map((history, index) => (
+                          <CTableRow
+                            key={history.id || index}
+                            onClick={() => history.id && fetchLeaveDetails(history.id)}
+                            style={{ cursor: history.id ? 'pointer' : 'default' }}
+                            className={history.id ? 'hover-row' : ''}
+                          >
+                            <CTableDataCell>{index + 1}</CTableDataCell>
+                            <CTableDataCell>{history.leave_type || 'N/A'}</CTableDataCell>
+                            <CTableDataCell>
+                              {history.start_date && history.end_date
+                                ? formatDateRange(history.start_date, history.end_date)
+                                : 'N/A'}
+                            </CTableDataCell>
+                            <CTableDataCell>{history.total_days || 'N/A'}</CTableDataCell>
+                            <CTableDataCell>
+                              <CBadge color={getBadgeColor(history.status)}>
+                                {history.status || 'N/A'}
+                              </CBadge>
+                            </CTableDataCell>
+                          </CTableRow>
+                        ))}
+                      </CTableBody>
+                    </CTable>
+                  </div>
+                ) : (
+                  <p>No leave history found for this employee.</p>
+                )}
               </div>
             </>
           ) : (
@@ -339,6 +378,20 @@ const List = () => {
             Close
           </CButton>
         </CModalFooter>
+      </CModal>
+
+      <CModal
+        visible={calendarModalVisible}
+        onClose={() => setCalendarModalVisible(false)}
+        size="xl"
+        fullscreen="lg"
+      >
+        <CModalHeader closeButton>
+          <CModalTitle>Leave Calendar</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <LeaveCalendar />
+        </CModalBody>
       </CModal>
 
       <CModal visible={leaveModalVisible} onClose={() => setLeaveModalVisible(false)}>
@@ -356,7 +409,7 @@ const List = () => {
                   <strong>Leave Type:</strong> {selectedLeave.leave_type}
                 </p>
                 <p>
-                  <strong>Start to End Date:</strong>{' '}
+                  <strong>Duration:</strong>{' '}
                   {new Date(selectedLeave.start_date).toLocaleDateString()} -{' '}
                   {new Date(selectedLeave.end_date).toLocaleDateString()}
                 </p>
@@ -373,19 +426,54 @@ const List = () => {
                   <strong>Reason:</strong> {selectedLeave.reason}
                 </p>
                 <p>
-                  <strong>Document:</strong>{' '}
-                  {selectedLeave.document_path ? (
-                    <a
-                      href={`http://localhost:8000/storage/${selectedLeave.document_path}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View Document
-                    </a>
-                  ) : (
-                    'No document uploaded'
-                  )}
+                  <strong>Documents:</strong>
                 </p>
+                {selectedLeave.document_path ? (
+                  Array.isArray(selectedLeave.document_path) ? (
+                    selectedLeave.document_path.length > 0 ? (
+                      <ul className="list-unstyled">
+                        {selectedLeave.document_path.map((file, index) => {
+                          const fileUrl = `https://hr3.axleshift.com/storage/${file}`
+                          const fileName = file.split('/').pop()
+
+                          return (
+                            <li key={index} className="mb-2">
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-decoration-none"
+                              >
+                                <i className="far fa-file me-2"></i>
+                                {fileName}
+                              </a>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : (
+                      <p>No documents uploaded</p>
+                    )
+                  ) : (
+                    <ul className="list-unstyled">
+                      <li>
+                        {typeof selectedLeave.document_path === 'string' && (
+                          <a
+                            href={`https://hr3.axleshift.com/storage/${selectedLeave.document_path}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-decoration-none"
+                          >
+                            <i className="far fa-file me-2"></i>
+                            {selectedLeave.document_path.split('/').pop()}
+                          </a>
+                        )}
+                      </li>
+                    </ul>
+                  )
+                ) : (
+                  <p>No documents uploaded</p>
+                )}
               </div>
             </>
           ) : (

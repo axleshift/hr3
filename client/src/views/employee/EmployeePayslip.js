@@ -48,7 +48,7 @@ const EmployeePayslip = () => {
         return
       }
 
-      const response = await api.get(`/api/releases`, {
+      const response = await api.get(`/releases`, {
         params: {
           user_id: userId,
         },
@@ -93,7 +93,7 @@ const EmployeePayslip = () => {
   const handleDownloadPayslip = async (employeeId, employeeName, monthNumber) => {
     setDownloading(true)
     try {
-      const response = await api.get(`/api/releases/download/${employeeId}`, {
+      const response = await api.get(`/releases/download/${employeeId}`, {
         responseType: 'blob',
       })
       const monthName = getMonthName(monthNumber)
@@ -121,7 +121,7 @@ const EmployeePayslip = () => {
         return
       }
 
-      const response = await api.get(`/api/releases/download-all`, {
+      const response = await api.get(`/releases/download-all`, {
         params: {
           user_id: userId,
         },
