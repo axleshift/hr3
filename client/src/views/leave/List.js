@@ -308,6 +308,8 @@ const List = () => {
         visible={employeeModalVisible}
         onClose={() => setEmployeeModalVisible(false)}
         size="lg"
+        scrollable
+        backdrop="static"
       >
         <CModalHeader>
           <CModalTitle>Employee Information</CModalTitle>

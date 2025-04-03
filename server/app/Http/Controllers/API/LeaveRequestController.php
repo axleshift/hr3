@@ -173,9 +173,18 @@ class LeaveRequestController extends Controller
         $employee = Employee::where('name', $request->name)->first();
         $type = Leave::where('name', $request->leave_type)->first();
     
+        $user = User::find($request->user_id);
+    
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        $employee = Employee::where('name', $user->name)->first();
         if (!$employee) {
             return response()->json([
-                'message' => 'Employee not found.',
+                'message' => 'Employee record not found.',
             ], 404);
         }
 
@@ -331,6 +340,8 @@ class LeaveRequestController extends Controller
         ]);
     }
        
+       
+    
 
     /**
      * Remove the specified resource from storage.
@@ -440,7 +451,6 @@ class LeaveRequestController extends Controller
             'monthName' => date('F', mktime(0, 0, 0, $month, 1)),
             'leaveRequests' => $leaveRequests,
         ];
-
         $pdf = PDF::loadView('leave.leave_report', $data);
         return $pdf->download("leave-report-{$year}-{$month}.pdf");
     }
@@ -452,9 +462,7 @@ class LeaveRequestController extends Controller
         ? $leaveRequest->document_path 
         : json_decode($leaveRequest->document_path, true) ?? [];
 
-        return view('leave.leave_documents', compact('leaveRequest', 'files'));
+        return view('leave.leave_documents', compact('leaveRequest', 'files'));    
     }
     
 }
-
-
