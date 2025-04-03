@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Leave;
 use App\Models\Employee;
-use App\Models\LeaveRequest;
+use Illuminate\Support\Facades\Validator;
 
 class LeaveController extends Controller
 {
@@ -24,12 +24,25 @@ class LeaveController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
         ]);
     
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validatedData = $validator->validated();
+        
+        if ($validatedData['type'] === 'Unpaid') {
+            $validatedData['pay_rate'] = 0;
+        }
+
         $leave = Leave::create($validatedData);
     
         return response()->json($leave, 201);
@@ -59,13 +72,28 @@ class LeaveController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $leave = Leave::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
         ]);
-        $leave = Leave::findOrFail($id);
-        $leave->update($request->only('name', 'type', 'pay_rate'));
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validatedData = $validator->validated();
+        
+        if ($validatedData['type'] === 'Unpaid') {
+            $validatedData['pay_rate'] = 0;
+        }
+
+        $leave->update($validatedData);
 
         return response()->json($leave);
     }
@@ -76,20 +104,16 @@ class LeaveController extends Controller
     public function destroy($id)
     {
         $leave = Leave::findOrFail($id);
+        $hasBalances = Leave::where('leave_type_id', $id)->exists();
+        
+        if ($hasBalances) {
+            return response()->json([
+                'message' => 'Cannot delete leave type as it has associated leave balances',
+            ], 400);
+        }
         $leave->delete();
 
         return response()->json([
             'message' => 'Leave type deleted successfully']);
     }
-
-    // public function getLeaveUsed($userId, $month, $year)
-    // {
-    //     $totalLeaveUsed = Leave::where('user_id', $userId)
-    //         ->where('status', 'Approved')
-    //         ->whereMonth('start_date', $month)
-    //         ->whereYear('start_date', $year)
-    //         ->sum('total_days');
-    
-    //     return response()->json(['total_leave_used' => $totalLeaveUsed], 200);
-    // }
 }
