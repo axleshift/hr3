@@ -74,7 +74,6 @@ const LeaveReport = () => {
 
       setLeaveRequests(leaveRes.data.leaveRequests || leaveRes.data)
       setLeaveTypes(typesRes.data)
-      calculateLeaveBalances(leaveRes.data.leaveRequests || leaveRes.data, typesRes.data)
     } catch (err) {
       setError('Error fetching leave data.')
       console.error(err)
