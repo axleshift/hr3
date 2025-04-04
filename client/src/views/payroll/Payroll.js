@@ -288,9 +288,9 @@ const Payroll = () => {
       }
 
       const params = {
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        calculate: selectedPreset === 'custom',
+        start_date: format(startDate, 'yyyy-MM-dd'), // Format dates properly
+        end_date: format(endDate, 'yyyy-MM-dd'),
+        calculate: 'true', // Send as string
       }
 
       console.log('Making request with params:', params)
