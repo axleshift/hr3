@@ -13,21 +13,11 @@ use App\Http\Controllers\API\SalaryController;
 use App\Http\Controllers\API\PayslipController;
 use App\Http\Controllers\API\BenefitTypesController;
 use App\Http\Controllers\API\ComplianceController;
-use App\Http\Controllers\API\LeaveBalanceController;
+use App\Http\Controllers\API\BudgetRequestController;
 
-use App\Http\Controllers\API\LeavePolicyController;
-use Illuminate\Support\Facades\Http;
-use App\Models\Attendance;
+//integration
+Route::post('/budgetRequest', [BudgetRequestController::class, 'store']);
 
-Route::get('/leave-balances', [LeaveBalanceController::class, 'index']);
-Route::patch('/leave-balances/{id}', [LeaveBalanceController::class, 'updateBalance']);
-
-Route::get('/leave-policies', [LeavePolicyController::class, 'index']);
-Route::post('/leave-policies', [LeavePolicyController::class, 'store']);
-Route::patch('/leave-policies/{id}', [LeavePolicyController::class, 'update']);
-
-Route::get('/leave-types', [LeavePolicyController::class, 'getLeaveTypes']);
-    Route::get('/employee-leave-balances', [LeavePolicyController::class, 'getEmployeeLeaveBalances']);
 
 // Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
@@ -35,6 +25,8 @@ Route::get('/leave-statistics', [LeaveRequestController::class, 'getLeaveStatist
 Route::get('/leave/calendar', [LeaveRequestController::class, 'calendarData']);
 Route::get('/leave/status-counts', [LeaveRequestController::class, 'statusCounts']);
 
+
+Route::get('/payrolls/month', [PayrollController::class, 'getPayrollByMonth']);
 Route::apiResource('compliances', ComplianceController::class);
 Route::apiResource('attendances', AttendanceController::class);
 Route::apiResource('benefit-types', BenefitTypesController::class);
@@ -52,7 +44,7 @@ Route::get('/leave-documents/{leaveId}', [LeaveRequestController::class, 'viewDo
 
 Route::apiResource('employees', EmployeeController::class);
 Route::get('/job-positions', [EmployeeController::class, 'getJobPositions']);
-Route::get('/departments', [EmployeeController::class, 'getDepartments']);
+Route::get('/employee/departments', [EmployeeController::class, 'getDepartments']);
 Route::get('/employees/${employeeId}', [EmployeeController::class, 'getLeaveHistory']);
 
 Route::apiResource('benefits', BenefitController::class);

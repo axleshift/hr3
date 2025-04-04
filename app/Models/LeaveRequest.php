@@ -34,7 +34,6 @@ class LeaveRequest extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'document_path' => 'array'
     ];
 
     public function employee()

@@ -28,6 +28,9 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
+            'description' => 'nullable|string',
+            'max_days_per_year' => 'required|integer',
+            'eligibility_rules' => 'required|string',
         ]);
     
         if ($validator->fails()) {
@@ -78,6 +81,9 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
+            'description' => 'nullable|string',
+            'max_days_per_year' => 'required|integer',
+            'eligibility_rules' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -104,16 +110,10 @@ class LeaveController extends Controller
     public function destroy($id)
     {
         $leave = Leave::findOrFail($id);
-        $hasBalances = Leave::where('leave_type_id', $id)->exists();
-        
-        if ($hasBalances) {
-            return response()->json([
-                'message' => 'Cannot delete leave type as it has associated leave balances',
-            ], 400);
-        }
         $leave->delete();
 
         return response()->json([
-            'message' => 'Leave type deleted successfully']);
+            'message' => 'Leave type deleted successfully'
+        ]);
     }
 }

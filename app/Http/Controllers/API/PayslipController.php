@@ -86,8 +86,11 @@ class PayslipController extends Controller
             'dateIssued' => now()->format('m-d-Y'),
             'base_salary' => $payslip->base_salary,
             'overtime' => $payslip->total_overtime_amount,
+            'benefits_total' => $payslip->benefits_total,
+            'net_salary' => $payslip->net_salary,
+            'tax'=> $payslip->tax,
+            'total_overtime_amount' => $payslip->total_overtime_amount,
             'bonus' => $payslip->bonus,
-            'deductions' => $payslip->deduction,
         ];
 
         $pdf = Pdf::loadView('payroll.payslip', ['payslipData' => $payslipData]);
