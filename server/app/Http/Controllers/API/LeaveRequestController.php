@@ -189,7 +189,7 @@ class LeaveRequestController extends Controller
         $month = $startDate->format('m');
 
         $is_paid = $type->pay_rate > 0 ? 'Paid' : 'Unpaid';
-        $paid_amount = round($daily_rate * ($type->pay_rate / 100) * $total_days, 2);
+        $paid_amount = round($daily_rate * ($type->pay_rate / 100) * $total_days, 2);  0;
         
         $filePaths = [];
         if ($request->hasFile('documents')) {
