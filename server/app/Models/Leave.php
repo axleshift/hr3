@@ -17,8 +17,8 @@ class Leave extends Model
         'name',
         'type',
         'pay_rate',
-        'description',
-        'max_days_per_year', 
+        // 'description',
+        // 'max_days_per_year', 
         'eligibility_rules'
     ];
 

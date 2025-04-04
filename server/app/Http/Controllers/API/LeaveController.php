@@ -28,8 +28,8 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
-            'description' => 'nullable|string',
-            'max_days_per_year' => 'required|integer',
+            // 'description' => 'nullable|string',
+            // 'max_days_per_year' => 'required|integer',
             'eligibility_rules' => 'required|string',
         ]);
     
@@ -81,8 +81,8 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
-            'description' => 'nullable|string',
-            'max_days_per_year' => 'required|integer',
+            // 'description' => 'nullable|string',
+            // 'max_days_per_year' => 'required|integer',
             'eligibility_rules' => 'required|string',
         ]);
 
