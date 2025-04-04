@@ -5,13 +5,27 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rate;
+use App\Models\Payroll;
+use App\Models\Salary;
 
 class SalaryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     
+        
     public function index()
+    {
+        $overtimeRate = Rate::where('name', 'overtime')->first();
+
+        return response()->json([
+            'overtime_rate' => $overtimeRate ? $overtimeRate->rate : null,
+        ]);
+    }
+
+    public function gtesalary()
     {
         $overtimeRate = Rate::where('name', 'overtime')->first();
 
@@ -32,6 +46,7 @@ class SalaryController extends Controller
         $rate = Rate::create([
             'name' => $request->name ?? 'overtime',
             'rate' => $request->rate,
+            
         ]);
     
         return response()->json([
@@ -49,6 +64,7 @@ class SalaryController extends Controller
         // );
         // return response()->json(['message' => 'Rates saved successfully'], 201);
     
+        
     /**
      * Display the specified resource.
      */
@@ -56,6 +72,8 @@ class SalaryController extends Controller
     {
         //
     }
+
+    
 
     /**
      * Update the specified resource in storage.

@@ -46,21 +46,24 @@ class AttendanceSeeder extends Seeder
                 for ($day = 0; $day < $currentMonthStart->daysInMonth; $day++) {
                     $date = $currentMonthStart->copy()->addDays($day);
 
-                    $timeIn = $date->copy()->setTime(8, 0, 0);
-                    $timeOut = $date->copy()->setTime(17, 0, 0);
+                    if ($date->isWeekday()) {
+                        $timeIn = $date->copy()->setTime(8, 0, 0);
+                        $timeOut = $date->copy()->setTime(17, 0, 0);
 
-                    Attendance::insert([
-                        'employee_id' => $employee['employee_id'],
-                        'name' => $employee['name'],
-                        'date' => $date->toDateString(),
-                        'time_in' => $date->copy()->setTime(8, 0, 0)->toDateTimeString(),
-                        'time_out' => $date->copy()->setTime(17, 0, 0)->toDateTimeString(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                        Attendance::insert([
+                            'employee_id' => $employee['employee_id'],
+                            'name' => $employee['name'],
+                            'date' => $date->toDateString(),
+                            'time_in' => $timeIn->toDateTimeString(),
+                            'time_out' => $timeOut->toDateTimeString(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
                 }
             }
         }
-        $this->command->info('3 months (January, February, March) of attendance records for multiple employees created successfully.');
+
+        $this->command->info('3 months (January, February, March) of attendance records for weekdays (Monday to Friday) created successfully.');
     }
 }

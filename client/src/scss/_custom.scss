@@ -199,3 +199,8 @@
   .img-thumbnail {
     object-fit: contain;
   }
+  
+  .dropdown-menu {
+    z-index: 1050 !important; /* Ensure it appears above other elements */
+    position: absolute !important;
+  }

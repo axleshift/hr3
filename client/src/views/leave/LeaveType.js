@@ -34,6 +34,9 @@ const LeaveType = () => {
     name: '',
     type: 'Paid',
     pay_rate: 100,
+    // description: '',
+    // max_days_per_year: '0',
+    eligibility_rules: '',
   })
 
   const [editLeaveType, setEditLeaveType] = useState({
@@ -41,6 +44,9 @@ const LeaveType = () => {
     name: '',
     type: 'Paid',
     pay_rate: 100,
+    // description: '',
+    // max_days_per_year: '0',
+    eligibility_rules: '',
   })
 
   useEffect(() => {
@@ -190,6 +196,9 @@ const LeaveType = () => {
                 <CTableHeaderCell>Leave Type</CTableHeaderCell>
                 <CTableHeaderCell>Type</CTableHeaderCell>
                 <CTableHeaderCell>Pay Rate</CTableHeaderCell>
+                {/* <CTableHeaderCell>Description</CTableHeaderCell> */}
+                {/* <CTableHeaderCell>Days</CTableHeaderCell> */}
+                <CTableHeaderCell>Rules</CTableHeaderCell>
                 <CTableHeaderCell>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -203,6 +212,9 @@ const LeaveType = () => {
                       <CBadge color={getTypeBadge(type.type)}>{type.type}</CBadge>
                     </CTableDataCell>
                     <CTableDataCell>{getPayRateDisplay(type.type, type.pay_rate)}</CTableDataCell>
+                    {/* <CTableDataCell>{type.description}</CTableDataCell> */}
+                    {/* <CTableDataCell>{type.max_days_per_year}</CTableDataCell> */}
+                    <CTableDataCell>{type.eligibility_rules}</CTableDataCell>
                     <CTableDataCell>
                       <CButton
                         color="info"
@@ -271,6 +283,37 @@ const LeaveType = () => {
               />
             </div>
           )}
+
+          {/* <div className="mb-3">
+            <CFormLabel>Description</CFormLabel>
+            <CFormInput
+              type="text"
+              name="description"
+              value={newLeaveType.description}
+              onChange={handleChange}
+              placeholder="Enter description"
+            />
+          </div> */}
+          {/* <div className="mb-3">
+            <CFormLabel>Max Days Per Year</CFormLabel>
+            <CFormInput
+              type="number"
+              name="max_days_per_year"
+              value={newLeaveType.max_days_per_year}
+              onChange={handleChange}
+              placeholder="Enter max days per year"
+            />
+          </div> */}
+          <div className="mb-3">
+            <CFormLabel>Eligibility Rules</CFormLabel>
+            <CFormInput
+              type="text"
+              name="eligibility_rules"
+              value={newLeaveType.eligibility_rules}
+              onChange={handleChange}
+              placeholder="Enter eligibility rules"
+            />
+          </div>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
@@ -294,7 +337,7 @@ const LeaveType = () => {
             <CFormInput
               type="text"
               name="name"
-              value={editLeaveType.name}
+              value={editLeaveType.name} // Bind to editLeaveType
               onChange={handleEditChange}
               placeholder="Enter leave type name"
             />
@@ -314,12 +357,43 @@ const LeaveType = () => {
                 name="pay_rate"
                 min="0"
                 max="100"
-                value={editLeaveType.pay_rate}
+                value={editLeaveType.pay_rate} // Bind to editLeaveType
                 onChange={handleEditChange}
                 placeholder="Enter pay rate percentage (0-100)"
               />
             </div>
           )}
+
+          {/* <div className="mb-3">
+            <CFormLabel>Description</CFormLabel>
+            <CFormInput
+              type="text"
+              name="description"
+              value={editLeaveType.description} // Bind to editLeaveType
+              onChange={handleEditChange}
+              placeholder="Enter description"
+            />
+          </div> */}
+          {/* <div className="mb-3">
+            <CFormLabel>Max Days Per Year</CFormLabel>
+            <CFormInput
+              type="number"
+              name="max_days_per_year"
+              value={editLeaveType.max_days_per_year} // Bind to editLeaveType
+              onChange={handleEditChange}
+              placeholder="Enter max days per year"
+            />
+          </div> */}
+          <div className="mb-3">
+            <CFormLabel>Eligibility Rules</CFormLabel>
+            <CFormInput
+              type="text"
+              name="eligibility_rules"
+              value={editLeaveType.eligibility_rules} // Bind to editLeaveType
+              onChange={handleEditChange}
+              placeholder="Enter eligibility rules"
+            />
+          </div>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setEditModalVisible(false)}>

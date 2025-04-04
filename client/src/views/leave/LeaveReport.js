@@ -215,15 +215,15 @@ const LeaveReport = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell className="text-center">ID</CTableHeaderCell>
-                      <CTableHeaderCell>Employee</CTableHeaderCell>
+                      <CTableHeaderCell>Name</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Department</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Job Position</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Leave Type</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Duration</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Days</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Status</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Paid</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Reason</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Paid</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Status</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -257,13 +257,13 @@ const LeaveReport = () => {
                                   {leave.total_days}
                                 </CTableDataCell>
                                 <CTableDataCell className="text-center">
-                                  {getStatusBadge(leave.status)}
+                                  {leave.reason}
                                 </CTableDataCell>
                                 <CTableDataCell className="text-center">
                                   {getPaidBadge(leave.is_paid)}
                                 </CTableDataCell>
                                 <CTableDataCell className="text-center">
-                                  {leave.reason}
+                                  {getStatusBadge(leave.status)}
                                 </CTableDataCell>
                               </CTableRow>
                             ))}

@@ -42,7 +42,7 @@ const Payslip = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get(`/api/payslip`, {
+      const response = await api.get(`/payslip`, {
         params: {
           year: selectedYear,
           month: selectedMonth,
@@ -80,7 +80,7 @@ const Payslip = () => {
     setError(null)
 
     try {
-      const response = await api.post(`/api/release`, {
+      const response = await api.post(`/release`, {
         month: selectedMonth,
         year: selectedYear,
       })

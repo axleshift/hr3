@@ -14,4 +14,13 @@ class Rate extends Model
         'name',
         'rate',
     ];
+
+    protected $casts = [
+        'rate' => 'decimal:2'
+    ];
+
+    public static function getOvertimeRate()
+    {
+        return self::where('name', 'overtime')->first()->rate ?? 0;
+    }
 }

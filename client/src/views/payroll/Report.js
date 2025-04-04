@@ -21,6 +21,7 @@ import api from '../../util/api'
 
 const Report = () => {
   const [payroll, setPayroll] = useState([])
+  const [selectedPeriod, setSelectedPeriod] = useState('all')
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [loading, setLoading] = useState(false)
@@ -33,16 +34,23 @@ const Report = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get(`/api/payrolls`, {
+      const response = await api.get(`/payrolls`, {
         params: {
           year: selectedYear,
           month: selectedMonth,
         },
-        withCredentials: true,
       })
-      const payrollData = response.data.payroll || response.data
+
+      let payrollData = response.data.payroll || response.data
 
       if (Array.isArray(payrollData)) {
+        if (selectedPeriod !== 'all') {
+          payrollData = payrollData.filter((record) => {
+            const startDate = new Date(record.start_date).getDate()
+            return selectedPeriod === 'first' ? startDate <= 15 : startDate > 15
+          })
+        }
+
         setPayroll(payrollData)
       } else {
         throw new Error('Invalid payroll data format received from server')
@@ -58,7 +66,7 @@ const Report = () => {
 
   useEffect(() => {
     fetchPayrollData()
-  }, [selectedYear, selectedMonth])
+  }, [selectedYear, selectedMonth, selectedPeriod]) // Add selectedPeriod here
 
   const calculateTotalNetSalary = () => {
     return payroll.reduce((total, payroll) => total + parseFloat(payroll.net_salary || 0), 0)
@@ -86,7 +94,7 @@ const Report = () => {
   const handleDownloadPDF = async () => {
     try {
       setPdfLoading(true)
-      const response = await api.get(`/api/payroll/download-report`, {
+      const response = await api.get(`/payroll/download-report`, {
         params: {
           year: selectedYear,
           month: selectedMonth,
@@ -111,6 +119,13 @@ const Report = () => {
     }
   }
 
+  const formatDateRange = (start, end) => {
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+    return `${startDate.getDate()} ${startDate.toLocaleString('default', { month: 'short' })} - 
+            ${endDate.getDate()} ${endDate.toLocaleString('default', { month: 'short' })}`
+  }
+
   const departmentHeaderStyle = {
     backgroundColor: '#f8f9fa',
     fontWeight: 'bold',
@@ -129,6 +144,16 @@ const Report = () => {
         <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap">
           <strong>Payroll Report</strong>
           <div className="d-flex flex-wrap gap-2 align-items-center">
+            <CFormSelect
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              style={{ width: '150px' }}
+              disabled={loading}
+            >
+              <option value="all">All Periods</option>
+              <option value="first">First Half</option>
+              <option value="second">2nd Half</option>
+            </CFormSelect>
             <CFormSelect
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
@@ -199,7 +224,9 @@ const Report = () => {
                         <React.Fragment key={department}>
                           <CTableRow>
                             <CTableDataCell colSpan="8" style={departmentHeaderStyle}>
-                              {department}
+                              {department} -{' '}
+                              {new Date(employees[0].start_date).toLocaleDateString()} to{' '}
+                              {new Date(employees[0].end_date).toLocaleDateString()}
                             </CTableDataCell>
                           </CTableRow>
                           {employees.map((employee, empIndex) => (
@@ -226,7 +253,7 @@ const Report = () => {
                             <CTableDataCell colSpan="6" className="text-center">
                               <strong>Department Total</strong>
                             </CTableDataCell>
-                            <CTableDataCell colSpan="2">
+                            <CTableDataCell colSpan="2" className="text-center">
                               <strong>
                                 {formatCurrency(
                                   employees.reduce(
@@ -237,10 +264,11 @@ const Report = () => {
                               </strong>
                             </CTableDataCell>
                           </CTableRow>
+                          <br />
                           {deptIndex < Object.keys(groupByDepartment(payroll)).length - 1 && (
                             <CTableRow>
-                              <CTableDataCell colSpan="8" style={{ padding: '10px 0' }}>
-                                <hr style={{ borderTop: '2px solid #ddd' }} />
+                              <CTableDataCell colSpan="8" style={{ padding: '10px' }}>
+                                <hr style={{ borderTop: ' #ddd' }} />
                               </CTableDataCell>
                             </CTableRow>
                           )}

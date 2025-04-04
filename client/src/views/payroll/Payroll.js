@@ -24,16 +24,23 @@ import {
   CDropdownToggle,
   CDropdownMenu,
   CDropdownItem,
+  CCol,
+  CRow,
+  CAlert,
+  CInputGroup,
+  CInputGroupText,
 } from '@coreui/react'
 import api from '../../util/api'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 import {
   faFile,
   faChevronDown,
   faMoneyBill,
   faClock,
   faGift,
-  faCalculator,
-  faFilter,
+  faCalendarAlt,
+  faSyncAlt,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
@@ -41,13 +48,8 @@ const Payroll = () => {
   const [employees, setEmployees] = useState([])
   const [filteredEmployees, setFilteredEmployees] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedDepartment, setSelectedDepartment] = useState('all')
   const [departments, setDepartments] = useState([])
-  const [monthName, setMonthName] = useState(
-    new Date().toLocaleString('default', { month: 'long' }),
-  )
   const [modalVisible, setModalVisible] = useState(false)
   const [overtimeRate, setOvertimeRate] = useState('')
   const [bonusModalVisible, setBonusModalVisible] = useState(false)
@@ -55,17 +57,124 @@ const Payroll = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [salaryModalVisible, setSalaryModalVisible] = useState(false)
   const [jobPosition, setJobPosition] = useState('')
-  const [baseSalary, setBaseSalary] = useState('')
+  const [monthlyRate, setMonthlyRate] = useState('')
   const [validationError, setValidationError] = useState('')
   const [jobPositions, setJobPositions] = useState([])
   const [employeeBenefits, setEmployeeBenefits] = useState([])
   const [error, setError] = useState(null)
   const [payslipModalVisible, setPayslipModalVisible] = useState(false)
   const [hasAttendanceData, setHasAttendanceData] = useState(false)
+  const [dateRange, setDateRange] = useState([null, null])
+  const [startDate, endDate] = dateRange
+  const [attendanceDetails, setAttendanceDetails] = useState([])
+  const [showAttendanceDetails, setShowAttendanceDetails] = useState(false)
+  const [workingDays, setWorkingDays] = useState(0)
+  const [presetRanges, setPresetRanges] = useState([])
+  const [selectedPreset, setSelectedPreset] = useState('')
+  const [computationModalVisible, setComputationModalVisible] = useState(false)
+  const [selectedEmployeeComputation, setSelectedEmployeeComputation] = useState(null)
+
+  useEffect(() => {
+    const today = new Date()
+    const currentYear = today.getFullYear()
+
+    const ranges = [
+      {
+        label: 'Custom',
+        value: 'custom',
+        getRange: () => [null, null],
+      },
+      {
+        label: 'Last Month',
+        value: 'last_month',
+        getRange: () => {
+          const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+          const lastDay = new Date(today.getFullYear(), today.getMonth(), 0)
+          return [firstDay, lastDay]
+        },
+      },
+      ...Array.from({ length: 12 }, (_, i) => ({
+        label: new Date(currentYear, i, 1).toLocaleString('default', { month: 'long' }),
+        value: `month_${i + 1}`,
+        getRange: () => {
+          const firstDay = new Date(currentYear, i, 1)
+          const lastDay = new Date(currentYear, i + 1, 0)
+          return [firstDay, lastDay]
+        },
+      })),
+    ]
+
+    setPresetRanges(ranges)
+    setSelectedPreset('custom')
+  }, [])
+
+  useEffect(() => {
+    if (selectedPreset && presetRanges.length > 0) {
+      const selectedRange = presetRanges.find((r) => r.value === selectedPreset)
+      if (selectedRange) {
+        const [start, end] = selectedRange.getRange()
+        setDateRange([start, end])
+
+        // Reset employees when changing periods
+        setEmployees([])
+        setHasAttendanceData(false)
+
+        if (selectedPreset !== 'custom') {
+          fetchPayrollDataForMonth(start, end)
+        }
+      }
+    }
+  }, [selectedPreset])
+
+  const fetchPayrollDataForMonth = async (start, end) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      if (!start || !end) {
+        setError('Invalid date range selected')
+        setLoading(false)
+        return
+      }
+
+      const response = await api.get('/payrolls', {
+        params: {
+          year: start.getFullYear(),
+          month: start.getMonth() + 1,
+        },
+      })
+
+      const groupedData = response.data.reduce((acc, payroll) => {
+        if (!acc[payroll.employee_id]) {
+          acc[payroll.employee_id] = {
+            employee_id: payroll.employee_id,
+            name: payroll.name,
+            department: payroll.department,
+            job_position: payroll.job_position,
+            payrolls: [],
+          }
+        }
+        acc[payroll.employee_id].payrolls.push(payroll)
+        return acc
+      }, {})
+
+      setEmployees(Object.values(groupedData))
+      setHasAttendanceData(response.data.length > 0)
+
+      const uniqueDepartments = [...new Set(response.data.map((p) => p.department))]
+      setDepartments(uniqueDepartments)
+    } catch (error) {
+      console.error('Error:', error)
+      setError(error.response?.data?.message || 'Failed to fetch payroll data')
+      setHasAttendanceData(false)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchJobPositions = async () => {
     try {
-      const response = await api.get('/api/job-positions')
+      const response = await api.get('/job-positions')
       setJobPositions(response.data)
     } catch (error) {
       console.error('Error fetching job positions:', error)
@@ -75,47 +184,188 @@ const Payroll = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await api.get('/api/departments')
-      setDepartments(response.data)
+      const response = await api.get('/employee/departments')
+      setDepartments(Array.isArray(response.data) ? response.data : [])
     } catch (error) {
       console.error('Error fetching departments:', error)
       setError('Failed to fetch departments')
+      setDepartments([])
     }
   }
+
+  const calculateWorkingDays = (start, end) => {
+    if (!start || !end) return 0
+
+    let count = 0
+    const current = new Date(start)
+    const last = new Date(end)
+
+    while (current <= last) {
+      const day = current.getDay()
+      if (day !== 0 && day !== 6) {
+        count++
+      }
+      current.setDate(current.getDate() + 1)
+    }
+
+    return count
+  }
+
+  // const fetchPayrollData = async () => {
+  //   try {
+  //     setLoading(true)
+  //     setHasAttendanceData(false)
+  //     setError(null)
+
+  //     if (!startDate || !endDate) {
+  //       setError('Please select a date range')
+  //       setLoading(false)
+  //       return
+  //     }
+
+  //     const params = {
+  //       start_date: startDate.toISOString().split('T')[0],
+  //       end_date: endDate.toISOString().split('T')[0],
+  //       calculate: selectedPreset === 'custom',
+  //     }
+
+  //     const response = await api.get('/payrolls', { params })
+
+  //     // Debugging: Log the response
+  //     console.log('Payroll API Response:', response.data)
+
+  //     // Handle case where response.data is the array directly
+  //     const payrollData = Array.isArray(response.data) ? response.data : response.data.data || [] // Also check for Laravel's default wrapped response
+
+  //     if (payrollData.length === 0) {
+  //       setHasAttendanceData(false)
+  //       setLoading(false)
+  //       return
+  //     }
+
+  //     const groupedData = payrollData.reduce((acc, payroll) => {
+  //       if (!acc[payroll.employee_id]) {
+  //         acc[payroll.employee_id] = {
+  //           employee_id: payroll.employee_id,
+  //           name: payroll.name,
+  //           department: payroll.department,
+  //           job_position: payroll.job_position,
+  //           payrolls: [],
+  //         }
+  //       }
+  //       acc[payroll.employee_id].payrolls.push(payroll)
+  //       return acc
+  //     }, {})
+
+  //     setEmployees(Object.values(groupedData))
+  //     setHasAttendanceData(payrollData.length > 0)
+
+  //     const uniqueDepartments = [...new Set(payrollData.map((emp) => emp.department))]
+  //     setDepartments(uniqueDepartments)
+  //   } catch (error) {
+  //     console.error('Error:', error)
+  //     setError(error.response?.data?.message || 'Failed to fetch payroll data')
+  //     setHasAttendanceData(false)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
       setHasAttendanceData(false)
+      setError(null)
 
-      const params = new URLSearchParams({
-        year: selectedYear,
-        month: selectedMonth,
-        calculate: true,
-      })
+      if (!startDate || !endDate) {
+        setError('Please select a date range')
+        setLoading(false)
+        return
+      }
 
-      const response = await api.get(`/api/payrolls?${params.toString()}`)
+      const params = {
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        calculate: selectedPreset === 'custom',
+      }
 
-      setEmployees(response.data)
-      setFilteredEmployees(response.data)
-      setHasAttendanceData(response.data.length > 0)
+      const response = await api.get('/payrolls', { params })
 
-      const uniqueDepartments = [...new Set(response.data.map((emp) => emp.department))]
+      const payrollData = Array.isArray(response.data) ? response.data : response.data.data || []
+
+      if (payrollData.length === 0) {
+        setHasAttendanceData(false)
+        setLoading(false)
+        return
+      }
+
+      const groupedData = payrollData.reduce((acc, payroll) => {
+        const key = `${payroll.employee_id}-${payroll.period}`
+        if (!acc[key]) {
+          acc[key] = {
+            employee_id: payroll.employee_id,
+            name: payroll.name,
+            department: payroll.department,
+            job_position: payroll.job_position,
+            period: payroll.period,
+            payrolls: [],
+          }
+        }
+        acc[key].payrolls.push(payroll)
+        return acc
+      }, {})
+
+      setEmployees(Object.values(groupedData))
+      setHasAttendanceData(payrollData.length > 0)
+
+      const uniqueDepartments = [...new Set(payrollData.map((emp) => emp.department))]
       setDepartments(uniqueDepartments)
     } catch (error) {
-      console.error('Error:', error.response?.data)
-      setError(error.response?.data?.message || 'Failed to fetch payroll')
+      console.error('Error:', error)
+      setError(error.response?.data?.message || 'Failed to fetch payroll data')
       setHasAttendanceData(false)
     } finally {
       setLoading(false)
     }
   }
 
+  const handleRowClick = (employee, e) => {
+    if (
+      e.target.closest('.dropdown') ||
+      e.target.closest('.dropdown-toggle') ||
+      e.target.closest('.dropdown-menu')
+    ) {
+      return
+    }
+    setSelectedEmployeeComputation(employee)
+    setComputationModalVisible(true)
+  }
+
+  const handleCustomDateChange = (update) => {
+    const [start, end] = update
+    setDateRange([start, end])
+    setSelectedPreset('custom')
+
+    if (start && end) {
+      setEmployees([])
+      setHasAttendanceData(false)
+      fetchPayrollData()
+    }
+  }
+
   useEffect(() => {
-    console.log(`Fetching payroll for ${selectedMonth}/${selectedYear}`)
-    fetchPayrollData()
+    if (startDate && endDate) {
+      setWorkingDays(calculateWorkingDays(startDate, endDate))
+      if (selectedPreset === 'custom') {
+        fetchPayrollData()
+      }
+    }
+  }, [startDate, endDate])
+
+  useEffect(() => {
     fetchDepartments()
-  }, [selectedMonth, selectedYear])
+    fetchJobPositions()
+  }, [])
 
   useEffect(() => {
     if (selectedDepartment === 'all') {
@@ -126,20 +376,20 @@ const Payroll = () => {
   }, [selectedDepartment, employees])
 
   const handleSaveSalary = async () => {
-    if (!jobPosition || !baseSalary) {
+    if (!jobPosition || !monthlyRate) {
       setValidationError('All fields are required')
       return
     }
 
     try {
-      await api.post('/api/payrolls', {
+      await api.post('/payrolls', {
         job_position: jobPosition,
-        base_salary: parseFloat(baseSalary),
+        monthly_rate: parseFloat(monthlyRate),
       })
       setSalaryModalVisible(false)
       setValidationError('')
       setJobPosition('')
-      setBaseSalary('')
+      setMonthlyRate('')
       fetchPayrollData()
     } catch (error) {
       console.error('Error saving salary:', error)
@@ -147,20 +397,9 @@ const Payroll = () => {
     }
   }
 
-  useEffect(() => {
-    fetchJobPositions()
-    fetchPayrollData()
-  }, [selectedYear, selectedMonth])
-
-  useEffect(() => {
-    setMonthName(
-      new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long' }),
-    )
-  }, [selectedMonth, selectedYear])
-
   const fetchRates = async () => {
     try {
-      const response = await api.get('/api/rates')
+      const response = await api.get('/rates')
       setOvertimeRate(response.data.overtime_rate || '')
     } catch (error) {
       console.error('Error fetching rates:', error)
@@ -178,7 +417,7 @@ const Payroll = () => {
       return
     }
     try {
-      await api.put(`/api/rates/overtime`, { rate: parseFloat(overtimeRate) })
+      await api.put(`/rates/overtime`, { rate: parseFloat(overtimeRate) })
       setModalVisible(false)
       setValidationError('')
       fetchPayrollData()
@@ -187,30 +426,47 @@ const Payroll = () => {
     }
   }
 
-  const handlePreviewPayslip = async (employee) => {
+  const fetchAttendanceDetails = async (employeeId) => {
     try {
       setLoading(true)
-      setSelectedEmployee(employee)
-      const response = await api.get('/api/benefits', {
-        params: {
-          employee_id: employee.employee_id,
-          year: selectedYear,
-          month: selectedMonth,
-        },
-      })
-      setEmployeeBenefits(response.data)
-      setPayslipModalVisible(true)
+      const params = {
+        employee_id: employeeId,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+      }
+
+      const response = await api.get('/attendances', { params })
+      setAttendanceDetails(response.data)
+      setShowAttendanceDetails(!showAttendanceDetails)
     } catch (error) {
-      console.error('Error fetching benefits:', error)
-      setError('Failed to fetch benefits data')
+      console.error('Error fetching attendance details:', error)
+      setError('Failed to fetch attendance details')
     } finally {
       setLoading(false)
     }
   }
 
+  const handlePreviewPayslip = async (payroll) => {
+    try {
+      setSelectedEmployee(payroll)
+      const response = await api.get('/benefits', {
+        params: {
+          employee_id: payroll.employee_id,
+          start_date: payroll.start_date,
+          end_date: payroll.end_date,
+        },
+      })
+      setEmployeeBenefits(response.data.benefits || [])
+      setPayslipModalVisible(true)
+    } catch (error) {
+      console.error('Error fetching benefits:', error)
+      setError('Failed to fetch benefits data')
+    }
+  }
+
   const handleStatus = async (id, newStatus) => {
     try {
-      await api.put(`/api/payrolls/${id}`, { status: newStatus })
+      await api.put(`/payrolls/${id}`, { status: newStatus })
       fetchPayrollData()
     } catch (error) {
       console.error('Error updating status:', error)
@@ -220,9 +476,9 @@ const Payroll = () => {
 
   const handleBonus = async () => {
     try {
-      await api.post('/api/bonus', {
-        year: selectedYear,
-        month: selectedMonth,
+      await api.post('/bonus', {
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
         bonus: parseFloat(bonus),
       })
       setBonusModalVisible(false)
@@ -232,24 +488,6 @@ const Payroll = () => {
       setError('Failed to save bonus')
     }
   }
-
-  const fetchBonus = async () => {
-    try {
-      const response = await api.get('/api/payrolls', {
-        params: { year: selectedYear, month: selectedMonth },
-      })
-      setBonus(response.data?.bonus || 0)
-    } catch (error) {
-      console.error('Error fetching bonus:', error)
-      setError('Failed to fetch bonus data')
-    }
-  }
-
-  useEffect(() => {
-    if (bonusModalVisible) fetchBonus()
-  }, [bonusModalVisible])
-
-  const years = Array.from({ length: new Date().getFullYear() - 2020 + 1 }, (_, i) => 2020 + i)
 
   const getStatusBadge = (status) => {
     const statusValue = status?.toLowerCase() || 'pending'
@@ -263,27 +501,83 @@ const Payroll = () => {
     }
   }
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0)
+  }
+
+  const formatDateRange = () => {
+    if (!startDate || !endDate) return 'No date range selected'
+
+    if (selectedPreset.startsWith('month_')) {
+      return startDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+    }
+    const options = { year: 'numeric', month: 'short', day: 'numeric' }
+    return `${startDate.toLocaleDateString(undefined, options)} - ${endDate.toLocaleDateString(undefined, options)}`
+  }
+
+  const handleRefresh = () => {
+    setError(null)
+    fetchPayrollData()
+  }
+
   return (
     <div>
       <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap">
-          <strong>Employee Payroll</strong>
-          <div className="d-flex flex-wrap gap-2">
-            <CFormSelect
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              style={{ width: '120px' }}
-            >
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {new Date(2023, i).toLocaleString('default', { month: 'long' })}
-                </option>
-              ))}
-            </CFormSelect>
+        <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <strong>Employee Payroll</strong>
+            {startDate && endDate && (
+              <div className="text-muted small mt-1">{workingDays} working days</div>
+            )}
+          </div>
+
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <CInputGroup>
+              <CInputGroupText>
+                <FontAwesomeIcon icon={faCalendarAlt} />
+              </CInputGroupText>
+              <CFormSelect
+                value={selectedPreset}
+                onChange={(e) => setSelectedPreset(e.target.value)}
+                style={{ minWidth: '150px' }}
+              >
+                {presetRanges.map((range) => (
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
+                ))}
+              </CFormSelect>
+            </CInputGroup>
+
+            {selectedPreset === 'custom' && (
+              <DatePicker
+                selectsRange
+                startDate={startDate}
+                endDate={endDate}
+                onChange={handleCustomDateChange}
+                isClearable
+                placeholderText="Select date range"
+                className="form-control"
+                dateFormat="yyyy-MM-dd"
+                minDate={new Date(2020, 0, 1)}
+                maxDate={new Date()}
+                onCalendarClose={() => {
+                  if (startDate && endDate) {
+                    fetchPayrollData()
+                  }
+                }}
+              />
+            )}
+
             <CFormSelect
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
-              style={{ width: '150px' }}
+              style={{ minWidth: '150px' }}
             >
               <option value="all">All Departments</option>
               {departments.map((dept, index) => (
@@ -292,17 +586,33 @@ const Payroll = () => {
                 </option>
               ))}
             </CFormSelect>
-            <CButton color="primary" onClick={() => setModalVisible(true)}>
+
+            <CButton
+              color="primary"
+              onClick={() => setModalVisible(true)}
+              title="Set Overtime Rate"
+            >
               <FontAwesomeIcon icon={faClock} />
             </CButton>
-            <CButton color="primary" onClick={() => setBonusModalVisible(true)}>
+
+            <CButton color="primary" onClick={() => setBonusModalVisible(true)} title="Set Bonus">
               <FontAwesomeIcon icon={faGift} />
             </CButton>
-            <CButton color="info" onClick={() => setSalaryModalVisible(true)}>
+
+            <CButton
+              color="info"
+              onClick={() => setSalaryModalVisible(true)}
+              title="Manage Salaries"
+            >
               <FontAwesomeIcon icon={faMoneyBill} />
+            </CButton>
+
+            <CButton color="secondary" onClick={handleRefresh} title="Refresh Data">
+              <FontAwesomeIcon icon={faSyncAlt} />
             </CButton>
           </div>
         </CCardHeader>
+
         <CCardBody>
           {loading ? (
             <div className="text-center py-5">
@@ -310,96 +620,122 @@ const Payroll = () => {
               <p className="mt-2">Loading payroll data...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-5 text-danger">
+            <CAlert color="danger" className="text-center">
               <h5>Error loading data</h5>
               <p>{error}</p>
-            </div>
-          ) : !hasAttendanceData ? (
+              <CButton color="primary" size="sm" onClick={fetchPayrollData}>
+                Retry
+              </CButton>
+            </CAlert>
+          ) : employees.length === 0 ? ( // Changed from hasAttendanceData
             <div className="text-center py-5">
-              <p>No attendance records found</p>
+              <p>No payroll records found for the selected date range</p>
+              <CButton color="primary" onClick={fetchPayrollData}>
+                Refresh
+              </CButton>
             </div>
           ) : (
             <div className="table-responsive">
               <CTable hover responsive>
                 <CTableHead>
                   <CTableRow>
+                    {' '}
                     <CTableHeaderCell>#</CTableHeaderCell>
-                    <CTableHeaderCell>ID</CTableHeaderCell>
+                    {/* <CTableHeaderCell>ID</CTableHeaderCell> */}
                     <CTableHeaderCell>Name</CTableHeaderCell>
                     <CTableHeaderCell>Department</CTableHeaderCell>
-                    <CTableHeaderCell>Job Position</CTableHeaderCell>
+                    <CTableHeaderCell>Position</CTableHeaderCell>
                     <CTableHeaderCell>Base Salary</CTableHeaderCell>
-                    <CTableHeaderCell>Overtime</CTableHeaderCell>
+                    <CTableHeaderCell>Days Worked</CTableHeaderCell>
+                    <CTableHeaderCell>Gross Salary</CTableHeaderCell>
                     <CTableHeaderCell>Tax</CTableHeaderCell>
                     <CTableHeaderCell>Benefits</CTableHeaderCell>
                     <CTableHeaderCell>Bonus</CTableHeaderCell>
                     <CTableHeaderCell>Net Salary</CTableHeaderCell>
                     <CTableHeaderCell>Status</CTableHeaderCell>
-                    <CTableHeaderCell>Action</CTableHeaderCell>
+                    <CTableHeaderCell>Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {filteredEmployees.map((employee, index) => {
-                    const employeeStatus = employee.status || 'Pending'
-                    return (
-                      <CTableRow key={employee.employee_id}>
-                        <CTableDataCell>{index + 1}</CTableDataCell>
-                        <CTableDataCell>{employee.employee_id}</CTableDataCell>
-                        <CTableDataCell>{employee.name}</CTableDataCell>
-                        <CTableDataCell>{employee.department}</CTableDataCell>
-                        <CTableDataCell>{employee.job_position}</CTableDataCell>
-                        <CTableDataCell>
-                          {parseFloat(employee.base_salary || 0).toLocaleString()}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {parseFloat(employee.total_overtime_amount || 0).toFixed(2)}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          ₱
-                          {parseFloat(employee.tax || 0).toLocaleString('en-PH', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {parseFloat(employee.benefits_total || 0).toLocaleString()}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {parseFloat(employee.bonus || 0).toFixed(2)}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {parseFloat(employee.net_salary || 0).toLocaleString()}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={getStatusBadge(employeeStatus)}>{employeeStatus}</CBadge>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CButton color="secondary" onClick={() => handlePreviewPayslip(employee)}>
-                            <FontAwesomeIcon icon={faFile} />
-                          </CButton>
-                          <CDropdown>
-                            <CDropdownToggle color="link" size="sm">
-                              <FontAwesomeIcon icon={faChevronDown} />
-                            </CDropdownToggle>
-                            <CDropdownMenu>
-                              <CDropdownItem
-                                onClick={() => handleStatus(employee.id, 'Paid')}
-                                disabled={employeeStatus === 'Paid'}
-                              >
-                                Paid
-                              </CDropdownItem>
-                              <CDropdownItem
-                                onClick={() => handleStatus(employee.id, 'Pending')}
-                                disabled={employeeStatus === 'Pending'}
-                              >
-                                Pending
-                              </CDropdownItem>
-                            </CDropdownMenu>
-                          </CDropdown>
-                        </CTableDataCell>
-                      </CTableRow>
-                    )
-                  })}
+                  {filteredEmployees.map((employee, index) => (
+                    <React.Fragment key={employee.employee_id || index}>
+                      {employee.payrolls.map((payroll, payrollIndex) => (
+                        <CTableRow
+                          key={`${employee.employee_id}-${payrollIndex}`}
+                          onClick={(e) => handleRowClick(payroll, e)}
+                          style={{ cursor: 'pointer' }}
+                          className="hover-row"
+                        >
+                          {payrollIndex === 0 && (
+                            <>
+                              <CTableDataCell rowSpan={employee.payrolls.length}>
+                                {index + 1}
+                              </CTableDataCell>
+                              <CTableDataCell rowSpan={employee.payrolls.length}>
+                                {employee.name}
+                              </CTableDataCell>
+                              <CTableDataCell rowSpan={employee.payrolls.length}>
+                                {employee.department}
+                              </CTableDataCell>
+                              <CTableDataCell rowSpan={employee.payrolls.length}>
+                                {employee.job_position}
+                              </CTableDataCell>
+                            </>
+                          )}
+                          <CTableDataCell>{formatCurrency(payroll.base_salary)}</CTableDataCell>
+                          <CTableDataCell>{payroll.working_days || 'N/A'}</CTableDataCell>
+                          <CTableDataCell>{formatCurrency(payroll.gross_salary)}</CTableDataCell>
+                          <CTableDataCell>{formatCurrency(payroll.tax)}</CTableDataCell>
+                          <CTableDataCell>{formatCurrency(payroll.benefits_total)}</CTableDataCell>
+                          <CTableDataCell>{formatCurrency(payroll.bonus)}</CTableDataCell>
+                          <CTableDataCell>{formatCurrency(payroll.net_salary)}</CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={getStatusBadge(payroll.status)}>
+                              {payroll.status || 'Pending'}
+                            </CBadge>
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <CButton
+                              color="info"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handlePreviewPayslip(payroll)
+                              }}
+                              title="View Payslip"
+                            >
+                              <FontAwesomeIcon icon={faFile} />
+                            </CButton>
+                            <CDropdown className="d-inline ms-1">
+                              <CDropdownToggle color="secondary" size="sm">
+                                <FontAwesomeIcon icon={faChevronDown} />
+                              </CDropdownToggle>
+                              <CDropdownMenu>
+                                <CDropdownItem
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStatus(payroll.id, 'Paid')
+                                  }}
+                                  disabled={payroll.status === 'Paid'}
+                                >
+                                  Mark as Paid
+                                </CDropdownItem>
+                                <CDropdownItem
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStatus(payroll.id, 'Pending')
+                                  }}
+                                  disabled={payroll.status === 'Pending'}
+                                >
+                                  Mark as Pending
+                                </CDropdownItem>
+                              </CDropdownMenu>
+                            </CDropdown>
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </React.Fragment>
+                  ))}
                 </CTableBody>
               </CTable>
             </div>
@@ -407,22 +743,29 @@ const Payroll = () => {
         </CCardBody>
       </CCard>
 
+      {/* Overtime Rate Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <CModalHeader>
+        <CModalHeader closeButton>
           <CModalTitle>Set Overtime Rate</CModalTitle>
         </CModalHeader>
         <CModalBody>
+          {validationError && <CAlert color="danger">{validationError}</CAlert>}
           <CFormLabel>Overtime Rate (per hour)</CFormLabel>
-          <CFormInput
-            type="number"
-            value={overtimeRate}
-            onChange={(e) => setOvertimeRate(e.target.value)}
-            placeholder="Enter overtime rate"
-          />
+          <CInputGroup>
+            <CInputGroupText>₱</CInputGroupText>
+            <CFormInput
+              type="number"
+              value={overtimeRate}
+              onChange={(e) => setOvertimeRate(e.target.value)}
+              placeholder="Enter overtime rate"
+              min="0"
+              step="0.01"
+            />
+          </CInputGroup>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
-            Close
+            Cancel
           </CButton>
           <CButton color="primary" onClick={handleSaveRates}>
             Save Rate
@@ -430,66 +773,77 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
+      {/* Bonus Modal */}
       <CModal visible={bonusModalVisible} onClose={() => setBonusModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Set Bonus</CModalTitle>
+        <CModalHeader closeButton>
+          <CModalTitle>Set Bonus for Selected Period</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {/* <CFormLabel>Deduction</CFormLabel>
-          <CFormInput
-            type="number"
-            value={deduction}
-            onChange={(e) => setDeduction(parseFloat(e.target.value))}
-            placeholder="Enter deduction"
-          /> */}
-          <CFormLabel>Bonus</CFormLabel>
-          <CFormInput
-            type="number"
-            value={bonus}
-            onChange={(e) => setBonus(parseFloat(e.target.value))}
-            placeholder="Enter bonus"
-          />
+          <p className="mb-3">
+            <strong>Date Range:</strong> {formatDateRange()}
+          </p>
+
+          <CFormLabel>Bonus Amount</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>₱</CInputGroupText>
+            <CFormInput
+              type="number"
+              value={bonus}
+              onChange={(e) => setBonus(parseFloat(e.target.value))}
+              placeholder="Enter bonus amount"
+              min="0"
+              step="0.01"
+            />
+          </CInputGroup>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setBonusModalVisible(false)}>
-            Close
+            Cancel
           </CButton>
           <CButton color="primary" onClick={handleBonus}>
-            Save
+            Apply Bonus
           </CButton>
         </CModalFooter>
       </CModal>
 
+      {/* Salary Management Modal */}
       <CModal visible={salaryModalVisible} onClose={() => setSalaryModalVisible(false)}>
-        <CModalHeader>
-          <CModalTitle>Manage Salaries</CModalTitle>
+        <CModalHeader closeButton>
+          <CModalTitle>Manage Base Salaries</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {validationError && <div className="alert alert-danger">{validationError}</div>}
-          <CFormLabel>Job Position</CFormLabel>
-          <CFormSelect
-            value={jobPosition}
-            onChange={(e) => setJobPosition(e.target.value)}
-            placeholder="Select job position"
-          >
-            <option value="">Select a job position</option>
-            {jobPositions.map((position, index) => (
-              <option key={index} value={position}>
-                {position}
-              </option>
-            ))}
-          </CFormSelect>
-          <CFormLabel className="mt-3">Base Salary</CFormLabel>
-          <CFormInput
-            type="number"
-            value={baseSalary}
-            onChange={(e) => setBaseSalary(e.target.value)}
-            placeholder="Enter base salary"
-          />
+          {validationError && <CAlert color="danger">{validationError}</CAlert>}
+
+          <div className="mb-3">
+            <CFormLabel>Job Position</CFormLabel>
+            <CFormSelect value={jobPosition} onChange={(e) => setJobPosition(e.target.value)}>
+              <option value="">Select a job position</option>
+              {jobPositions.map((position, index) => (
+                <option key={index} value={position}>
+                  {position}
+                </option>
+              ))}
+            </CFormSelect>
+          </div>
+
+          <div className="mb-3">
+            <CFormLabel>Monthly Rate</CFormLabel>
+            <CInputGroup>
+              <CInputGroupText>₱</CInputGroupText>
+              <CFormInput
+                type="number"
+                value={monthlyRate}
+                onChange={(e) => setMonthlyRate(e.target.value)}
+                placeholder="Enter monthly rate"
+                min="0"
+                step="0.01"
+              />
+            </CInputGroup>
+          </div>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setSalaryModalVisible(false)}>
-            Close
+            Cancel
           </CButton>
           <CButton color="primary" onClick={handleSaveSalary}>
             Save Salary
@@ -497,146 +851,420 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
-      <CModal visible={payslipModalVisible} onClose={() => setPayslipModalVisible(false)} size="lg">
+      {/* Payslip Modal */}
+      <CModal
+        visible={payslipModalVisible}
+        onClose={() => {
+          setPayslipModalVisible(false)
+          setShowAttendanceDetails(false)
+        }}
+        size="xl"
+        scrollable
+      >
         <CModalHeader closeButton>
-          <CModalTitle>Payslip for {selectedEmployee?.name}</CModalTitle>
+          <CModalTitle>
+            Payslip for {selectedEmployee?.name}
+            <div className="small text-muted mt-1">
+              Pay Period:{' '}
+              {selectedEmployee?.start_date
+                ? new Date(selectedEmployee.start_date).toLocaleDateString()
+                : ''}{' '}
+              -{' '}
+              {selectedEmployee?.end_date
+                ? new Date(selectedEmployee.end_date).toLocaleDateString()
+                : ''}
+            </div>
+          </CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedEmployee && (
             <>
-              <div className="mb-4">
-                <p>
-                  <strong>Date Period:</strong> {monthName} 1, {selectedYear} – {monthName} 30,{' '}
-                  {selectedYear}
-                </p>
-                <p>
-                  <strong>Employee Name:</strong> {selectedEmployee.name}
-                </p>
-                <p>
-                  <strong>Employee ID:</strong> {selectedEmployee.employee_id}
-                </p>
-                <p>
-                  <strong>Department:</strong> {selectedEmployee.department}
-                </p>
-                <p>
-                  <strong>Position:</strong> {selectedEmployee.job_position}
-                </p>
-              </div>
-              <div className="table-responsive" style={{ overflowX: 'auto' }}>
-                <table className="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Earnings</th>
-                      <th>Amount</th>
-                      <th>Deductions</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Base Salary</td>
-                      <td>
-                        ₱
-                        {parseFloat(selectedEmployee.base_salary || 0).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td>Tax</td>
-                      <td>
-                        ₱
-                        {parseFloat(selectedEmployee.tax || 0).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Overtime Pay</td>
-                      <td>
-                        ₱
-                        {parseFloat(selectedEmployee.total_overtime_amount || 0).toLocaleString(
-                          'en-PH',
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
-                      </td>
-                      <td colSpan="2"></td>
-                    </tr>
-                    <tr>
-                      <td>Bonus</td>
-                      <td>
-                        ₱
-                        {parseFloat(selectedEmployee.bonus || 0).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </td>
-                    </tr>
+              <CRow className="mb-4">
+                <CCol md={6}>
+                  <p>
+                    <strong>Name:</strong> {selectedEmployee.name}
+                  </p>
+                  <p>
+                    <strong>ID:</strong> {selectedEmployee.employee_id}
+                  </p>
+                  <p>
+                    <strong>Department:</strong> {selectedEmployee.department}
+                  </p>
+                  <p>
+                    <strong>Designation:</strong> {selectedEmployee.job_position}
+                  </p>
+                </CCol>
+                <CCol md={6}>
+                  <p>
+                    <strong>Date of Payment:</strong> {selectedEmployee.updated_at || 'N/A'}
+                  </p>
+                  <p>
+                    <strong>Working Days:</strong> {selectedEmployee.working_days || 'N/A'}
+                  </p>
+                  <p>
+                    <strong>Status:</strong>{' '}
+                    <CBadge color={getStatusBadge(selectedEmployee.status)}>
+                      {selectedEmployee.status || 'Pending'}
+                    </CBadge>
+                  </p>
+                  <p>
+                    <strong
+                      style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                      onClick={() => fetchAttendanceDetails(selectedEmployee.employee_id)}
+                    >
+                      View Attendance Details
+                    </strong>
+                  </p>
+                </CCol>
+              </CRow>
 
-                    {employeeBenefits.map((benefit, index) => (
-                      <tr key={index}>
-                        <td colSpan="2"></td>
-                        <td>{benefit.type}</td>
-                        <td>
-                          ₱
-                          {parseFloat(benefit.amount || 0).toLocaleString('en-PH', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
+              {showAttendanceDetails && (
+                <div className="mb-4">
+                  <h5>Attendance Details</h5>
+                  <div className="table-responsive">
+                    <CTable striped>
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>Date</CTableHeaderCell>
+                          <CTableHeaderCell>Time In</CTableHeaderCell>
+                          <CTableHeaderCell>Time Out</CTableHeaderCell>
+                          <CTableHeaderCell>Hours Worked</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {attendanceDetails
+                          .filter(
+                            (att) =>
+                              new Date(att.time_in) >= new Date(selectedEmployee.start_date) &&
+                              new Date(att.time_out) <= new Date(selectedEmployee.end_date),
+                          )
+                          .map((attendance, index) => {
+                            const timeIn = new Date(attendance.time_in)
+                            const timeOut = new Date(attendance.time_out)
+                            const hoursWorked = (timeOut - timeIn) / (1000 * 60 * 60) - 1
+                            return (
+                              <CTableRow key={index}>
+                                <CTableDataCell>{timeIn.toLocaleDateString()}</CTableDataCell>
+                                <CTableDataCell>{timeIn.toLocaleTimeString()}</CTableDataCell>
+                                <CTableDataCell>{timeOut.toLocaleTimeString()}</CTableDataCell>
+                                <CTableDataCell>{hoursWorked.toFixed(2)} hours</CTableDataCell>
+                              </CTableRow>
+                            )
                           })}
-                        </td>
-                      </tr>
-                    ))}
+                        <CTableRow>
+                          <CTableDataCell colSpan="3" className="text-end">
+                            <strong>Total Hours:</strong>
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <strong>
+                              {attendanceDetails
+                                .filter(
+                                  (att) =>
+                                    new Date(att.time_in) >=
+                                      new Date(selectedEmployee.start_date) &&
+                                    new Date(att.time_out) <= new Date(selectedEmployee.end_date),
+                                )
+                                .reduce((total, attendance) => {
+                                  const timeIn = new Date(attendance.time_in)
+                                  const timeOut = new Date(attendance.time_out)
+                                  return total + ((timeOut - timeIn) / (1000 * 60 * 60) - 1)
+                                }, 0)
+                                .toFixed(2)}{' '}
+                              hours
+                            </strong>
+                          </CTableDataCell>
+                        </CTableRow>
+                      </CTableBody>
+                    </CTable>
+                  </div>
+                </div>
+              )}
 
-                    <tr>
-                      <th>Gross Salary</th>
-                      <th>
-                        ₱
-                        {(
-                          parseFloat(selectedEmployee.base_salary || 0) +
-                          parseFloat(selectedEmployee.total_overtime_amount || 0) +
-                          parseFloat(selectedEmployee.bonus || 0)
-                        ).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </th>
-                      <th>Total Deductions</th>
-                      <th>
-                        ₱
-                        {(
+              <div className="table-responsive">
+                <CTable bordered>
+                  <CTableHead>
+                    <CTableRow className="text-center">
+                      <CTableHeaderCell>Earnings</CTableHeaderCell>
+                      <CTableHeaderCell>Hours</CTableHeaderCell>
+                      <CTableHeaderCell>Amount</CTableHeaderCell>
+                      <CTableHeaderCell>Deductions</CTableHeaderCell>
+                      <CTableHeaderCell>Amount</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    <CTableRow>
+                      <CTableDataCell>Base Salary</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {selectedEmployee.total_regular_hours || '0'}
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.base_salary)}
+                      </CTableDataCell>
+                      <CTableDataCell>Tax</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.tax)}
+                      </CTableDataCell>
+                    </CTableRow>
+                    <CTableRow>
+                      <CTableDataCell>Overtime Pay</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {selectedEmployee.total_overtime_hours || '0'}
+                      </CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.total_overtime_amount)}
+                      </CTableDataCell>
+                      <CTableDataCell>Benefits</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.benefits_total)}
+                      </CTableDataCell>
+                    </CTableRow>
+                    <CTableRow>
+                      <CTableDataCell>Bonus</CTableDataCell>
+                      <CTableDataCell className="text-center">-</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.bonus)}
+                      </CTableDataCell>
+                      <CTableDataCell></CTableDataCell>
+                    </CTableRow>
+
+                    {employeeBenefits
+                      .filter(
+                        (benefit) =>
+                          new Date(benefit.date) >= new Date(selectedEmployee.start_date) &&
+                          new Date(benefit.date) <= new Date(selectedEmployee.end_date),
+                      )
+                      .map((benefit, index) => (
+                        <CTableRow key={index}>
+                          <CTableDataCell colSpan={3}></CTableDataCell>
+                          <CTableDataCell>{benefit.type}</CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            {formatCurrency(benefit.amount)}
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+
+                    <CTableRow>
+                      <CTableDataCell>Paid Leave</CTableDataCell>
+                      <CTableDataCell className="text-center">-</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.paid_leave_amount)}
+                      </CTableDataCell>
+                      <CTableDataCell>Late Hours</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.total_late_hours)}
+                      </CTableDataCell>
+                    </CTableRow>
+
+                    <CTableRow>
+                      <CTableHeaderCell>Gross Salary</CTableHeaderCell>
+                      <CTableHeaderCell colSpan={2} className="text-center">
+                        {formatCurrency(selectedEmployee.gross_salary)}
+                      </CTableHeaderCell>
+                      <CTableHeaderCell>Total Deductions</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        {formatCurrency(
                           parseFloat(selectedEmployee.tax || 0) +
-                          parseFloat(selectedEmployee.benefits_total || 0)
-                        ).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </th>
-                    </tr>
-                    <tr>
-                      <th>Net Pay</th>
-                      <th colSpan="3">
-                        ₱
-                        {(
-                          parseFloat(selectedEmployee.base_salary || 0) +
-                          parseFloat(selectedEmployee.total_overtime_amount || 0) +
-                          parseFloat(selectedEmployee.bonus || 0) -
-                          parseFloat(selectedEmployee.tax || 0) -
-                          parseFloat(selectedEmployee.benefits_total || 0)
-                        ).toLocaleString('en-PH', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </th>
-                    </tr>
-                  </tbody>
-                </table>
+                            parseFloat(selectedEmployee.benefits_total || 0) +
+                            parseFloat(
+                              selectedEmployee.total_late_hours *
+                                (selectedEmployee.daily_rate / 8) || 0,
+                            ),
+                        )}
+                      </CTableHeaderCell>
+                    </CTableRow>
+                    <br />
+
+                    <CTableRow>
+                      <CTableHeaderCell>Net Pay</CTableHeaderCell>
+                      <CTableHeaderCell colSpan={4} className="text-center">
+                        {formatCurrency(selectedEmployee.net_salary)}
+                      </CTableHeaderCell>
+                    </CTableRow>
+                  </CTableBody>
+                </CTable>
               </div>
             </>
           )}
         </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setPayslipModalVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={() => window.print()}>
+            Print Payslip
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      <CModal
+        visible={computationModalVisible}
+        onClose={() => setComputationModalVisible(false)}
+        size="xl"
+      >
+        <CModalHeader closeButton>
+          <CModalTitle>
+            Payroll Computation for {selectedEmployeeComputation?.name} -{' '}
+            {selectedEmployeeComputation?.job_position}
+          </CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          {selectedEmployeeComputation && (
+            <div>
+              <CRow className="mb-4">
+                <CCol md={6}>
+                  <p>
+                    <strong>Employee ID:</strong> {selectedEmployeeComputation.employee_id}
+                  </p>
+                  <p>
+                    <strong>Department:</strong> {selectedEmployeeComputation.department}
+                  </p>
+                  <p>
+                    <strong>Pay Period:</strong>{' '}
+                    {new Date(selectedEmployeeComputation.start_date).toLocaleDateString()} -{' '}
+                    {new Date(selectedEmployeeComputation.end_date).toLocaleDateString()}
+                  </p>
+                </CCol>
+                <CCol md={6}>
+                  <p>
+                    <strong>Position:</strong> {selectedEmployeeComputation.job_position}
+                  </p>
+                  <p>
+                    <strong>Monthly Rate:</strong>{' '}
+                    {formatCurrency(selectedEmployeeComputation.monthly_rate)}
+                  </p>
+                  <p>
+                    <strong>Days of Worked:</strong> {selectedEmployeeComputation.working_days}
+                  </p>
+                </CCol>
+              </CRow>
+
+              <CTable bordered responsive>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>Component</CTableHeaderCell>
+                    <CTableHeaderCell>Calculation</CTableHeaderCell>
+                    <CTableHeaderCell>Amount</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  <CTableRow>
+                    <CTableDataCell>Monthly Rate</CTableDataCell>
+                    <CTableDataCell>Base salary</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.monthly_rate)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Base Salary (Half Month)</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.monthly_rate)} / 2
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.base_salary)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Daily Rate</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.base_salary)} /{' '}
+                      {selectedEmployeeComputation.working_days} days
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.daily_rate)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Regular Pay</CTableDataCell>
+                    <CTableDataCell>
+                      {selectedEmployeeComputation.working_days} days ×{' '}
+                      {formatCurrency(selectedEmployeeComputation.daily_rate)}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(
+                        selectedEmployeeComputation.working_days *
+                          selectedEmployeeComputation.daily_rate,
+                      )}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Overtime Pay</CTableDataCell>
+                    <CTableDataCell>
+                      {selectedEmployeeComputation.total_overtime_hours} hours ×{' '}
+                      {formatCurrency(overtimeRate)}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.total_overtime_amount)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Bonus</CTableDataCell>
+                    <CTableDataCell>Additional compensation</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.bonus)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Paid Leave</CTableDataCell>
+                    <CTableDataCell>Approved paid leaves</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.paid_leave_amount)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow className="table-primary">
+                    <CTableDataCell>
+                      <strong>Gross Salary</strong>
+                    </CTableDataCell>
+                    <CTableDataCell></CTableDataCell>
+                    <CTableDataCell>
+                      <strong>{formatCurrency(selectedEmployeeComputation.gross_salary)}</strong>
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Tax</CTableDataCell>
+                    <CTableDataCell>Progressive tax calculation</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.tax)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow>
+                    <CTableDataCell>Benefits</CTableDataCell>
+                    <CTableDataCell>Employee benefits</CTableDataCell>
+                    <CTableDataCell>
+                      {formatCurrency(selectedEmployeeComputation.benefits_total)}
+                    </CTableDataCell>
+                  </CTableRow>
+                  <CTableRow className="table-primary">
+                    <CTableDataCell>
+                      <strong>Net Salary</strong>
+                    </CTableDataCell>
+                    <CTableDataCell></CTableDataCell>
+                    <CTableDataCell>
+                      <strong>{formatCurrency(selectedEmployeeComputation.net_salary)}</strong>
+                    </CTableDataCell>
+                  </CTableRow>
+                </CTableBody>
+              </CTable>
+
+              <div className="mt-4">
+                <h5>Tax Computation Details</h5>
+                <p>The tax is calculated using progressive tax rates based on the gross salary:</p>
+                <ul>
+                  <li>Up to ₱20,833: 0%</li>
+                  <li>₱20,834 - ₱33,332: 15% of excess over ₱20,833</li>
+                  <li>₱33,333 - ₱66,666: ₱1,875 + 20% of excess over ₱33,333</li>
+                  <li>₱66,667 - ₱166,666: ₱8,541.80 + 25% of excess over ₱66,667</li>
+                  <li>₱166,667 - ₱666,666: ₱33,541.80 + 30% of excess over ₱166,667</li>
+                  <li>Over ₱666,667: ₱183,541.80 + 35% of excess over ₱666,667</li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setComputationModalVisible(false)}>
+            Close
+          </CButton>
+        </CModalFooter>
       </CModal>
     </div>
   )

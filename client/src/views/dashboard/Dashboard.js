@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader } from '@coreui/react'
+import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CSpinner } from '@coreui/react'
 import { Link } from 'react-router-dom'
 import WidgetStats from './WidgetStats'
 import useAuthStatus from '../../hook/useAuthStatus'
@@ -60,8 +60,11 @@ const Dashboard = () => {
   return (
     <CContainer fluid>
       {loading && (
-        <div className="d-flex justify-content-center my-5">
-          <div className="spinner-border" role="status"></div>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: '100vh' }}
+        >
+          <CSpinner color="primary" />
         </div>
       )}
 
@@ -92,58 +95,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
-// import React, { useEffect, useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
-// import { CContainer } from '@coreui/react'
-// import axios from 'axios'
-// import { WidgetStats } from './WidgetStats'
-
-// const API_URL = 'http://localhost:8000'
-
-// const getLeaveCountByStatus = async (status) => {
-//   try {
-//     const response = await axios.get(`${API_URL}/leave-requests/count/${status}`)
-//     return response.data.count
-//   } catch (error) {
-//     console.error(`Error fetching count for status ${status}:`, error)
-//     return 0
-//   }
-// }
-
-// export const Dashboard = () => {
-//   const navigate = useNavigate() // Hook for navigation
-//   const [leaveStats, setLeaveStats] = useState({
-//     pendingRequests: 0,
-//     approvedLeaves: 0,
-//     rejectedLeaves: 0,
-//   })
-
-//   useEffect(() => {
-//     const fetchLeaveStats = async () => {
-//       try {
-//         const pendingRequests = await getLeaveCountByStatus('Pending')
-//         const approvedLeaves = await getLeaveCountByStatus('Approved')
-//         const rejectedLeaves = await getLeaveCountByStatus('Rejected')
-
-//         setLeaveStats({
-//           pendingRequests,
-//           approvedLeaves,
-//           rejectedLeaves,
-//         })
-//       } catch (error) {
-//         console.error('Error fetching leave stats:', error)
-//       }
-//     }
-
-//     fetchLeaveStats()
-//   }, [])
-
-//   return (
-//     <CContainer fluid>
-//       <WidgetStats />
-//     </CContainer>
-//   )
-// }
-
-// export default Dashboard

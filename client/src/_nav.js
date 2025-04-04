@@ -81,6 +81,13 @@ const navItems = [
   },
   {
     component: CNavItem,
+    name: 'Budget',
+    to: '/Budget',
+    icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
+    permission: ['superAdmin', 'admin'],
+  },
+  {
+    component: CNavItem,
     name: 'Payslip',
     to: '/Payslip',
     icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,

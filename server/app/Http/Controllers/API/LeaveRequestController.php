@@ -215,7 +215,7 @@ class LeaveRequestController extends Controller
     
         $leave = LeaveRequest::create([
             'user_id' => $user->id ?? null,
-            'name' => $request->name,
+            'name' => $user->name,
             'leave_type' => $request->leave_type,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
@@ -316,7 +316,7 @@ class LeaveRequestController extends Controller
             'leave_status' => 'sometimes|in:Pending,Approved,Rejected',
         ]);
 
-        if (isset($validated['status']) && $validated['status'] === 'Approved' && $leaveRequest->is_paid === 'Paid') {
+        if (isset($validated['leave_status']) && $validated['leave_status'] === 'Approved' && $leaveRequest->is_paid === 'Paid') {
             $employee = Employee::where('name', $leaveRequest->name)->first();
             $type = Leave::where('name', $leaveRequest->leave_type)->first();
             

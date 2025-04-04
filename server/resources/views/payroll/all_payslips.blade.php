@@ -17,7 +17,7 @@
             border: 1px solid #ddd;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            page-break-after: always; /* Ensure each payslip starts on a new page */
+            page-break-after: always;
         }
         .header {
             text-align: center;
@@ -70,6 +70,12 @@
             margin-top: 20px;
             font-size: 14px;
         }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -77,17 +83,26 @@
         <div class="payslip">
             <div class="header">
                 <h1>Payslip</h1>
-            </div>
-            
-            <div class="sub-header">
-                <p><strong>Pay Period:</strong> {{ $payslipData['periodStart'] }} – {{ $payslipData['periodEnd'] }}</p>
-                <p><strong>Pay Date:</strong> {{ $payslipData['dateIssued'] }}</p>
+                <div class="sub-header">
+                    <p><strong>Company Name</strong></p>
+                    <p><strong>Pay Period:</strong> {{ date('F d, Y', strtotime($payslipData['start_date'])) }} – {{ date('F d, Y', strtotime($payslipData['end_date'])) }}</p>
+                    <p><strong>Date Issued:</strong> {{ date('F d, Y', strtotime($payslipData['issued_at'])) }}</p>
+                </div>
             </div>
 
             <div class="details">
-                <p><strong>Employee Name:</strong> {{ $payslipData['employeeName'] }}</p>
-                <p><strong>Employee ID:</strong> {{ $payslipData['employeeId'] }}</p>
-                <p><strong>Position:</strong> {{ $payslipData['job_position'] }}</p>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <p><strong>Employee Name:</strong> {{ $payslipData['name'] }}</p>
+                        <p><strong>Employee ID:</strong> {{ $payslipData['employee_id'] }}</p>
+                        <p><strong>Department:</strong> {{ $payslipData['department'] }}</p>
+                    </div>
+                    <div>
+                        <p><strong>Position:</strong> {{ $payslipData['job_position'] }}</p>
+                        <p><strong>Status:</strong> {{ $payslipData['status'] }}</p>
+                        <p><strong>Working Days:</strong> {{ $payslipData['working_days'] }}</p>
+                    </div>
+                </div>
             </div>
 
             <div class="table-container">
@@ -95,36 +110,57 @@
                     <thead>
                         <tr>
                             <th>Earnings</th>
+                            <th>Hours</th>
                             <th>Amount</th>
                             <th>Deductions</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Earnings -->
                         <tr>
                             <td>Base Salary</td>
-                            <td>{{ number_format($payslipData['base_salary'], 2) }}</td>
-                            <td></td>
-                            <td></td>
+                            <td class="text-center">{{ $payslipData['total_regular_hours'] }}</td>
+                            <td class="text-right">{{ number_format($payslipData['base_salary'], 2) }}</td>
+                            <td>Tax</td>
+                            <td class="text-right">{{ number_format($payslipData['tax'], 2) }}</td>
                         </tr>
                         <tr>
                             <td>Overtime Pay</td>
-                            <td>{{ number_format($payslipData['overtime'], 2) }}</td>
-                            <td></td>
-                            <td></td>
+                            <td class="text-center">{{ $payslipData['total_overtime_hours'] }}</td>
+                            <td class="text-right">{{ number_format($payslipData['total_overtime_amount'], 2) }}</td>
+                            <td>Benefits</td>
+                            <td class="text-right">{{ number_format($payslipData['benefits_total'], 2) }}</td>
                         </tr>
                         <tr>
                             <td>Bonus</td>
-                            <td>{{ number_format($payslipData['bonus'], 2) }}</td>
+                            <td class="text-center">-</td>
+                            <td class="text-right">{{ number_format($payslipData['bonus'], 2) }}</td>
+                            <td>Late Hours</td>
+                            <td class="text-right">{{ number_format($payslipData['total_late_hours'], 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Paid Leave</td>
+                            <td class="text-center">-</td>
+                            <td class="text-right">{{ number_format($payslipData['paid_leave_amount'], 2) }}</td>
                             <td></td>
                             <td></td>
                         </tr>
-                        <tr>
-                            <td>Total Earnings</td>
-                            <td class="highlight">{{ number_format($payslipData['base_salary'] + $payslipData['overtime'] + $payslipData['bonus'], 2) }}</td>
+                        
+                        @if(isset($payslipData['benefits']) && is_array($payslipData['benefits']))
+                            @foreach($payslipData['benefits'] as $benefit)
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>{{ $benefit['type'] }}</td>
+                                <td class="text-right">{{ number_format($benefit['amount'], 2) }}</td>
+                            </tr>
+                            @endforeach
+                        @endif
+                        
+                        <tr class="highlight">
+                            <td colspan="2">Gross Salary</td>
+                            <td class="text-right">{{ number_format($payslipData['gross_salary'], 2) }}</td>
                             <td>Total Deductions</td>
-                            <td class="highlight">{{ number_format($payslipData['deductions'], 2) }}</td>
+                            <td class="text-right">{{ number_format($payslipData['tax'] + $payslipData['benefits_total'] + $payslipData['total_late_hours'], 2) }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -134,12 +170,15 @@
                 <table>
                     <tr>
                         <th>Net Pay</th>
-                        <td class="total">{{ number_format(($payslipData['base_salary'] + $payslipData['overtime'] + $payslipData['bonus']) - $payslipData['deductions'], 2) }}</td>
+                        <td class="total text-right">
+                            {{ number_format($payslipData['net_salary'], 2) }}
+                        </td>
                     </tr>
                 </table>
             </div>
 
             <div class="footer">
+                <p>This is a computer generated payslip and does not require signature</p>
                 <p>Thank you for your hard work!</p>
             </div>
         </div>

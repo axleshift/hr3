@@ -19,18 +19,8 @@ import {
   CModalHeader,
   CModalTitle,
   CModalBody,
-  CModalFooter,
-  CButton,
 } from '@coreui/react'
 import api from '../../util/api'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCalendar,
-  faCheckCircle,
-  faExclamationTriangle,
-  faTimesCircle,
-  faTimes,
-} from '@fortawesome/free-solid-svg-icons'
 
 const LeaveCalendar = () => {
   const [events, setEvents] = useState([])
@@ -129,75 +119,12 @@ const LeaveCalendar = () => {
   }
 
   return (
-    <CContainer fluid>
-      <CRow className="mb-4">
-        <CCol xs={12} md={6} lg={3}>
-          <CWidgetStatsA
-            color="success"
-            value={statusCounts.approved}
-            title="Approved"
-            icon={
-              <div className="fs-4">
-                <FontAwesomeIcon icon={faCheckCircle} />
-              </div>
-            }
-          />
-        </CCol>
-        <CCol xs={12} md={6} lg={3}>
-          <CWidgetStatsA
-            color="warning"
-            value={statusCounts.pending}
-            title="Pending"
-            icon={
-              <div className="fs-4">
-                <FontAwesomeIcon icon={faExclamationTriangle} />
-              </div>
-            }
-          />
-        </CCol>
-        <CCol xs={12} md={6} lg={3}>
-          <CWidgetStatsA
-            color="danger"
-            value={statusCounts.rejected}
-            title="Rejected"
-            icon={
-              <div className="fs-4">
-                <FontAwesomeIcon icon={faTimesCircle} />
-              </div>
-            }
-          />
-        </CCol>
-        <CCol xs={12} md={6} lg={3}>
-          <CWidgetStatsA
-            color="info"
-            value={statusCounts.approved + statusCounts.pending + statusCounts.rejected}
-            title="Total Leaves"
-            icon={
-              <div className="fs-4">
-                <FontAwesomeIcon icon={faCalendar} />
-              </div>
-            }
-          />
-        </CCol>
-      </CRow>
-
+    <>
       <CRow>
         <CCol xs={12}>
           <CCard>
             <CCardHeader className="d-flex justify-content-between align-items-center">
               <h5>Leave Calendar</h5>
-              <div className="d-flex gap-2">
-                <CFormSelect
-                  value={view}
-                  onChange={(e) => setView(e.target.value)}
-                  style={{ width: '150px' }}
-                >
-                  <option value="dayGridMonth">Month</option>
-                  <option value="timeGridWeek">Week</option>
-                  <option value="timeGridDay">Day</option>
-                  <option value="listMonth">List</option>
-                </CFormSelect>
-              </div>
             </CCardHeader>
             <CCardBody>
               {loading ? (
@@ -226,7 +153,6 @@ const LeaveCalendar = () => {
         </CCol>
       </CRow>
 
-      {/* Leave Details Modal */}
       <CModal visible={leaveModalVisible} onClose={() => setLeaveModalVisible(false)} size="lg">
         <CModalHeader closeButton>
           <CModalTitle>Leave Request Details</CModalTitle>
@@ -292,25 +218,24 @@ const LeaveCalendar = () => {
                       const docName = doc.split('/').pop()
                       const isImage = /\.(jpg|jpeg|png|gif)$/i.test(docName)
                       return (
-                        <div key={index} className="border p-2 rounded">
+                        <a
+                          key={index}
+                          href={`http://localhost:8000/storage/${doc}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border p-2 rounded d-block text-decoration-none"
+                        >
                           {isImage ? (
                             <img
-                              src={`https://hr3.axleshift.com/storage/${doc}`}
+                              src={`http://localhost:8000/storage/${doc}`}
                               alt={`Document ${index + 1}`}
                               style={{ maxWidth: '100px', maxHeight: '100px' }}
                               className="img-thumbnail"
                             />
                           ) : (
-                            <a
-                              href={`https://hr3.axleshift.com/storage/${doc}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="d-block"
-                            >
-                              {docName}
-                            </a>
+                            docName
                           )}
-                        </div>
+                        </a>
                       )
                     })}
                   </div>
@@ -324,7 +249,7 @@ const LeaveCalendar = () => {
           )}
         </CModalBody>
       </CModal>
-    </CContainer>
+    </>
   )
 }
 

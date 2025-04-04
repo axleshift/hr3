@@ -68,7 +68,7 @@ class EmployeeController extends Controller
     public function getDepartments()
     {
         
-        $department = Payroll::select('department')
+        $department = Employee::select('department')
             ->distinct()
             ->pluck('department');
 
