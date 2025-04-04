@@ -27,6 +27,7 @@ return new class extends Migration
             $table->decimal('paid_amount')->nullable();
             $table->enum('is_paid', ['Paid', 'Unpaid'])->default('Unpaid');
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
+            $table->enum('leave_status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->json('document_path')->nullable();
             $table->timestamps();
         });

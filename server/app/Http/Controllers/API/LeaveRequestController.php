@@ -227,6 +227,7 @@ class LeaveRequestController extends Controller
             'month' => $month,
             'department' => $employee->department,
             'job_position' => $employee->job_position,
+            'leave_status' => 'Pending',
             'paid_amount' => $paid_amount,
         ]);
     
@@ -290,6 +291,7 @@ class LeaveRequestController extends Controller
         $validated = $request->validate([
             'status' => 'sometimes|in:Pending,Approved,Rejected',
             'is_paid' => 'sometimes|boolean',
+            'leave_status' => 'sometimes|in:Pending,Approved,Rejected',
         ]);
 
         $leaveRequest->update($validated);
@@ -310,7 +312,8 @@ class LeaveRequestController extends Controller
 
         $validated = $request->validate([
             'status' => 'sometimes|in:Pending,Approved,Rejected',
-            'is_paid' => 'sometimes|boolean',
+            'sometimes|in:Pending,Approved,Rejected',
+            'leave_status' => 'sometimes|in:Pending,Approved,Rejected',
         ]);
 
         if (isset($validated['status']) && $validated['status'] === 'Approved' && $leaveRequest->is_paid === 'Paid') {
