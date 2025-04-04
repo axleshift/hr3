@@ -88,7 +88,7 @@ const LeaveReport = () => {
 
   const groupByDepartment = (leaveData) => {
     return leaveData.reduce((acc, leave) => {
-      const department = leave.department || 'Unassigned'
+      const department = leave.department || 'Unassigned' // Ensure empty departments are labeled
       if (!acc[department]) {
         acc[department] = []
       }
@@ -214,8 +214,10 @@ const LeaveReport = () => {
                 <CTable striped bordered responsive>
                   <CTableHead>
                     <CTableRow>
+                      <CTableHeaderCell className="text-center">ID</CTableHeaderCell>
                       <CTableHeaderCell>Employee</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Department</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Job Position</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Leave Type</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Duration</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Days</CTableHeaderCell>
@@ -230,15 +232,19 @@ const LeaveReport = () => {
                         ([department, leaves]) => (
                           <React.Fragment key={department}>
                             <CTableRow>
-                              <CTableDataCell colSpan="8" style={departmentHeaderStyle}>
+                              <CTableDataCell colSpan="10" style={departmentHeaderStyle}>
                                 <strong>{department} Department</strong>
                               </CTableDataCell>
                             </CTableRow>
                             {leaves.map((leave) => (
                               <CTableRow key={leave.id}>
+                                <CTableDataCell>{leave.id}</CTableDataCell>
                                 <CTableDataCell>{leave.name}</CTableDataCell>
                                 <CTableDataCell className="text-center">
-                                  {leave.department}
+                                  {leave.department || 'Unassigned'}
+                                </CTableDataCell>
+                                <CTableDataCell className="text-center">
+                                  {leave.job_position}
                                 </CTableDataCell>
                                 <CTableDataCell className="text-center">
                                   {leave.leave_type}
