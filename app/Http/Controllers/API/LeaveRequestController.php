@@ -160,28 +160,19 @@ class LeaveRequestController extends Controller
             'documents' => 'sometimes|array',
             'document' => 'sometimes|file|mimes:jpg,jpeg,png,pdf,doc,docx,txt|max:500',
         ]);
-
-        $employee = Employee::where('name', $request->name)->first();
-
-        $user = User::where('name', $employee->name)->first();
-        $employee = Employee::where('name', $request->name)->first();
+    
         $type = Leave::where('name', $request->leave_type)->first();
     
         $user = User::find($request->user_id);
-    
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found.',
-            ], 404);
-        }
 
-        $employee = Employee::where('name', $user->name)->first();
-        if (!$employee) {
-            return response()->json([
-                'message' => 'Employee record not found.',
-            ], 404);
-        }
+    if (!$user) {
+        return response()->json(['message' => 'User not found.'], 404);
+    }
 
+    $employee = Employee::where('name', $user->name)->first();
+    if (!$employee) {
+        return response()->json(['message' => 'Employee record not found.'], 404);
+    }
         if (!$type) {
             return response()->json(['message' => 'Leave type not found.'], 404);
         }
