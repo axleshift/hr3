@@ -546,17 +546,18 @@ const Payroll = () => {
                 selectsRange
                 startDate={startDate}
                 endDate={endDate}
-                onChange={(update) => {
-                  const [start, end] = update
-                  if (start && end) {
-                    setDateRange([start, end])
-                  }
-                }}
+                onChange={handleCustomDateChange}
+                isClearable
+                placeholderText="Select date range"
+                className="form-control"
                 dateFormat="yyyy-MM-dd"
                 minDate={new Date(2020, 0, 1)}
                 maxDate={new Date()}
-                isClearable
-                placeholderText="Select date range"
+                onCalendarClose={() => {
+                  if (startDate && endDate) {
+                    fetchPayrollData()
+                  }
+                }}
               />
             )}
 
