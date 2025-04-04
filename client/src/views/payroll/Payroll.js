@@ -276,7 +276,6 @@ const Payroll = () => {
       setLoading(true)
       setError(null)
 
-      // Validate dates
       if (!startDate || !endDate) {
         setError('Please select a date range')
         return
@@ -288,8 +287,8 @@ const Payroll = () => {
       }
 
       const params = {
-        start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'),
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
         calculate: selectedPreset === 'custom',
       }
 
