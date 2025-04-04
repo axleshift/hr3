@@ -220,14 +220,14 @@ const LeaveCalendar = () => {
                       return (
                         <a
                           key={index}
-                          href={`http://localhost:8000/storage/${doc}`}
+                          href={`https://hr3.axleshift.com/storage/${doc}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="border p-2 rounded d-block text-decoration-none"
                         >
                           {isImage ? (
                             <img
-                              src={`http://localhost:8000/storage/${doc}`}
+                              src={`https://hr3.axleshift.com/storage/${doc}`}
                               alt={`Document ${index + 1}`}
                               style={{ maxWidth: '100px', maxHeight: '100px' }}
                               className="img-thumbnail"
