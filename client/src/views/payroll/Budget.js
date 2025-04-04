@@ -68,7 +68,7 @@ const BudgetRequestForm = () => {
         updatedAt: new Date().toISOString(),
       }
 
-      await axios.post('https://finance/api/budgetRequest', financeData, {
+      await axios.post('https://backend-finance.axleshift.com/api/budgetRequest', financeData, {
         headers: {
           'Content-Type': 'application/json',
         },
