@@ -162,12 +162,6 @@ class LeaveRequestController extends Controller
         ]);
 
         $employee = Employee::where('name', $request->name)->first();
-    
-        if (!$employee) {
-            return response()->json([
-                'message' => 'Employee not found.',
-            ], 404);
-        }
 
         $user = User::where('name', $employee->name)->first();
         $employee = Employee::where('name', $request->name)->first();
