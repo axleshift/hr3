@@ -297,11 +297,19 @@ class PayrollController extends Controller
             return $this->calculate($startDate, $endDate);
         }
 
-        $query = Payroll::with(['employee', 'user']);
-
-        $payrolls = $query->orderBy('department')
-            ->orderBy('name')
-            ->get();
+        $payrolls = Payroll::with(['employee', 'user'])
+        ->orderBy('department')
+        ->orderBy('name')
+        ->get()
+        ->map(function ($payroll) {
+            return [
+                ...$payroll->toArray(),
+                'start_date' => Carbon::parse($payroll->start_date)->format('Y-m-d'),
+                'end_date' => Carbon::parse($payroll->end_date)->format('Y-m-d'),
+                'created_at' => $payroll->created_at->format('Y-m-d H:i:s'),
+                'updated_at' => $payroll->updated_at->format('Y-m-d H:i:s')
+            ];
+        });
         
         $payrolls->transform(function ($item, $key) {
             $item->display_id = $key + 1;

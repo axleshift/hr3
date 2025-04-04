@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { format } from 'date-fns'
 import {
   CCard,
   CCardBody,
@@ -545,18 +546,17 @@ const Payroll = () => {
                 selectsRange
                 startDate={startDate}
                 endDate={endDate}
-                onChange={handleCustomDateChange}
-                isClearable
-                placeholderText="Select date range"
-                className="form-control"
+                onChange={(update) => {
+                  const [start, end] = update
+                  if (start && end) {
+                    setDateRange([start, end])
+                  }
+                }}
                 dateFormat="yyyy-MM-dd"
                 minDate={new Date(2020, 0, 1)}
                 maxDate={new Date()}
-                onCalendarClose={() => {
-                  if (startDate && endDate) {
-                    fetchPayrollData()
-                  }
-                }}
+                isClearable
+                placeholderText="Select date range"
               />
             )}
 
