@@ -27,7 +27,8 @@ class LeaveRequest extends Model
         'leave_used',
         'department',
         'paid_amount',
-        'remarks'
+        'remarks',
+        'leave_status'
     ];
     
     protected $casts = [
