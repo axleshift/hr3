@@ -274,56 +274,43 @@ const Payroll = () => {
   const fetchPayrollData = async () => {
     try {
       setLoading(true)
-      setHasAttendanceData(false)
       setError(null)
 
+      // Validate dates
       if (!startDate || !endDate) {
         setError('Please select a date range')
-        setLoading(false)
+        return
+      }
+
+      if (startDate > endDate) {
+        setError('End date must be after start date')
         return
       }
 
       const params = {
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
+        start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'),
         calculate: selectedPreset === 'custom',
       }
 
+      console.log('Making request with params:', params)
+
       const response = await api.get('/payrolls', { params })
 
-      const payrollData = Array.isArray(response.data) ? response.data : response.data.data || []
-
-      if (payrollData.length === 0) {
+      if (!response.data || response.data.length === 0) {
         setHasAttendanceData(false)
-        setLoading(false)
         return
       }
 
-      const groupedData = payrollData.reduce((acc, payroll) => {
-        const key = `${payroll.employee_id}-${payroll.period}`
-        if (!acc[key]) {
-          acc[key] = {
-            employee_id: payroll.employee_id,
-            name: payroll.name,
-            department: payroll.department,
-            job_position: payroll.job_position,
-            period: payroll.period,
-            payrolls: [],
-          }
-        }
-        acc[key].payrolls.push(payroll)
-        return acc
-      }, {})
-
-      setEmployees(Object.values(groupedData))
-      setHasAttendanceData(payrollData.length > 0)
-
-      const uniqueDepartments = [...new Set(payrollData.map((emp) => emp.department))]
-      setDepartments(uniqueDepartments)
+      // Process response data...
     } catch (error) {
-      console.error('Error:', error)
+      console.error('API Error:', {
+        message: error.message,
+        response: error.response?.data,
+        config: error.config,
+      })
+
       setError(error.response?.data?.message || 'Failed to fetch payroll data')
-      setHasAttendanceData(false)
     } finally {
       setLoading(false)
     }
