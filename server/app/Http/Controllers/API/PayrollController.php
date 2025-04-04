@@ -282,34 +282,23 @@ class PayrollController extends Controller
 
 
     public function index(Request $request)
-    {
+{
+    try {
         $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
         
-        $validated = $request->validate([
-            'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date|after_or_equal:start_date',
-        ]);
-
-        $startDate = $validated['start_date'] ?? null;
-        $endDate = $validated['end_date'] ?? null;
-
         if ($calculate) {
-            return $this->calculate($startDate, $endDate);
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
+            
+            return $this->calculate($validated['start_date'], $validated['end_date']);
         }
 
         $payrolls = Payroll::with(['employee', 'user'])
-        ->orderBy('department')
-        ->orderBy('name')
-        ->get()
-        ->map(function ($payroll) {
-            return [
-                ...$payroll->toArray(),
-                'start_date' => Carbon::parse($payroll->start_date)->format('Y-m-d'),
-                'end_date' => Carbon::parse($payroll->end_date)->format('Y-m-d'),
-                'created_at' => $payroll->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $payroll->updated_at->format('Y-m-d H:i:s')
-            ];
-        });
+            ->orderBy('department')
+            ->orderBy('name')
+            ->get();
         
         $payrolls->transform(function ($item, $key) {
             $item->display_id = $key + 1;
@@ -317,7 +306,19 @@ class PayrollController extends Controller
         });
 
         return response()->json($payrolls);
+        
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'error' => 'Validation failed',
+            'messages' => $e->errors()
+        ], 400);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Server error',
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
             
     
