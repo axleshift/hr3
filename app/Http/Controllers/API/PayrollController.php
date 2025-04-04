@@ -283,13 +283,12 @@ class PayrollController extends Controller
 
     public function index(Request $request)
 {
-    try {
-        $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
+    $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
         
         if ($calculate) {
             $validated = $request->validate([
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
+                'start_date' => 'required|date_format:Y-m-d',
+                'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
             ]);
             
             return $this->calculate($validated['start_date'], $validated['end_date']);
@@ -306,18 +305,6 @@ class PayrollController extends Controller
         });
 
         return response()->json($payrolls);
-        
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'error' => 'Validation failed',
-            'messages' => $e->errors()
-        ], 400);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Server error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
 }
 
             
