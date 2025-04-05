@@ -135,7 +135,7 @@ const List = () => {
   const fetchLeave = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/leave-requests/page', {
+      const response = await api.get('/leave-requests', {
         params: {
           page: currentPage,
           limit: itemsPerPage,
