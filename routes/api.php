@@ -22,7 +22,7 @@ Route::post('/budgetRequest', [BudgetRequestController::class, 'store']);
 // Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
 Route::get('/leave-statistics', [LeaveRequestController::class, 'getLeaveStatistics']);
-Route::get('/leaves', [LeaveRequestController::class, 'calendarData']);
+Route::get('/leave', [LeaveRequestController::class, 'calendarData']);
 Route::get('/leave/status-counts', [LeaveRequestController::class, 'statusCounts']);
 
 
