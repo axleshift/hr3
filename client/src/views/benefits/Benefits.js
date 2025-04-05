@@ -77,7 +77,7 @@ const Benefits = () => {
 
     try {
       if (editingBenefit) {
-        await api.put(`/api/benefits/${editingBenefit.id}`, benefitData)
+        await api.put(`/benefits/${editingBenefit.id}`, benefitData)
         alert('Benefit updated successfully!')
       } else {
         const response = await api.post('/benefits', benefitData)
@@ -103,7 +103,7 @@ const Benefits = () => {
   const handleDelete = async (benefitId) => {
     if (window.confirm('Are you sure you want to delete this benefit?')) {
       try {
-        await api.delete(`/api/benefits/${benefitId}`)
+        await api.delete(`/benefits/${benefitId}`)
         alert('Benefit deleted successfully!')
 
         const benefitsResponse = await api.get('/benefits')
