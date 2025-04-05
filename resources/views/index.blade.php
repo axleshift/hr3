@@ -14,7 +14,7 @@
     <title>Freight HR 3</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="shortcut icon" href="./favicon.ico">
-    <script type="module" crossorigin src="./assets/index-iIDKupjO.js"></script>
+    <script type="module" crossorigin src="./assets/index-B2aix9KR.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-CFdBBhXK.css">
   </head>
   <body>
