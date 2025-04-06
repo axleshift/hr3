@@ -46,7 +46,7 @@ const LeaveCalendar = () => {
         setLoading(true)
 
         const [calendarResponse, approvedCount, pendingCount, rejectedCount] = await Promise.all([
-          api.get('/leave'),
+          api.get('/leave-calendar'),
           api.get('/leave-requests/count/approved'),
           api.get('/leave-requests/count/pending'),
           api.get('/leave-requests/count/rejected'),

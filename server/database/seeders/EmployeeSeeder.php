@@ -22,27 +22,15 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'employee_id' => 'EMP-0003',
-                'name' => 'Alice Smith',
-                'job_position' => 'Freight Coordinator',
-                'department' => 'Operations',
-            ],
-            [
-                'employee_id' => 'EMP-0004',
                 'name' => 'Rose Anne',
                 'job_position' => 'Billing Specialist',
                 'department' => 'Finance',
             ],
             [
-                'employee_id' => 'EMP-0005',
-                'name' => 'Anne',
+                'employee_id' => 'EMP-0004',
+                'name' => 'Maye',
                 'job_position' => 'HR Associate',
                 'department' => 'Human Resources',
-            ],
-            [
-                'employee_id' => 'EMP-0006',
-                'name' => 'Maye',
-                'job_position' => 'Driver',
-                'department' => 'Transportation',
             ],
         ];
 

@@ -17,32 +17,47 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'role' => 'superAdmin',
-                'username' => 'superAdmin',
-                'name' => 'super admin',
+                'username' => 'Joy',
+                'name' => 'Mary Joy  Ayen',
                 'email' => 'rosen@gmail.com',
                 'password' => Hash::make('dandandan'),
             ],
             [
                 'role' => 'admin',
-                'username' => 'admin',
-                'name' => 'Administrator',
-                'email' => 'admin@gmail.com',
+                'username' => 'Maria',
+                'name' => 'Maria Isabelle Cruz',
+                'email' => 'mariacruz98@gmail.com',
                 'password' => Hash::make('dandandan'),
             ],
             [
                 'role' => 'staff',
-                'username' => 'staff',
-                'name' => 'Staff',
-                'email' => 'staff@gmail.com',
+                'username' => 'Angelo',
+                'name' => 'Angelo Martin Santos',
+                'email' => 'angelo.santos23@gmail.com',
                 'password' => Hash::make('dandandan'),
             ],
             [
                 'role' => 'employee',
-                'username' => 'employee',
-                'name' => 'Employee',
-                'email' => 'employee@gmail.com',
+                'username' => 'Benjamin',
+                'name' => 'Benjamin Krane',
+                'email' => 'ben@gmail.com',
                 'password' => Hash::make('dandandan'),
             ],
+            [
+                'role' => 'employee',
+                'username' => 'Anne',
+                'name' => 'Rose Anne',
+                'email' => 'anne@gmail.com',
+                'password' => Hash::make('dandandan'),
+            ],
+            [
+                'role' => 'employee',
+                'username' => 'Maye',
+                'name' => 'Maye',
+                'email' => 'maye@gmail.com',
+                'password' => Hash::make('dandandan'),
+            ],
+            
         ];
 
         foreach ($users as $user) {

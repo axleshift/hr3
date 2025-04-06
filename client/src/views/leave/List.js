@@ -94,7 +94,7 @@ const List = () => {
         setLoading(true)
 
         const [calendarResponse, approvedCount, pendingCount, rejectedCount] = await Promise.all([
-          api.get('/leave/calendar'),
+          api.get('/leave-calendar'),
           api.get('/leave-requests/count/approved'),
           api.get('/leave-requests/count/pending'),
           api.get('/leave-requests/count/rejected'),
@@ -383,6 +383,7 @@ const List = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
+                      <CTableHeaderCell>Employee ID</CTableHeaderCell>
                       <CTableHeaderCell>Employee</CTableHeaderCell>
                       <CTableHeaderCell>Date Requested</CTableHeaderCell>
                       <CTableHeaderCell>Leave Type</CTableHeaderCell>
@@ -411,6 +412,7 @@ const List = () => {
                         <CTableDataCell>
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </CTableDataCell>
+                        <CTableDataCell>{leave.employee_id || 'NA'}</CTableDataCell>
                         <CTableDataCell>{leave.name}</CTableDataCell>
                         <CTableDataCell>
                           {new Date(leave.updated_at).toLocaleDateString()}
