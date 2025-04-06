@@ -162,26 +162,33 @@ class LeaveRequestController extends Controller
         ]);
     
         $type = Leave::where('name', $request->leave_type)->first();
-    
         $user = User::find($request->user_id);
 
-    if (!$user) {
-        return response()->json(['message' => 'User not found.'], 404);
-    }
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
 
-    $employee = Employee::where('name', $user->name)->first();
-    if (!$employee) {
-        return response()->json(['message' => 'Employee record not found.'], 404);
-    }
+        $employee = Employee::where('name', $user->name)->first();
+        if (!$employee) {
+            return response()->json(['message' => 'Employee record not found.'], 404);
+        }
         if (!$type) {
             return response()->json(['message' => 'Leave type not found.'], 404);
         }
-        $payroll = Payroll::where('name', $request->name)->first();
+
+        $payroll = Payroll::where('name', $user->name)->first();
+        // if (!$payroll) {
+        //     return response()->json(['message' => 'Payroll record not found for the employee.'], 404);
+        // }
+
         if (!$payroll) {
-            return response()->json(['message' => 'Payroll record not found for the employee.'], 404);
+            $payroll = (object) [
+                'daily_rate' => 0,
+                'base_salary' => 0,
+            ];
         }
     
-        $daily_rate = $payroll->daily_rate;
+        $daily_rate = $payroll->daily_rate ?? 0;
     
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);

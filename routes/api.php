@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\API\PayrollController;
+use App\Http\Controllers\API\PaysController;
 use App\Http\Controllers\API\BenefitController;
 use App\Http\Controllers\API\LeaveRequestController;
 use App\Http\Controllers\ProfileController;
@@ -15,26 +15,22 @@ use App\Http\Controllers\API\BenefitTypesController;
 use App\Http\Controllers\API\ComplianceController;
 use App\Http\Controllers\API\BudgetRequestController;
 
-//integration
-Route::post('/budgetRequest', [BudgetRequestController::class, 'store']);
-
-
 // Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
 Route::get('/leave-statistics', [LeaveRequestController::class, 'getLeaveStatistics']);
-Route::get('/leave', [LeaveRequestController::class, 'calendarData']);
+Route::get('/leave-calendar', [LeaveRequestController::class, 'calendarData']);
 Route::get('/leave/status-counts', [LeaveRequestController::class, 'statusCounts']);
 
 
-Route::get('/payrolls/month', [PayrollController::class, 'getPayrollByMonth']);
+Route::get('/payrolls/month', [PaysController::class, 'getPayrollByMonth']);
 Route::apiResource('compliances', ComplianceController::class);
 Route::apiResource('attendances', AttendanceController::class);
 Route::apiResource('benefit-types', BenefitTypesController::class);
 
-Route::apiResource('salaries', PayrollController::class);
-Route::post('/salary', [PayrollController::class, 'saveSalary']);
-Route::put('/salary/{id}', [PayrollController::class, 'updateSalary']);
-Route::get('/salary', [PayrollController::class, 'getSalaries']);
+Route::apiResource('salaries', PaysController::class);
+Route::post('/salary', [PaysController::class, 'saveSalary']);
+Route::put('/salary/{id}', [PaysController::class, 'updateSalary']);
+Route::get('/salary', [PaysController::class, 'getSalaries']);
 Route::apiResource('profiles', ProfileController::class);
 
 Route::apiResource('rates', SalaryController::class);
@@ -48,16 +44,16 @@ Route::get('/employee/departments', [EmployeeController::class, 'getDepartments'
 Route::get('/employees/${employeeId}', [EmployeeController::class, 'getLeaveHistory']);
 
 Route::apiResource('benefits', BenefitController::class);
+Route::post('/payslip/send', [PayslipController::class, 'sendPayslips']);
 
-
-Route::apiResource('payrolls', PayrollController::class);
-Route::post('/payrolls/calculate', [PayrollController::class, 'calculate']);
-Route::post('/payrolls/calculate', [PayrollController::class, 'savePayrollRecord']);
-Route::post('/bonus', [PayrollController::class, 'save']);
-Route::post('/release', [PayrollController::class, 'releasePayslips']);
-Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
-Route::get('/bonus', [PayrollController::class, 'getBonus']);
-Route::get('/payroll', [PayrollController::class, 'all']);
+Route::apiResource('payrolls', PaysController::class);
+Route::post('/payrolls/calculate', [PaysController::class, 'calculate']);
+Route::post('/payrolls/calculate', [PaysController::class, 'savePayrollRecord']);
+Route::post('/bonus', [PaysController::class, 'save']);
+Route::post('/release', [PaysController::class, 'releasePayslips']);
+Route::get('/payroll/download-report', [PaysController::class, 'downloadReport']);
+Route::get('/bonus', [PaysController::class, 'getBonus']);
+Route::get('/payroll', [PaysController::class, 'all']);
 
 Route::apiResource('leave-types', LeaveController::class);
 // Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
@@ -82,7 +78,3 @@ Route::get('/payslip', [PayslipController::class, 'all']);
 Route::get('/releases', [PayslipController::class, 'getPayslipsByUserId']);
 Route::get('/releases/download/{employeeId}', [PayslipController::class, 'downloadPayslip']);
 Route::get('/releases/download-all', [PayslipController::class, 'downloadAllPayslips']);
-
-Route::get('/payrolls/for-approval', [PayrollController::class, 'forApproval']);
-Route::put('/payrolls/{id}/approve', [PayrollController::class, 'approve']);
-Route::put('/payrolls/{id}/reject', [PayrollController::class, 'reject']);
