@@ -28,6 +28,58 @@ class PayrollController extends Controller
          return response()->json($payrolls);
     }
 
+    public function filter(Request $request)
+    {
+        $query = Payroll::with(['employee', 'user'])
+            ->orderBy('department')
+            ->orderBy('name');
+    
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $query->whereBetween('start_date', [
+                $request->start_date,
+                $request->end_date
+            ]);
+        }
+    
+        if ($request->has('year')) {
+            $query->where('year', $request->year);
+        }
+    
+        if ($request->has('month')) {
+            $query->where('month', $request->month);
+        }
+    
+        if ($request->has('period') && $request->period !== 'all') {
+            $query->where('period', $request->period);
+        }
+    
+        if ($request->has('department') && $request->department !== 'all') {
+            $query->where('department', $request->department);
+        }
+    
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+    
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('employee_id', 'like', "%$search%");
+            });
+        }
+    
+        $perPage = $request->has('per_page') ? (int)$request->per_page : 15;
+        $payrolls = $query->paginate($perPage);
+    
+        $payrolls->getCollection()->transform(function ($item, $key) use ($payrolls) {
+            $item->display_id = ($payrolls->currentPage() - 1) * $payrolls->perPage() + $key + 1;
+            return $item;
+        });
+    
+        return response()->json($payrolls);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -36,10 +88,9 @@ class PayrollController extends Controller
         $request->validate([
             'job_position' => 'required|string',
             'monthly_rate' => 'required|numeric|min:0',
-            'department' => 'sometimes|string' // Added department field
+            'department' => 'sometimes|string'
         ]);
 
-        // Update or create salary record
         Salary::updateOrCreate(
             ['job_position' => $request->job_position],
             [
@@ -99,7 +150,7 @@ class PayrollController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
         //
     }
@@ -143,7 +194,6 @@ class PayrollController extends Controller
             ], 400);
         }
     
-        // Check for existing payslips for this month/year (regardless of period)
         $existingPayslips = Payslip::where('month', $selectedMonth)
             ->where('year', $selectedYear)
             ->exists();
@@ -154,12 +204,11 @@ class PayrollController extends Controller
             ], 400);
         }
     
-        // Get the most recent payroll records for this month/year
         $payrolls = Payroll::where('month', $selectedMonth)
             ->where('year', $selectedYear)
             ->orderBy('period', 'desc')
             ->get()
-            ->unique('employee_id'); // Only take the most recent period for each employee
+            ->unique('employee_id');
     
         if ($payrolls->isEmpty()) {
             return response()->json([
@@ -195,7 +244,7 @@ class PayrollController extends Controller
                 'paid_leave_amount' => $payroll->paid_leave_amount,
                 'start_date' => $payroll->start_date,
                 'end_date' => $payroll->end_date,
-                'status' => 'Sent',
+                'status' => 'Generated',
                 'issued_at' => now(),
             ]);
             $createdCount++;
@@ -282,34 +331,38 @@ class PayrollController extends Controller
 
 
     public function index(Request $request)
-{
-    $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
-        
-        if ($calculate) {
-            $validated = $request->validate([
-                'start_date' => 'required|date_format:Y-m-d',
-                'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
-            ]);
+    {
+        $calculate = filter_var($request->input('calculate', false), FILTER_VALIDATE_BOOLEAN);
+        $department = $request->input('department');
+
+            if ($calculate) {
+                $validated = $request->validate([
+                    'start_date' => 'required|date_format:Y-m-d',
+                    'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
+                ]);
+                
+                return $this->calculate($validated['start_date'], $validated['end_date'], $department);
+            }
+
+            $payrolls = Payroll::with(['employee', 'user'])
+                ->when($department && $department !== 'all', function($query) use ($department) {
+                    return $query->where('department', $department);
+                })
+                ->orderBy('department')
+                ->orderBy('name')
+                ->get();
             
-            return $this->calculate($validated['start_date'], $validated['end_date']);
-        }
+            $payrolls->transform(function ($item, $key) {
+                $item->display_id = $key + 1;
+                return $item;
+            });
 
-        $payrolls = Payroll::with(['employee', 'user'])
-            ->orderBy('department')
-            ->orderBy('name')
-            ->get();
-        
-        $payrolls->transform(function ($item, $key) {
-            $item->display_id = $key + 1;
-            return $item;
-        });
-
-        return response()->json($payrolls);
-}
+            return response()->json($payrolls);
+    }
 
             
     
-    private function calculate($startDate, $endDate)
+    private function calculate($startDate, $endDate, $department = null)
     {
         if (!$startDate || !$endDate) {
             return response()->json(['error' => 'Date range is required'], 400);
@@ -325,9 +378,12 @@ class PayrollController extends Controller
         }
     
         $existingPayrolls = Payroll::where('start_date', $start->format('Y-m-d'))
-                            ->where('end_date', $end->format('Y-m-d'))
-                            ->orderBy('period', 'desc')
-                            ->get();
+                        ->where('end_date', $end->format('Y-m-d'))
+                        ->when($department, function($query) use ($department) {
+                            return $query->where('department', $department);
+                        })
+                        ->orderBy('period', 'desc')
+                        ->get();
     
         $nextPeriod = 1;
         if ($existingPayrolls->isNotEmpty()) {
@@ -344,11 +400,19 @@ class PayrollController extends Controller
         }
     
     
+        $employeesQuery = Employee::query();
+        if ($department && $department !== 'all') {
+            $employeesQuery->where('department', $department);
+        }
+        $employees = $employeesQuery->get();
+
         $employees = Employee::all();
         if ($employees->isEmpty()) {
             return response()->json(['error' => 'No employee data found'], 404);
         }
     
+        $employeeIds = $employees->pluck('employee_id')->toArray();
+        
         $salaryData = Salary::all()->keyBy('job_position');
         if ($salaryData->isEmpty()) {
             return response()->json(['error' => 'No salary data configured'], 400);
@@ -363,10 +427,19 @@ class PayrollController extends Controller
             $current->addDay();
         }
     
+        // $attendances = Attendance::whereBetween('date', [
+        //     $start->format('Y-m-d'),
+        //     $end->format('Y-m-d')
+        // ])->orderBy('date')->get();
+        
+        //try
         $attendances = Attendance::whereBetween('date', [
             $start->format('Y-m-d'),
             $end->format('Y-m-d')
-        ])->get();
+        ])
+        ->whereIn('employee_id', $employeeIds)
+        ->orderBy('date')
+        ->get();
     
         if ($attendances->isEmpty()) {
             return response()->json(['error' => 'No attendance records found for this period'], 404);
@@ -532,6 +605,7 @@ class PayrollController extends Controller
                     'month' => (int)$month,
                     'year' => (int)$year,
                     'period' => $nextPeriod,
+                    'days_worked' => $data['days_worked'],
                     'created_at' => now(),
                 ];
             }
@@ -545,6 +619,9 @@ class PayrollController extends Controller
             Payroll::where('start_date', $start->format('Y-m-d'))
                 ->where('end_date', $end->format('Y-m-d'))
                 ->where('period', $nextPeriod)
+                ->when($department, function($query) use ($department) {
+                    return $query->where('department', $department);
+                })
                 ->get()
         );
     }

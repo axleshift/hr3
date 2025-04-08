@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\API\PayrollController;
 use App\Http\Controllers\API\BenefitController;
 use App\Http\Controllers\API\LeaveRequestController;
@@ -21,7 +22,7 @@ Route::get('/leave-statistics', [LeaveRequestController::class, 'getLeaveStatist
 Route::get('/leave-calendar', [LeaveRequestController::class, 'calendarData']);
 Route::get('/leave/status-counts', [LeaveRequestController::class, 'statusCounts']);
 
-
+Route::get('/payrolls/filter', [PayrollController::class, 'filter']);
 Route::get('/payrolls/month', [PayrollController::class, 'getPayrollByMonth']);
 Route::apiResource('compliances', ComplianceController::class);
 Route::apiResource('attendances', AttendanceController::class);
@@ -51,6 +52,7 @@ Route::post('/payrolls/calculate', [PayrollController::class, 'calculate']);
 Route::post('/payrolls/calculate', [PayrollController::class, 'savePayrollRecord']);
 Route::post('/bonus', [PayrollController::class, 'save']);
 Route::post('/release', [PayrollController::class, 'releasePayslips']);
+
 Route::get('/payroll/download-report', [PayrollController::class, 'downloadReport']);
 Route::get('/bonus', [PayrollController::class, 'getBonus']);
 Route::get('/payroll', [PayrollController::class, 'all']);
@@ -59,6 +61,7 @@ Route::apiResource('leave-types', LeaveController::class);
 // Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
 Route::post('/leaves', [LeaveController::class, 'computeLeave']);
 Route::get('/generate-report', [LeaveRequestController::class, 'generateReport']);
+Route::get('/generate-password', [LeaveController::class, 'generatePasswordApi']);
 Route::get('/view-report', [LeaveRequestController::class, 'viewReport']);
 
 Route::get('/leave-requests/page', [LeaveRequestController::class, 'page']);
@@ -72,9 +75,13 @@ Route::post('/leave-requests/{id}', [LeaveRequestController::class, 'destroy']);
 Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
 Route::get('/leave-view', [LeaveRequestController::class, 'leaveView']);  
 
+
 // Payslip
 Route::get('/payslips', [PayslipController::class, 'index']);
 Route::get('/payslip', [PayslipController::class, 'all']);
 Route::get('/releases', [PayslipController::class, 'getPayslipsByUserId']);
 Route::get('/releases/download/{employeeId}', [PayslipController::class, 'downloadPayslip']);
 Route::get('/releases/download-all', [PayslipController::class, 'downloadAllPayslips']);
+Route::post('/payslip/send', [PayslipController::class, 'send']);
+Route::post('/payslip/generate', [PayslipController::class, 'release']);
+
