@@ -324,13 +324,13 @@ const List = () => {
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <strong>Leave List</strong>
           <div className="d-flex gap-2 flex-wrap">
-            <CButton
+            {/* <CButton
               color="secondary"
               onClick={() => setCalendarModalVisible(true)}
               className="me-2"
             >
               <FontAwesomeIcon icon={faCalendarAlt} />
-            </CButton>
+            </CButton> */}
             <CFormSelect
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
