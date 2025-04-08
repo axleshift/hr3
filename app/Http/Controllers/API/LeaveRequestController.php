@@ -418,16 +418,55 @@ class LeaveRequestController extends Controller
         return response()->json($leaveTypes);
     }
 
+    // public function generateReport(Request $request)
+    // {
+    //     $request->validate([
+    //         'year' => 'required|integer|min:2000|max:2100',
+    //         'month' => 'required|integer|min:1|max:12',
+    //     ]);
+
+    //     $year = $request->input('year');
+    //     $month = $request->input('month');
+
+    //     $leaveRequests = LeaveRequest::where(function($query) use ($year, $month) {
+    //             $query->whereYear('start_date', $year)
+    //                   ->whereMonth('start_date', $month);
+    //         })
+    //         ->orWhere(function($query) use ($year, $month) {
+    //             $query->whereYear('end_date', $year)
+    //                   ->whereMonth('end_date', $month);
+    //         })
+    //         ->with('user')
+    //         ->get()
+    //         ->groupBy('department');
+
+    //     $data = [
+    //         'year' => $year,
+    //         'month' => $month,
+    //         'monthName' => date('F', mktime(0, 0, 0, $month, 1)),
+    //         'leaveRequests' => $leaveRequests,
+    //     ];
+    //     $pdf = PDF::loadView('leave.leave_report', $data);
+        
+    //     return $pdf->download("leave-report-{$year}-{$month}.pdf");
+    // }
+
+
     public function generateReport(Request $request)
     {
         $request->validate([
             'year' => 'required|integer|min:2000|max:2100',
             'month' => 'required|integer|min:1|max:12',
         ]);
-
+    
         $year = $request->input('year');
         $month = $request->input('month');
 
+        $autoPassword = $month . '/' . $year;
+        if ($request->input('password') !== $autoPassword) {
+            return response()->json(['error' => 'Invalid password'], 401);
+        }
+    
         $leaveRequests = LeaveRequest::where(function($query) use ($year, $month) {
                 $query->whereYear('start_date', $year)
                       ->whereMonth('start_date', $month);
@@ -439,25 +478,19 @@ class LeaveRequestController extends Controller
             ->with('user')
             ->get()
             ->groupBy('department');
-
+    
         $data = [
             'year' => $year,
             'month' => $month,
             'monthName' => date('F', mktime(0, 0, 0, $month, 1)),
             'leaveRequests' => $leaveRequests,
         ];
+        
         $pdf = PDF::loadView('leave.leave_report', $data);
+        
+        $pdf->setEncryption($autoPassword, '', ['copy', 'print'], 128);
+        
         return $pdf->download("leave-report-{$year}-{$month}.pdf");
-    }
-
-    public function viewDocuments($leaveRequestId)
-    {
-        $leaveRequest = LeaveRequest::findOrFail($leaveRequestId);
-        $files = is_array($leaveRequest->document_path) 
-        ? $leaveRequest->document_path 
-        : json_decode($leaveRequest->document_path, true) ?? [];
-
-        return view('leave.leave_documents', compact('leaveRequest', 'files'));    
     }
     
 }
