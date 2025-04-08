@@ -16,7 +16,7 @@ import {
   CBadge,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilePdf, faSyncAlt } from '@fortawesome/free-solid-svg-icons'
+import { faFilePdf, faLock } from '@fortawesome/free-solid-svg-icons'
 import api from '../../util/api'
 
 const LeaveReport = () => {
@@ -28,36 +28,6 @@ const LeaveReport = () => {
   const [error, setError] = useState(null)
 
   const years = Array.from({ length: new Date().getFullYear() - 2020 + 1 }, (_, i) => 2020 + i)
-
-  // const fetchLeaveData = async () => {
-  //   try {
-  //     setLoading(true)
-  //     setError(null)
-
-  //     const [leaveRes, typesRes] = await Promise.all([
-  //       api.get('/leave-requests/page', {
-  //         params: { year: selectedYear, month: selectedMonth },
-  //       }),
-  //       api.get('/leave-types'),
-  //     ])
-
-  //     const leaveData = leaveRes.data.leaveRequests || leaveRes.data
-  //     const typesData = typesRes.data
-
-  //     if (Array.isArray(leaveData)) {
-  //       setLeaveRequests(leaveData)
-  //       setLeaveTypes(typesData)
-  //       calculateLeaveBalances(leaveData, typesData)
-  //     } else {
-  //       setError('Invalid leave data format.')
-  //     }
-  //   } catch (err) {
-  //     setError('Error fetching leave data.')
-  //     console.error(err)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
 
   const fetchLeaveData = async () => {
     try {
@@ -88,7 +58,7 @@ const LeaveReport = () => {
 
   const groupByDepartment = (leaveData) => {
     return leaveData.reduce((acc, leave) => {
-      const department = leave.department || 'Unassigned' // Ensure empty departments are labeled
+      const department = leave.department || 'Unassigned'
       if (!acc[department]) {
         acc[department] = []
       }
@@ -99,11 +69,20 @@ const LeaveReport = () => {
 
   const handleDownloadPDF = async () => {
     try {
+      setLoading(true)
+      setError(null)
+
+      // Generate password in format month/year (e.g., 4/2025)
+      const password = `${selectedMonth}/${selectedYear}`
+
+      const params = {
+        year: selectedYear,
+        month: selectedMonth,
+        password: password,
+      }
+
       const response = await api.get('/generate-report', {
-        params: {
-          year: selectedYear,
-          month: selectedMonth,
-        },
+        params,
         responseType: 'blob',
       })
 
@@ -116,18 +95,27 @@ const LeaveReport = () => {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error downloading PDF:', error)
-      alert('Failed to download the PDF. Please try again.')
+      setError('Error generating PDF report.')
+      console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleViewPDF = () => {
-    const params = new URLSearchParams({
+    // Generate password in format month/year (e.g., 4/2025)
+    const password = `${selectedMonth}/${selectedYear}`
+
+    const params = {
       year: selectedYear,
       month: selectedMonth,
-    }).toString()
+      password: password,
+    }
 
-    window.open(`${api.defaults.baseURL}/view-report?${params}`, '_blank')
+    window.open(
+      `${api.defaults.baseURL}/view-report?${new URLSearchParams(params).toString()}`,
+      '_blank',
+    )
   }
 
   const getStatusBadge = (status) => {
@@ -191,12 +179,11 @@ const LeaveReport = () => {
                 </option>
               ))}
             </CFormSelect>
-            <CButton color="danger" onClick={handleDownloadPDF}>
+            <CButton color="danger" onClick={handleDownloadPDF} disabled={loading}>
               <FontAwesomeIcon icon={faFilePdf} /> Export PDF
             </CButton>
-            <CButton color="info" onClick={handleViewPDF} className="ms-2">
-              {' '}
-              View PDF
+            <CButton color="info" onClick={handleViewPDF} className="ms-2" disabled={loading}>
+              <FontAwesomeIcon icon={faLock} /> View PDF
             </CButton>
           </div>
         </CCardHeader>
@@ -272,7 +259,7 @@ const LeaveReport = () => {
                       )
                     ) : (
                       <CTableRow>
-                        <CTableDataCell colSpan="8" className="text-center">
+                        <CTableDataCell colSpan="10" className="text-center">
                           No leave data available for the selected period
                         </CTableDataCell>
                       </CTableRow>
