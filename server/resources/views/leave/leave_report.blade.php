@@ -1,62 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Leave Report - {{ $monthName }} {{ $year }}</title>
+    <title>Leave Report - {{ $month }}/{{ $year }}</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { margin: 0; }
-        .header p { margin: 5px 0 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { 
-            background-color: #f2f2f2; 
-            text-align: center; /* Center-align all th elements */
-        }
-        td { text-align: left; } /* Keep td elements left-aligned */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
         .department-header { background-color: #e9e9e9; font-weight: bold; }
-        .footer { margin-top: 30px; text-align: right; font-size: 0.8em; }
+        .text-center { text-align: center; }
+        .badge { padding: 3px 6px; border-radius: 3px; font-size: 12px; }
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-danger { background-color: #dc3545; color: white; }
+        .badge-warning { background-color: #ffc107; color: black; }
+        .badge-secondary { background-color: #6c757d; color: white; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Leave Report</h1>
-        <p>{{ $monthName }} {{ $year }}</p>
-    </div>
-
-    @foreach($leaveRequests as $department => $leaves)
-        <h3>{{ $department }} Department</h3>
-        <table>
-            <thead>
+    <h1>Leave Report - {{ date('F', mktime(0, 0, 0, $month, 1)) }} {{ $year }}</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Employee</th>
+                <th class="text-center">Department</th>
+                <th class="text-center">Leave Type</th>
+                <th class="text-center">Duration</th>
+                <th class="text-center">Days</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Paid</th>
+                <th class="text-center">Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($leaveRequests as $department => $leaves)
                 <tr>
-                    <th>Employee</th>
-                    <th>Leave Type</th>
-                    <th>Duration</th>
-                    <th>Days</th>
-                    <th>Reason</th>
-                    <th>Paid</th>
-                    <th>Status</th>
+                    <td colspan="9" class="department-header">{{ $department }} Department</td>
                 </tr>
-            </thead>
-            <tbody>
                 @foreach($leaves as $leave)
                 <tr>
+                <td>{{ $leave->id }}</td>
                     <td>{{ $leave->user->name }}</td>
-                    <td>{{ $leave->leave_type }}</td>
-                    <td>{{ date('M d, Y', strtotime($leave->start_date)) }} - {{ date('M d, Y', strtotime($leave->end_date)) }}</td>
-                    <td>{{ $leave->total_days }}</td>
-                    <td>{{ $leave->reason }}</td>
-                    <td>{{ $leave->is_paid }}</td>
-                    <td>{{ $leave->status }}</td>
+                    <td class="text-center">{{ $leave->department ?: 'Unassigned' }}</td>
+                    <td class="text-center">{{ $leave->leave_type }}</td>
+                    <td class="text-center">
+                        {{ $leave->start_date->format('m/d/Y') }} - {{ $leave->end_date->format('m/d/Y') }}
+                    </td>
+                    <td class="text-center">{{ $leave->total_days }}</td>
+                    <td class="text-center">
+                        @if($leave->status === 'Approved')
+                            <span class="badge badge-success">Approved</span>
+                        @elseif($leave->status === 'Rejected')
+                            <span class="badge badge-danger">Rejected</span>
+                        @else
+                            <span class="badge badge-warning">Pending</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($leave->is_paid === 'Paid')
+                            <span class="badge badge-success">Paid</span>
+                        @else
+                            <span class="badge badge-secondary">Unpaid</span>
+                        @endif
+                    </td>
+                    <td class="text-center">{{ $leave->reason }}</td>
                 </tr>
                 @endforeach
-            </tbody>
-        </table>
-    @endforeach
-
-    <div class="footer">
-        Generated on {{ date('M d, Y') }}
-    </div>
+            @endforeach
+        </tbody>
+    </table>
 </body>
 </html>
