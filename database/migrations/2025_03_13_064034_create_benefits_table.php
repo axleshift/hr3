@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('name');
             $table->enum('type', ['Pag-ibig', 'SSS', 'PhilHealth', '13th Month Pay', 'Service Incentive Leave']);
             $table->decimal('amount', 10, 2);
+            $table->string('status')->default('Active');
+
+            $table->unique(['employee_id', 'type']);
             $table->timestamps();
         });
     }

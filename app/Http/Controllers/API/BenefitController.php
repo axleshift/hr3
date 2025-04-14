@@ -12,21 +12,29 @@ class BenefitController extends Controller
 {
     public function index(Request $request)
     {
-        // $benefits = Benefit::all();
-        // return response()->json($benefits);
-
         $query = Benefit::query();
-    
-    if ($request->has('employee_id')) {
-        $query->where('employee_id', $request->employee_id);
-    }
-    
-    if ($request->has('year') && $request->has('month')) {
-        $query->whereYear('created_at', $request->year)
-              ->whereMonth('created_at', $request->month);
-    }
-    
-    return $query->get();
+        
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->has('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
+        }
+        
+        if ($request->has('year') && $request->has('month')) {
+            $query->whereYear('created_at', $request->year)
+                  ->whereMonth('created_at', $request->month);
+        }
+        
+        $benefits = $query->get();
+        
+        $benefits->transform(function ($item, $key) {
+            $item->display_id = $key + 1;
+            return $item;
+        });
+        
+        return response()->json($benefits);
     }
 
     public function getBenefitTypes()
@@ -48,7 +56,8 @@ class BenefitController extends Controller
     {
         $request->validate([
             'type' => 'required|in:Pag-ibig,SSS,PhilHealth,13th Month Pay,Service Incentive Leave',
-            'amount' => 'required|numeric|min:0'
+            'amount' => 'required|numeric|min:0',
+            'status' => 'sometimes|in:Active,Inactive',
         ]);
 
         $employees = Employee::all();
@@ -58,9 +67,11 @@ class BenefitController extends Controller
                 'employee_id' => $employee->employee_id,
                 'name' => $employee->name,
                 'type' => $request->type,
-                'amount' => $request->amount
+                'amount' => $request->amount,
+                'status' => $request->status ?? 'Active',
             ]);
         }
+        
         return response()->json([
             'message' => 'Benefits applied successfully!'
         ], 201);
@@ -72,7 +83,8 @@ class BenefitController extends Controller
 
         $validated = $request->validate([
             'type' => 'sometimes|required|in:Pag-ibig,SSS,PhilHealth,13th Month Pay,Service Incentive Leave',
-            'amount' => 'sometimes|required|numeric|min:0'
+            'amount' => 'sometimes|required|numeric|min:0',
+            'status' => 'sometimes|required|in:Active,Inactive',
         ]);
 
         $benefit->update($validated);

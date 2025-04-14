@@ -15,6 +15,7 @@ class Benefit extends Model
         'name', 
         'type', 
         'amount', 
+        'status'
     ];
 
     public function employee()
