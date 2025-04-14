@@ -21,7 +21,7 @@ const Pending = React.lazy(() => import('./views/leave/Pending'))
 const LeaveList = React.lazy(() => import('./views/leave/LeaveList'))
 const LeaveType = React.lazy(() => import('./views/leave/LeaveType'))
 const LeaveReport = React.lazy(() => import('./views/leave/LeaveReport'))
-const Budget = React.lazy(() => import('./views/payroll/Budget'))
+const Benefits_Archive = React.lazy(() => import('./views/benefits/Benefits_Archive'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -35,7 +35,6 @@ const routes = [
   { path: '/Payroll', name: 'Payroll', element: Payroll },
   { path: '/Report', name: 'Report', element: Report },
   { path: '/LeaveReport', name: 'Report', element: LeaveReport },
-  { path: '/Budget', name: 'Budget', element: Budget },
   { path: '/Profile', name: 'Profile', element: Profile },
   { path: '/ChangePassword', name: 'Change Password', element: ChangePassword },
   { path: '/Leave', name: 'Leave', element: Leave },
@@ -45,6 +44,7 @@ const routes = [
   //  { path: '/Attendances', name: 'Attendances', element: Attendances },
   { path: '/Payslip', name: 'Payslip', element: Payslip },
   { path: '/LeaveType', name: 'LeaveType', element: LeaveType },
+  { path: '/Benefits_Archive', name: 'Benefits_Archive', element: Benefits_Archive },
 ]
 
 export default routes
