@@ -81,13 +81,6 @@ const navItems = [
   },
   {
     component: CNavItem,
-    name: 'Budget',
-    to: '/Budget',
-    icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
-    permission: ['superAdmin', 'admin'],
-  },
-  {
-    component: CNavItem,
     name: 'Payslip',
     to: '/Payslip',
     icon: <FontAwesomeIcon icon={faChartLine} className="nav-icon" />,
@@ -114,11 +107,18 @@ const navItems = [
   },
   {
     component: CNavItem,
-    name: 'Compliance',
-    to: '/Compliance',
-    icon: <FontAwesomeIcon icon={faUserCog} className="nav-icon" />,
-    permission: ['superAdmin'],
+    name: 'Benefits Archive',
+    to: '/Benefits_Archive',
+    icon: <FontAwesomeIcon icon={faHandHoldingHeart} className="nav-icon" />,
+    permission: ['superAdmin', 'admin'],
   },
+  // {
+  //   component: CNavItem,
+  //   name: 'Compliance',
+  //   to: '/Compliance',
+  //   icon: <FontAwesomeIcon icon={faUserCog} className="nav-icon" />,
+  //   permission: ['superAdmin'],
+  // },
 ]
 
 const _nav = (role) => {
