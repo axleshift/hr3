@@ -23,6 +23,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Employee ID</th>
                 <th>Employee</th>
                 <th class="text-center">Department</th>
                 <th class="text-center">Leave Type</th>
@@ -36,11 +37,12 @@
         <tbody>
             @foreach($leaveRequests as $department => $leaves)
                 <tr>
-                    <td colspan="9" class="department-header">{{ $department }} Department</td>
+                    <td colspan="10" class="department-header">{{ $department }} Department</td>
                 </tr>
                 @foreach($leaves as $leave)
                 <tr>
                 <td>{{ $leave->id }}</td>
+                <td>{{ $leave->employee_id }}</td>
                     <td>{{ $leave->user->name }}</td>
                     <td class="text-center">{{ $leave->department ?: 'Unassigned' }}</td>
                     <td class="text-center">{{ $leave->leave_type }}</td>
