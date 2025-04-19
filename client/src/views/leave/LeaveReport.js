@@ -71,8 +71,6 @@ const LeaveReport = () => {
     try {
       setLoading(true)
       setError(null)
-
-      // Generate password in format month/year (e.g., 4/2025)
       const password = `${selectedMonth}/${selectedYear}`
 
       const params = {
@@ -102,21 +100,13 @@ const LeaveReport = () => {
     }
   }
 
-  const handleViewPDF = () => {
-    // Generate password in format month/year (e.g., 4/2025)
-    const password = `${selectedMonth}/${selectedYear}`
-
-    const params = {
-      year: selectedYear,
-      month: selectedMonth,
-      password: password,
-    }
-
-    window.open(
-      `${api.defaults.baseURL}/view-report?${new URLSearchParams(params).toString()}`,
-      '_blank',
-    )
-  }
+  // const handleViewPDF = () => {
+  //   const params = new URLSearchParams({
+  //     year: selectedYear,
+  //     month: selectedMonth,
+  //   })
+  //   window.open(`${api.defaults.baseURL}/view-view?${params}`, '_blank')
+  // }
 
   const getStatusBadge = (status) => {
     let color
@@ -180,11 +170,11 @@ const LeaveReport = () => {
               ))}
             </CFormSelect>
             <CButton color="danger" onClick={handleDownloadPDF} disabled={loading}>
-              <FontAwesomeIcon icon={faFilePdf} /> Export PDF
+              <FontAwesomeIcon icon={faFilePdf} /> Export
             </CButton>
-            <CButton color="info" onClick={handleViewPDF} className="ms-2" disabled={loading}>
+            {/* <CButton color="info" onClick={handleViewPDF} className="ms-2" disabled={loading}>
               <FontAwesomeIcon icon={faLock} /> View PDF
-            </CButton>
+            </CButton> */}
           </div>
         </CCardHeader>
 
@@ -202,6 +192,7 @@ const LeaveReport = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell className="text-center">ID</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Employee ID</CTableHeaderCell>
                       <CTableHeaderCell>Name</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Department</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Job Position</CTableHeaderCell>
@@ -226,6 +217,7 @@ const LeaveReport = () => {
                             {leaves.map((leave) => (
                               <CTableRow key={leave.id}>
                                 <CTableDataCell>{leave.id}</CTableDataCell>
+                                <CTableDataCell>{leave.employee_id}</CTableDataCell>
                                 <CTableDataCell>{leave.name}</CTableDataCell>
                                 <CTableDataCell className="text-center">
                                   {leave.department || 'Unassigned'}

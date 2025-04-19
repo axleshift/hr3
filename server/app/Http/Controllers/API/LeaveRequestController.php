@@ -187,7 +187,7 @@ class LeaveRequestController extends Controller
                 'base_salary' => 0,
             ];
         }
-    
+        $payroll = Payroll::where('employee_id', $employee->employee_id)->first();
         $daily_rate = $payroll->daily_rate ?? 0;
     
         $startDate = Carbon::parse($request->start_date);
@@ -208,6 +208,7 @@ class LeaveRequestController extends Controller
         $leave = LeaveRequest::create([
             'user_id' => $user->id ?? null,
             'name' => $user->name,
+            'employee_id' => $employee->employee_id,
             'leave_type' => $request->leave_type,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
@@ -384,33 +385,56 @@ class LeaveRequestController extends Controller
     //     return $pdf->download("leave-report-{$year}-{$month}.pdf");
     // }
 
+    // public function leaveView(Request $request)
+    // {
+    //     $year = $request->input('year');
+    //     $month = $request->input('month');
+        
+    //     if (!$year || !$month) {
+    //         return response()->json(['error' => 'Year and month parameters are required'], 400);
+    //     }
+    
+    //     $leaveRequests = LeaveRequest::whereYear('start_date', $year)
+    //         ->whereMonth('start_date', $month)
+    //         ->get();
+        
+    //     if ($leaveRequests->isEmpty()) {
+    //         return response()->json(['error' => 'No leave requests found for the selected period'], 404);
+    //     }
+    
+    //     $groupedLeaveRequests = $leaveRequests->groupBy('department');
+        
+    //     $pdf = PDF::loadView('leave_report', [
+    //         'leaveRequests' => $groupedLeaveRequests,
+    //         'year' => $year,
+    //         'month' => $month,
+    //     ]);
+        
+    //     return $pdf->stream("leave.leave-report-{$year}-{$month}.pdf");
+    // }
+
     public function leaveView(Request $request)
-    {
-        $year = $request->input('year');
-        $month = $request->input('month');
-        
-        if (!$year || !$month) {
-            return response()->json(['error' => 'Year and month parameters are required'], 400);
-        }
-    
-        $leaveRequests = LeaveRequest::whereYear('start_date', $year)
-            ->whereMonth('start_date', $month)
-            ->get();
-        
-        if ($leaveRequests->isEmpty()) {
-            return response()->json(['error' => 'No leave requests found for the selected period'], 404);
-        }
-    
-        $groupedLeaveRequests = $leaveRequests->groupBy('department');
-        
-        $pdf = PDF::loadView('leave_report', [
-            'leaveRequests' => $groupedLeaveRequests,
-            'year' => $year,
-            'month' => $month,
-        ]);
-        
-        return $pdf->stream("leave-report-{$year}-{$month}.pdf");
+{
+    $year = $request->input('year', date('Y'));
+    $month = $request->input('month', date('m'));
+
+    $leaveRequests = LeaveRequest::whereYear('start_date', $year)
+        ->whereMonth('start_date', $month)
+        ->get()
+        ->groupBy('department');
+
+    if ($leaveRequests->isEmpty()) {
+        return response()->json(['error' => 'No leave requests found.'], 404);
     }
+
+    $pdf = PDF::loadView('leave_report', [
+        'leaveRequests' => $leaveRequests,
+        'year' => $year,
+        'month' => $month,
+    ]);
+
+    return $pdf->stream('leave-report.pdf');
+}
 
     public function getLeaveTypes()
     {
@@ -450,7 +474,6 @@ class LeaveRequestController extends Controller
         
     //     return $pdf->download("leave-report-{$year}-{$month}.pdf");
     // }
-
 
     public function generateReport(Request $request)
     {

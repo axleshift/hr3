@@ -29,6 +29,7 @@
     <table>
         <thead>
             <tr>
+                <th>Employee ID</th>
                 <th>Employee</th>
                 <th>Department</th>
                 @foreach($leaveTypes as $type)
@@ -39,6 +40,7 @@
         <tbody>
             @foreach($employeeBalances as $employee)
                 <tr>
+                    <td>{{ $employee['employee_id'] }}</td>
                     <td>{{ $employee['name'] }}</td>
                     <td>{{ $employee['department'] }}</td>
                     @foreach($leaveTypes as $type)

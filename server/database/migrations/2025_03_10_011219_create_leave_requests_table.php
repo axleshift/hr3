@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
             $table->string('user_id');
+            $table->string('employee_id');
             $table->string('name')->index();
             $table->string('department');
             $table->string('job_position');
