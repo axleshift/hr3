@@ -427,7 +427,7 @@ class LeaveRequestController extends Controller
         return response()->json(['error' => 'No leave requests found.'], 404);
     }
 
-    $pdf = PDF::loadView('leave_report', [
+    $pdf = PDF::loadView('leave.leave_report', [
         'leaveRequests' => $leaveRequests,
         'year' => $year,
         'month' => $month,
