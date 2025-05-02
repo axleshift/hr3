@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import ProtectedRoute from './util/ProtectedRoute'
+import Landing from './views/pages/Landing'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/Login'))
@@ -38,9 +39,10 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/login" name="Login" element={<Login />} />
+          <Route exact path="/" name="Landing" element={<Landing />} />
+
+          <Route path="/login" name="Login" element={<Login />} />
           <Route path="/register" name="Register" element={<Register />} />
-          <Route path="/forgot-password" name="Forgot Password" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route path="*" element={<DefaultLayout />} />
           </Route>
