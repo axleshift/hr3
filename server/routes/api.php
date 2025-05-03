@@ -54,6 +54,10 @@ Route::apiResource('benefits', BenefitController::class);
 
 
 Route::apiResource('payrolls', PayrollController::class);
+Route::post('/payrolls', [PayrollController::class, 'index']);
+Route::post('/payrolls', [PayrollController::class, 'store']);
+Route::get('/payroll/download-report', [PayrollController::class, 'update']);
+Route::put('/payrolls', [PayrollController::class, 'downloadReport']);
 Route::post('/payrolls/calculate', [PayrollController::class, 'calculate']);
 Route::post('/payrolls/calculate', [PayrollController::class, 'savePayrollRecord']);
 Route::post('/bonus', [PayrollController::class, 'save']);
@@ -64,6 +68,7 @@ Route::get('/bonus', [PayrollController::class, 'getBonus']);
 Route::get('/payroll', [PayrollController::class, 'all']);
 
 Route::apiResource('leave-types', LeaveController::class);
+
 // Route::get('/leave-types/{userId}', [LeaveController::class, 'get']);
 Route::post('/leaves', [LeaveController::class, 'computeLeave']);
 Route::get('/generate-report', [LeaveRequestController::class, 'generateReport']);
