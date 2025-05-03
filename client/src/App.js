@@ -39,9 +39,9 @@ const App = () => {
         }
       >
         <Routes>
-          <Route exact path="/" name="Landing" element={<Landing />} />
+          {/* <Route  path="/" name="Landing" element={<Landing />} /> */}
 
-          <Route path="/login" name="Login" element={<Login />} />
+          <Route exact path="/login" name="Login" element={<Login />} />
           <Route path="/register" name="Register" element={<Register />} />
           <Route element={<ProtectedRoute />}>
             <Route path="*" element={<DefaultLayout />} />
