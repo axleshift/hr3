@@ -1,0 +1,1 @@
+import{a as s}from"./index-xsH4HHeE.js";const o="",a=s.create({baseURL:`${o}/api`,withCredentials:!0,headers:{Accept:"application/json","Content-Type":"application/json","X-Requested-With":"XMLHttpRequest"}});a.interceptors.response.use(e=>e,e=>{var t;return((t=e.response)==null?void 0:t.status)===401&&(window.location.href="/login"),Promise.reject(e)});export{a};
