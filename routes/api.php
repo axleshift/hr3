@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
+use App\Http\Controllers\API\LeaveBalanceController;
 use App\Http\Controllers\API\PayrollController;
 use App\Http\Controllers\API\BenefitController;
 use App\Http\Controllers\API\LeaveRequestController;
@@ -14,7 +16,8 @@ use App\Http\Controllers\API\SalaryController;
 use App\Http\Controllers\API\PayslipController;
 use App\Http\Controllers\API\BenefitTypesController;
 use App\Http\Controllers\API\ComplianceController;
-use App\Http\Controllers\API\BudgetRequestController;
+use App\Http\Controllers\API\DisputeController;
+use App\Http\Controllers\AuthController;
 
 // Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
@@ -27,6 +30,10 @@ Route::get('/payrolls/month', [PayrollController::class, 'getPayrollByMonth']);
 Route::apiResource('compliances', ComplianceController::class);
 Route::apiResource('attendances', AttendanceController::class);
 Route::apiResource('benefit-types', BenefitTypesController::class);
+
+Route::apiResource('disputes', DisputeController::class);
+Route::get('/disputes/statistics', [DisputeController::class, 'statistics']);
+Route::get('/dispute/{userId}', [DisputeController::class, 'userDisputes']);
 
 Route::apiResource('salaries', PayrollController::class);
 Route::post('/salary', [PayrollController::class, 'saveSalary']);
@@ -78,10 +85,19 @@ Route::get('/leave-view', [LeaveRequestController::class, 'leaveView']);
 
 // Payslip
 Route::get('/payslips', [PayslipController::class, 'index']);
-Route::get('/payslip', [PayslipController::class, 'all']);
+Route::get('/payslip/all', [PayslipController::class, 'all']);
 Route::get('/releases', [PayslipController::class, 'getPayslipsByUserId']);
 Route::get('/releases/download/{employeeId}', [PayslipController::class, 'downloadPayslip']);
 Route::get('/releases/download-all', [PayslipController::class, 'downloadAllPayslips']);
-Route::post('/payslip/send', [PayslipController::class, 'send']);
+Route::post('/payslip/release', [PayslipController::class, 'releasePayslips']);
 Route::post('/payslip/generate', [PayslipController::class, 'release']);
 
+Route::get('/users', [AuthController::class, 'index']);
+
+Route::post('/leave-balances', [LeaveBalanceController::class, 'store']);
+    Route::get('/leave-balances/{employeeId}', [LeaveBalanceController::class, 'getEmployeeLeaveBalances']);
+    Route::get('/leave-balances', [LeaveBalanceController::class, 'index']);
+
+    Route::get('/all', [SalaryController::class, 'all']);
+
+  

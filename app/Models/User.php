@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\Crypt;
 
 class User extends Authenticatable
 {
@@ -23,8 +25,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'two_factor_token',
+        'two_factor_expires_at'
     ];
-   
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -33,6 +37,10 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $dates = [
+        'two_factor_expires_at',
     ];
 
     /**

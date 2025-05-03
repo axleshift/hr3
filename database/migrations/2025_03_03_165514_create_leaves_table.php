@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('type')->default('Unpaid');
             $table->decimal('pay_rate', 8, 2)->default(0);
-            $table->text('description')->nullable();
-            $table->integer('max_days_per_year')->nullable();
-            $table->string('eligibility_rules')->nullable();
+            // $table->string('eligibility_rules')->nullable();
+            $table->string('is_convertible')->default('No');
+            $table->decimal('conversion_rate', 8, 2)->nullable();
+            // $table->integer('max_conversion_days')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

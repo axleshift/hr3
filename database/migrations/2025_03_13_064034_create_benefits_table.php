@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('benefits', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id');
+            $table->string('employeeId');
             $table->string('name');
-            $table->enum('type', ['Pag-ibig', 'SSS', 'PhilHealth', '13th Month Pay', 'Service Incentive Leave']);
+            $table->enum('type', ['Pag-ibig', 'SSS', 'PhilHealth', '13th Month Pay', 'Bonus']);
             $table->decimal('amount', 10, 2);
             $table->string('status')->default('Active');
 
-            $table->unique(['employee_id', 'type']);
+            $table->unique(['employeeId', 'type']);
             $table->timestamps();
         });
     }

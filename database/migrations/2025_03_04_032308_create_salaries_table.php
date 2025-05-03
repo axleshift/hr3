@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('salaries', function (Blueprint $table) {
             $table->id(); 
-            $table->string('job_position')->unique();
+            $table->string('position')->unique();
             $table->decimal('monthly_rate', 10, 2);
             $table->timestamps();
         });

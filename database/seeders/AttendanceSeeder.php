@@ -74,16 +74,18 @@ class AttendanceSeeder extends Seeder
                     $timeOut = $timeIn->copy()->addHours(8); // Minimum 8 hour workday
                 }
 
-                // Create attendance record
                 Attendance::create([
                     'employee_id' => $employee['employee_id'],
                     'name' => $employee['name'],
                     'date' => $date->toDateString(),
-                    'time_in' => $timeIn,
-                    'time_out' => $timeOut,
+                    'check_in' => $timeIn->format('H:i'),
+                    'check_out' => $timeOut->format('H:i'),
+                    'hours_worked' => round($timeIn->diffInMinutes($timeOut) / 60, 2),
+
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+                
             }
         }
 

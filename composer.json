@@ -9,11 +9,17 @@
         "components/masonry": "^4.2",
         "fahlisaputra/laravel-minify": "^1.1",
         "glennraya/xendivel": "^2.0",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
+        "mpdf/mpdf": "*",
+        "pragmarx/google2fa": "^8.0",
+        "pragmarx/google2fa-laravel": "^2.3",
         "pusher/pusher-php-server": "^7.2",
+        "setasign/fpdi": "^1.6",
+        "tecnickcom/tcpdf": "^6.9",
         "twbs/bootstrap": "^5.3"
     },
     "require-dev": {

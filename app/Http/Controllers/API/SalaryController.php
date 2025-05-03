@@ -14,7 +14,11 @@ class SalaryController extends Controller
      * Display a listing of the resource.
      */
 
-     
+     public function all()
+     {
+          $salaries = Salary::all();
+          return response()->json($salaries);
+     } 
         
     public function index()
     {
@@ -45,7 +49,7 @@ class SalaryController extends Controller
     
         $rate = Rate::create([
             'name' => $request->name ?? 'overtime',
-            'rate' => $request->rate,
+            'rate' => $request->rate ?? '75',
             
         ]);
     
@@ -105,7 +109,7 @@ class SalaryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
         //
     }

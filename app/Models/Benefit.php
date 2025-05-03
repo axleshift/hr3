@@ -11,7 +11,7 @@ class Benefit extends Model
 
     protected $table = 'benefits';
     protected $fillable = [ 
-        'employee_id',
+        'employeeId',
         'name', 
         'type', 
         'amount', 

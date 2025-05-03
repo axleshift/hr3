@@ -24,7 +24,11 @@ class Payslip extends Model
         'total_overtime_amount',
         'department',
         'job_position',
-        'issued_at'
+        'issued_at',
+        'password',
+        'tax',
+        'benefits_total',
+        'pdf_path'
     ];
 
     // public function payroll()

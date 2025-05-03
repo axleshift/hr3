@@ -10,10 +10,16 @@ class LeaveBalance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 
-        'leave_type_id', 
+        'employeeId', 
+        'firstName',
+        'middleName',
+        'lastName', 
         'used_days',
-        'remaining_days'
+        'remaining_days',
+        'allocated_days',
+        'year',
+        'convert_to_earnings',
+        'conversion_rate',
     ];
 
     public function user()

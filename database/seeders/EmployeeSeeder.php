@@ -15,30 +15,30 @@ class EmployeeSeeder extends Seeder
     {
         $employees = [
             [
-                'employee_id' => 'EMP-0002',
+                'employeeId' => 'EMP0002',
                 'name' => 'Benjamin Krane',
-                'job_position' => 'Operations Manager',
+                'position' => 'Operations Manager',
                 'department' => 'Logistics',
             ],
             [
-                'employee_id' => 'EMP-0003',
+                'employeeId' => 'EMP0003',
                 'name' => 'Rose Anne',
-                'job_position' => 'Billing Specialist',
+                'position' => 'Billing Specialist',
                 'department' => 'Finance',
             ],
             [
-                'employee_id' => 'EMP-0004',
+                'employeeId' => 'EMP0004',
                 'name' => 'Maye',
-                'job_position' => 'HR Associate',
+                'position' => 'HR Associate',
                 'department' => 'Human Resources',
             ],
         ];
 
         foreach ($employees as $employee) {
             Employee::create([
-                'employee_id' => $employee['employee_id'],
+                'employeeId' => $employee['employeeId'],
                 'name' => $employee['name'],
-                'job_position' => $employee['job_position'],
+                'position' => $employee['position'],
                 'department' => $employee['department'],
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

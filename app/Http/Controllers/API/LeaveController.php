@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Leave;
 use App\Models\Employee;
+use App\Models\Payroll;
+use App\Models\LeaveBalance;
 use Illuminate\Support\Facades\Validator;
 
 class LeaveController extends Controller
@@ -28,9 +30,9 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
-            // 'description' => 'nullable|string',
-            // 'max_days_per_year' => 'required|integer',
-            'eligibility_rules' => 'required|string',
+            'is_convertible' => 'required|in:Yes,No',
+            'conversion_rate' => 'required|numeric|min:0',
+            // 'eligibility_rules' => 'required|string',
         ]);
     
         if ($validator->fails()) {
@@ -44,6 +46,7 @@ class LeaveController extends Controller
         
         if ($validatedData['type'] === 'Unpaid') {
             $validatedData['pay_rate'] = 0;
+            $validatedData['conversion_rate'] = 0;
         }
 
         $leave = Leave::create($validatedData);
@@ -81,9 +84,9 @@ class LeaveController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Paid,Unpaid',
             'pay_rate' => 'required|numeric',
-            // 'description' => 'nullable|string',
-            // 'max_days_per_year' => 'required|integer',
-            'eligibility_rules' => 'required|string',
+            'is_convertible' => 'required|in:Yes,No',
+            'conversion_rate' => 'required|numeric|min:0'
+            // 'eligibility_rules' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -97,6 +100,7 @@ class LeaveController extends Controller
         
         if ($validatedData['type'] === 'Unpaid') {
             $validatedData['pay_rate'] = 0;
+            $validatedData['conversion_rate'] = 0;
         }
 
         $leave->update($validatedData);
