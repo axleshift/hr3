@@ -628,7 +628,7 @@ const Payroll = () => {
             </CButton>
 
             <div className="d-flex flex-wrap gap-2 mb-3">
-              <CFormSelect
+              {/* <CFormSelect
                 value={filters.department}
                 onChange={(e) => setFilters({ ...filters, department: e.target.value })}
                 style={{ minWidth: '180px' }}
@@ -639,7 +639,7 @@ const Payroll = () => {
                     {dept}
                   </option>
                 ))}
-              </CFormSelect>
+              </CFormSelect> */}
 
               <CInputGroup>
                 <CInputGroupText>
