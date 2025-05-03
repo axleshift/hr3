@@ -19,7 +19,6 @@ use App\Http\Controllers\API\ComplianceController;
 use App\Http\Controllers\API\DisputeController;
 use App\Http\Controllers\AuthController;
 
-// Count for Dashboard
 Route::get('/leave-requests/count/{status}', [LeaveRequestController::class, 'countLeaveRequests']);
 Route::get('/leave-statistics', [LeaveRequestController::class, 'getLeaveStatistics']);
 Route::get('/leave-calendar', [LeaveRequestController::class, 'calendarData']);
