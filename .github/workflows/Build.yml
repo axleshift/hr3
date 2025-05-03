@@ -28,14 +28,6 @@ jobs:
         run: |
           cd client
           echo "VITE_APP_API_URL=${{ secrets.VITE_APP_API_URL }}" > .env
-          echo "MAIL_MAILER=${{ secrets.MAIL_MAILER }}" > .env
-          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" > .env
-          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" > .env
-          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" > .env
-          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" > .env
-          echo "MAIL_ENCRYPTION=${{ secrets.MAIL_ENCRYPTION }}" > .env
-          echo "MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}" > .env
-          echo "MAIL_FROM_NAME=${{ secrets.MAIL_FROM_NAME }}" > .env
           npm run build
           cp build/assets ../server/public/ -r
           cp build/index.html ../server/resources/views
