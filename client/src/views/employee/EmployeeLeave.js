@@ -168,7 +168,7 @@ const EmployeeLeave = () => {
       setReason('')
       setFile(null)
       setModalVisible(false)
-      await fetchLeave() // Wait for the fetch to complete
+      await fetchLeave()
     } catch (error) {
       console.error('Error Response:', error.response?.data)
       setAlert({
@@ -189,10 +189,8 @@ const EmployeeLeave = () => {
     if (!documentPath) return []
 
     try {
-      // If it's already an array, return it
       if (Array.isArray(documentPath)) return documentPath
 
-      // If it's a string, try to parse it as JSON
       if (typeof documentPath === 'string') {
         const parsed = JSON.parse(documentPath)
         return Array.isArray(parsed) ? parsed : []
@@ -417,18 +415,16 @@ const EmployeeLeave = () => {
                 </p>
                 {(() => {
                   try {
-                    // Safely parse document_path whether it's a string or array
                     const documents =
                       typeof selectedLeave.document_path === 'string'
                         ? JSON.parse(selectedLeave.document_path)
                         : selectedLeave.document_path
 
-                    // Check if we have valid documents to display
                     if (Array.isArray(documents) && documents.length > 0) {
                       return (
                         <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
                           {documents.map((file, index) => {
-                            const fileUrl = `http://localhost:8000/storage/${file}`
+                            const fileUrl = `https://hr3.axleshift.com/storage/${file}`
                             const fileExtension = file.split('.').pop().toLowerCase()
                             const isImage = ['jpg', 'jpeg', 'png'].includes(fileExtension)
 

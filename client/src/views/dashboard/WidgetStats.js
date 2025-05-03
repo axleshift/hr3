@@ -62,8 +62,8 @@ const WidgetStats = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
-        <CSpinner color="primary" />
+      <div className="loading-overlay">
+        <CSpinner color="primary" variant="grow" />
       </div>
     )
   }

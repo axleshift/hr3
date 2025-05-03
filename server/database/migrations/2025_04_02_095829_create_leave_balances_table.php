@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('leave_balances', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id')->constrained();
-            $table->string('leave_type_id')->constrained();
-            $table->integer('total_days')->default(0);
+            $table->string('employeeId');
+            $table->string('firstName')->nullable();
+            $table->string('middleName')->nullable();
+            $table->string('lastName')->nullable();
+            $table->integer('allocated_days')->default(0);
             $table->integer('used_days')->default(0);
-            $table->integer('remaining_days')->default(0);
+            $table->integer('remaining_days')->nullable();
+            $table->integer('year');
+            $table->boolean('convert_to_earnings')->default(false);
+            $table->decimal('conversion_rate', 5, 2)->default(100); // Percentage of daily rate to convert
             $table->timestamps();
-            
-            $table->unique(['user_id', 'leave_type_id']);
         });
     }
 

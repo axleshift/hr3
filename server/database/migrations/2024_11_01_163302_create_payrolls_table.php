@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_id')->nullable();
+            $table->string('employeeId')->nullable();
             $table->string('user_id')->nullable()->constrained('users');
             $table->string('name')->nullable();
             $table->string('department')->nullable();
-            $table->string('job_position')->nullable();
+            $table->string('position')->nullable();
             
             $table->decimal('base_salary', 12, 2)->nullable();
             $table->decimal('daily_rate', 10, 2)->nullable();
+            // $table->decimal('hourly_rate', 10, 2)->nullable();
             $table->decimal('monthly_rate', 10, 2)->nullable();
             $table->decimal('gross_salary', 12, 2)->nullable();
             $table->decimal('tax', 12, 2)->nullable();
@@ -39,14 +40,17 @@ return new class extends Migration
             $table->decimal('working_days', 8, 2)->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->string('payroll_status')->default('pending');
+            // $table->string('payroll_status')->default('pending');
             $table->integer('year')->nullable();
             $table->integer('month')->nullable();
             $table->string('status')->default('Pending');
             $table->integer('period')->default(1);
             $table->timestamps();
+
+            // for leave conversion
+            $table->decimal('leave_conversion_earnings', 10, 2)->default(0);
             
-            $table->index(['start_date', 'end_date']);
+            $table->index(['start_date', 'end_date', 'period']);
             $table->index(['month', 'year']);
             $table->index(['department', 'name']);
         });

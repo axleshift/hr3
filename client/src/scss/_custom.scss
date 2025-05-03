@@ -204,3 +204,9 @@
     z-index: 1050 !important; /* Ensure it appears above other elements */
     position: absolute !important;
   }
+
+  .custom-toaster {
+    margin-top: 20px;
+    margin-right: 20px;
+    z-index: 1000;
+  }

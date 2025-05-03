@@ -56,24 +56,24 @@ class EmployeeController extends Controller
 
     }
 
-    public function getJobPositions()
-    {
-        $jobPositions = Employee::select('job_position')
-            ->distinct()
-            ->pluck('job_position');
+    // public function getJobPositions()
+    // {
+    //     $jobPositions = Employee::select('job_position')
+    //         ->distinct()
+    //         ->pluck('job_position');
 
-        return response()->json($jobPositions);
-    }
+    //     return response()->json($jobPositions);
+    // }
 
-    public function getDepartments()
-    {
+    // public function getDepartments()
+    // {
         
-        $department = Employee::select('department')
-            ->distinct()
-            ->pluck('department');
+    //     $department = Employee::select('department')
+    //         ->distinct()
+    //         ->pluck('department');
 
-        return response()->json($department);
-    }
+    //     return response()->json($department);
+    // }
 
     public function update(Request $request, $id)
     {
@@ -115,62 +115,60 @@ class EmployeeController extends Controller
     
 
     // URL 
-    // public function getJobPositions()
-    // {
-    //     try {
-    //         $response = Http::get("https://hr3.axleshift.com/api/employees");
+    public function getJobPositions()
+    {
+        try {
+            $response = Http::get("https://backend-hr1.axleshift.com/api/employees");
             
-    //         if ($response->successful()) {
-    //             $employees = $response->json();
+            if ($response->successful()) {
+                $employees = $response->json();
+                $position = collect($employees)
+                    ->pluck('position')
+                    ->unique()
+                    ->filter()
+                    ->values()
+                    ->toArray();
                 
-    //             // Extract unique job positions
-    //             $jobPositions = collect($employees)
-    //                 ->pluck('job_position')  // Fixed spelling
-    //                 ->unique()
-    //                 ->filter()
-    //                 ->values()
-    //                 ->toArray();
-                
-    //             return response()->json($jobPositions);
-    //         }
+                return response()->json($position);
+            }
             
-    //         return response()->json([], 500);
+            return response()->json([], 500);
             
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Failed to fetch job positions',  // Fixed spelling
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch job positions',  // Fixed spelling
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-    // public function getDepartments()
-    // {
-    //     try {
-    //         $response = Http::get("https://hr3.axleshift.com/api/employees");
+    public function getDepartments()
+    {
+        try {
+            $response = Http::get("https://backend-hr1.axleshift.com/api/employees");
             
-    //         if ($response->successful()) {
-    //             $employees = $response->json();
+            if ($response->successful()) {
+                $employees = $response->json();
                 
-    //             // Extract unique departments
-    //             $departments = collect($employees)
-    //                 ->pluck('department')
-    //                 ->unique()
-    //                 ->filter()
-    //                 ->values()
-    //                 ->toArray();
+                // Extract unique departments
+                $departments = collect($employees)
+                    ->pluck('department')
+                    ->unique()
+                    ->filter()
+                    ->values()
+                    ->toArray();
                 
-    //             return response()->json($departments);
-    //         }
+                return response()->json($departments);
+            }
             
-    //         return response()->json([], 500);
+            return response()->json([], 500);
             
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Failed to fetch departments',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch departments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 }

@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import api from '../../util/api'
 import {
-  CCardHeader,
-  CRow,
-  CButton,
   CCard,
-  CCol,
   CCardBody,
+  CCardHeader,
   CTable,
+  CTableBody,
   CTableHead,
   CTableRow,
   CTableHeaderCell,
-  CTableBody,
   CTableDataCell,
-  CSpinner,
   CBadge,
+  CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 
@@ -34,10 +31,10 @@ const BenefitsArchive = () => {
       setBenefits(updatedBenefits)
 
       const grouped = updatedBenefits.reduce((acc, benefit) => {
-        if (!acc[benefit.employee_id]) {
-          acc[benefit.employee_id] = []
+        if (!acc[benefit.employeeId]) {
+          acc[benefit.employeeId] = []
         }
-        acc[benefit.employee_id].push(benefit)
+        acc[benefit.employeeId].push(benefit)
         return acc
       }, {})
 
@@ -60,10 +57,10 @@ const BenefitsArchive = () => {
         setBenefits(response.data)
 
         const grouped = response.data.reduce((acc, benefit) => {
-          if (!acc[benefit.employee_id]) {
-            acc[benefit.employee_id] = []
+          if (!acc[benefit.employeeId]) {
+            acc[benefit.employeeId] = []
           }
-          acc[benefit.employee_id].push(benefit)
+          acc[benefit.employeeId].push(benefit)
           return acc
         }, {})
 
@@ -91,92 +88,76 @@ const BenefitsArchive = () => {
   }
 
   return (
-    <CRow>
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <strong>Archived Benefits</strong>
-            {/* <CButton color="secondary" className="float-end" onClick={() => navigate(-1)}>
-              <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
-              Back to Benefits
-            </CButton> */}
-          </CCardHeader>
-          <CCardBody>
-            {error && <div className="alert alert-danger mb-3">{error}</div>}
+    <div>
+      {/* Loading overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <CSpinner color="primary" variant="grow" />
+        </div>
+      )}
 
-            <CTable hover responsive>
-              <CTableHead>
+      <CCard>
+        <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <strong>Archived Benefits</strong>
+        </CCardHeader>
+        <CCardBody>
+          {error && <div className="alert alert-danger mb-3">{error}</div>}
+
+          <CTable hover responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell>ID</CTableHeaderCell>
+                <CTableHeaderCell>Employee ID</CTableHeaderCell>
+                <CTableHeaderCell>Name</CTableHeaderCell>
+                <CTableHeaderCell>Benefit Type</CTableHeaderCell>
+                <CTableHeaderCell>Amount</CTableHeaderCell>
+                <CTableHeaderCell>Status</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {Object.keys(groupedBenefits).length === 0 ? (
                 <CTableRow>
-                  <CTableHeaderCell>ID</CTableHeaderCell>
-                  <CTableHeaderCell>Employee ID</CTableHeaderCell>
-                  <CTableHeaderCell>Name</CTableHeaderCell>
-                  <CTableHeaderCell>Benefit Type</CTableHeaderCell>
-                  <CTableHeaderCell>Amount</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Action</CTableHeaderCell>
+                  <CTableDataCell colSpan={7} className="text-center">
+                    No archived benefits found
+                  </CTableDataCell>
                 </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {loading ? (
-                  <CTableRow>
-                    <CTableDataCell colSpan={7} className="text-center">
-                      <CSpinner />
-                      <span className="ms-2">Loading archived benefits...</span>
-                    </CTableDataCell>
-                  </CTableRow>
-                ) : Object.keys(groupedBenefits).length === 0 ? (
-                  <CTableRow>
-                    <CTableDataCell colSpan={7} className="text-center">
-                      No archived benefits found
-                    </CTableDataCell>
-                  </CTableRow>
-                ) : (
-                  Object.entries(groupedBenefits).map(([employeeId, employeeBenefits], index) => (
-                    <React.Fragment key={employeeId}>
-                      {employeeBenefits.map((benefit, benefitIndex) => (
-                        <CTableRow key={benefit.id}>
-                          {benefitIndex === 0 && (
-                            <>
-                              <CTableDataCell rowSpan={employeeBenefits.length}>
-                                {index + 1}
-                              </CTableDataCell>
-                              <CTableDataCell rowSpan={employeeBenefits.length}>
-                                {benefit.employee_id}
-                              </CTableDataCell>
-                              <CTableDataCell rowSpan={employeeBenefits.length}>
-                                {benefit.name}
-                              </CTableDataCell>
-                            </>
-                          )}
-                          <CTableDataCell>{benefit.type}</CTableDataCell>
-                          <CTableDataCell>
-                            ₱
-                            {parseFloat(benefit.amount).toLocaleString('en-PH', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </CTableDataCell>
-                          <CTableDataCell>{getStatusBadge(benefit.status)}</CTableDataCell>
-                          <CTableDataCell>
-                            <CButton
-                              color="success"
-                              size="sm"
-                              onClick={() => handleRestore(benefit.id)}
-                            >
-                              Restore
-                            </CButton>
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </React.Fragment>
-                  ))
-                )}
-              </CTableBody>
-            </CTable>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+              ) : (
+                Object.entries(groupedBenefits).map(([employeeId, employeeBenefits], index) => (
+                  <React.Fragment key={employeeId}>
+                    {employeeBenefits.map((benefit, benefitIndex) => (
+                      <CTableRow key={benefit.id}>
+                        {benefitIndex === 0 && (
+                          <>
+                            <CTableDataCell rowSpan={employeeBenefits.length}>
+                              {index + 1}
+                            </CTableDataCell>
+                            <CTableDataCell rowSpan={employeeBenefits.length}>
+                              {benefit.employeeId}
+                            </CTableDataCell>
+                            <CTableDataCell rowSpan={employeeBenefits.length}>
+                              {benefit.name}
+                            </CTableDataCell>
+                          </>
+                        )}
+                        <CTableDataCell>{benefit.type}</CTableDataCell>
+                        <CTableDataCell>
+                          ₱
+                          {parseFloat(benefit.amount).toLocaleString('en-PH', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </CTableDataCell>
+                        <CTableDataCell>{getStatusBadge(benefit.status)}</CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </React.Fragment>
+                ))
+              )}
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
+    </div>
   )
 }
 

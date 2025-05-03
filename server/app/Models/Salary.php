@@ -13,6 +13,6 @@ class Salary extends Model
 
     protected $fillable = [
         'monthly_rate',
-        'job_position',
+        'position',
     ];
 }

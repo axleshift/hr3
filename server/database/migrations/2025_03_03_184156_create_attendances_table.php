@@ -16,8 +16,9 @@ return new class extends Migration
             $table->string('employee_id');
             $table->string('name');
             $table->date('date');
-            $table->dateTime('time_in');
-            $table->dateTime('time_out');
+            $table->string('check_in'); // HH:mm format
+$table->string('check_out'); 
+$table->decimal('hours_worked', 5, 2);
             $table->timestamps();
         });
     }

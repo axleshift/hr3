@@ -11,6 +11,7 @@ Route::get('/', function () {
 Route::prefix('api/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/verify-session', [AuthController::class, 'verifySession']);
+    Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFactor']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 

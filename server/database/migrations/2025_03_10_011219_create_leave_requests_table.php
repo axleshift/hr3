@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id');
-            $table->string('employee_id');
+            $table->string('user_id')->nullable();
+            $table->string('employeeId');
             $table->string('name')->index();
             $table->string('department');
             $table->string('job_position');
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->enum('leave_status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->json('document_path')->nullable();
+    $table->boolean('is_converted')->default(false);
             $table->timestamps();
         });
     }

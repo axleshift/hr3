@@ -34,9 +34,8 @@ const LeaveType = () => {
     name: '',
     type: 'Paid',
     pay_rate: 100,
-    // description: '',
-    // max_days_per_year: '0',
-    eligibility_rules: '',
+    is_convertible: 'No',
+    conversion_rate: 100,
   })
 
   const [editLeaveType, setEditLeaveType] = useState({
@@ -44,9 +43,8 @@ const LeaveType = () => {
     name: '',
     type: 'Paid',
     pay_rate: 100,
-    // description: '',
-    // max_days_per_year: '0',
-    eligibility_rules: '',
+    is_convertible: 'No',
+    conversion_rate: 100,
   })
 
   useEffect(() => {
@@ -196,9 +194,7 @@ const LeaveType = () => {
                 <CTableHeaderCell>Leave Type</CTableHeaderCell>
                 <CTableHeaderCell>Type</CTableHeaderCell>
                 <CTableHeaderCell>Pay Rate</CTableHeaderCell>
-                {/* <CTableHeaderCell>Description</CTableHeaderCell> */}
-                {/* <CTableHeaderCell>Days</CTableHeaderCell> */}
-                <CTableHeaderCell>Rules</CTableHeaderCell>
+                <CTableHeaderCell>Conversion</CTableHeaderCell>
                 <CTableHeaderCell>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
@@ -212,9 +208,12 @@ const LeaveType = () => {
                       <CBadge color={getTypeBadge(type.type)}>{type.type}</CBadge>
                     </CTableDataCell>
                     <CTableDataCell>{getPayRateDisplay(type.type, type.pay_rate)}</CTableDataCell>
-                    {/* <CTableDataCell>{type.description}</CTableDataCell> */}
-                    {/* <CTableDataCell>{type.max_days_per_year}</CTableDataCell> */}
-                    <CTableDataCell>{type.eligibility_rules}</CTableDataCell>
+                    <CTableDataCell>
+                      {type.is_convertible === 'Yes'
+                        ? `Yes (${Math.round(type.conversion_rate)}%)`
+                        : '-'}
+                    </CTableDataCell>
+
                     <CTableDataCell>
                       <CButton
                         color="info"
@@ -283,37 +282,31 @@ const LeaveType = () => {
               />
             </div>
           )}
-
-          {/* <div className="mb-3">
-            <CFormLabel>Description</CFormLabel>
-            <CFormInput
-              type="text"
-              name="description"
-              value={newLeaveType.description}
-              onChange={handleChange}
-              placeholder="Enter description"
-            />
-          </div> */}
-          {/* <div className="mb-3">
-            <CFormLabel>Max Days Per Year</CFormLabel>
-            <CFormInput
-              type="number"
-              name="max_days_per_year"
-              value={newLeaveType.max_days_per_year}
-              onChange={handleChange}
-              placeholder="Enter max days per year"
-            />
-          </div> */}
           <div className="mb-3">
-            <CFormLabel>Eligibility Rules</CFormLabel>
-            <CFormInput
-              type="text"
-              name="eligibility_rules"
-              value={newLeaveType.eligibility_rules}
+            <CFormLabel>Is Convertible</CFormLabel>
+            <CFormSelect
+              name="is_convertible"
+              value={newLeaveType.is_convertible}
               onChange={handleChange}
-              placeholder="Enter eligibility rules"
-            />
+            >
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </CFormSelect>
           </div>
+          {newLeaveType.is_convertible === 'Yes' && (
+            <div className="mb-3">
+              <CFormLabel>Conversion Rate (%)</CFormLabel>
+              <CFormInput
+                type="number"
+                name="conversion_rate"
+                min="0"
+                max="100"
+                value={newLeaveType.conversion_rate}
+                onChange={handleChange}
+                placeholder="Enter conversion rate percentage (0-100)"
+              />
+            </div>
+          )}
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setModalVisible(false)}>
@@ -357,43 +350,37 @@ const LeaveType = () => {
                 name="pay_rate"
                 min="0"
                 max="100"
-                value={editLeaveType.pay_rate} // Bind to editLeaveType
+                value={editLeaveType.pay_rate}
                 onChange={handleEditChange}
                 placeholder="Enter pay rate percentage (0-100)"
               />
             </div>
           )}
-
-          {/* <div className="mb-3">
-            <CFormLabel>Description</CFormLabel>
-            <CFormInput
-              type="text"
-              name="description"
-              value={editLeaveType.description} // Bind to editLeaveType
-              onChange={handleEditChange}
-              placeholder="Enter description"
-            />
-          </div> */}
-          {/* <div className="mb-3">
-            <CFormLabel>Max Days Per Year</CFormLabel>
-            <CFormInput
-              type="number"
-              name="max_days_per_year"
-              value={editLeaveType.max_days_per_year} // Bind to editLeaveType
-              onChange={handleEditChange}
-              placeholder="Enter max days per year"
-            />
-          </div> */}
           <div className="mb-3">
-            <CFormLabel>Eligibility Rules</CFormLabel>
-            <CFormInput
-              type="text"
-              name="eligibility_rules"
-              value={editLeaveType.eligibility_rules} // Bind to editLeaveType
+            <CFormLabel>Is Convertible</CFormLabel>
+            <CFormSelect
+              name="is_convertible"
+              value={editLeaveType.is_convertible}
               onChange={handleEditChange}
-              placeholder="Enter eligibility rules"
-            />
+            >
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </CFormSelect>
           </div>
+          {editLeaveType.is_convertible === 'Yes' && (
+            <div className="mb-3">
+              <CFormLabel>Conversion Rate (%)</CFormLabel>
+              <CFormInput
+                type="number"
+                name="conversion_rate"
+                min="0"
+                max="100"
+                value={editLeaveType.conversion_rate}
+                onChange={handleEditChange}
+                placeholder="Enter conversion rate percentage (0-100)"
+              />
+            </div>
+          )}
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setEditModalVisible(false)}>

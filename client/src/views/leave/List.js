@@ -10,7 +10,6 @@ import {
   CTableHeaderCell,
   CTableDataCell,
   CBadge,
-  CSpinner,
   CPagination,
   CPaginationItem,
   CInputGroup,
@@ -30,6 +29,7 @@ import {
   CModalFooter,
   CButton,
   CFormSelect,
+  CSpinner,
 } from '@coreui/react'
 import LeaveCalendar from './LeaveCalendar'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -50,7 +50,6 @@ const List = () => {
   const [events, setEvents] = useState([])
   const [leave, setLeave] = useState([])
   const [filteredLeave, setFilteredLeave] = useState([])
-  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -61,6 +60,7 @@ const List = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [calendarModalVisible, setCalendarModalVisible] = useState(false)
+  const [loading, setLoading] = useState(false)
   const itemsPerPage = 10
   const [statusCounts, setStatusCounts] = useState({
     approved: 0,
@@ -69,11 +69,14 @@ const List = () => {
   })
 
   const handleLeaveStatus = async (id, leaveStatus) => {
+    setLoading(true)
     try {
       await api.put(`/leave-requests/${id}`, { leave_status: leaveStatus })
       fetchLeave()
     } catch (error) {
       console.error('Error updating status:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -88,43 +91,42 @@ const List = () => {
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [calendarResponse, approvedCount, pendingCount, rejectedCount] = await Promise.all([
+        api.get('/leave-calendar'),
+        api.get('/leave-requests/count/approved'),
+        api.get('/leave-requests/count/pending'),
+        api.get('/leave-requests/count/rejected'),
+      ])
 
-        const [calendarResponse, approvedCount, pendingCount, rejectedCount] = await Promise.all([
-          api.get('/leave-calendar'),
-          api.get('/leave-requests/count/approved'),
-          api.get('/leave-requests/count/pending'),
-          api.get('/leave-requests/count/rejected'),
-        ])
+      const formattedEvents = calendarResponse.data.map((event) => ({
+        ...event,
+        extendedProps: {
+          status: event.status,
+          leave_type: event.leave_type,
+          user_name: event.user_name,
+          department: event.department,
+          leave_id: event.id,
+        },
+      }))
 
-        const formattedEvents = calendarResponse.data.map((event) => ({
-          ...event,
-          extendedProps: {
-            status: event.status,
-            leave_type: event.leave_type,
-            user_name: event.user_name,
-            department: event.department,
-            leave_id: event.id,
-          },
-        }))
+      setStatusCounts({
+        approved: approvedCount.data.count || 0,
+        pending: pendingCount.data.count || 0,
+        rejected: rejectedCount.data.count || 0,
+      })
 
-        setStatusCounts({
-          approved: approvedCount.data.count || 0,
-          pending: pendingCount.data.count || 0,
-          rejected: rejectedCount.data.count || 0,
-        })
-
-        setEvents(formattedEvents)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
-      }
+      setEvents(formattedEvents)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [])
 
@@ -133,8 +135,8 @@ const List = () => {
   }, [currentPage, selectedMonth, selectedYear])
 
   const fetchLeave = async () => {
+    setLoading(true)
     try {
-      setLoading(true)
       const response = await api.get('/leave-requests', {
         params: {
           page: currentPage,
@@ -195,6 +197,7 @@ const List = () => {
   }
 
   const fetchEmployeeInfo = async (userId, employeeName) => {
+    setLoading(true)
     try {
       const leaveHistoryResponse = await api.get(`/leaves/${userId}`)
       let leaveHistory = []
@@ -223,10 +226,13 @@ const List = () => {
         leaveHistory: [],
       })
       setEmployeeModalVisible(true)
+    } finally {
+      setLoading(false)
     }
   }
 
   const fetchLeaveDetails = async (id) => {
+    setLoading(true)
     try {
       const response = await api.get(`/leave-requests/${id}`)
       if (response.data.leaveRequests && response.data.leaveRequests.length > 0) {
@@ -237,6 +243,8 @@ const List = () => {
       setLeaveModalVisible(true)
     } catch (error) {
       console.error('Error fetching leave details:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -255,7 +263,12 @@ const List = () => {
 
   return (
     <CContainer fluid>
-      <CRow className="mb-4 g-4">
+      {loading && (
+        <div className="loading-overlay">
+          <CSpinner color="primary" variant="grow" />
+        </div>
+      )}
+      {/* <CRow className="mb-4 g-4">
         <CCol xs={12} md={6} lg={3}>
           <CCard className="h-100 border-top-3 border-top-success">
             <CCardBody className="d-flex align-items-center">
@@ -318,20 +331,13 @@ const List = () => {
             </CCardBody>
           </CCard>
         </CCol>
-      </CRow>
+      </CRow> */}
 
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center">
           <strong>Leave List</strong>
           <div className="d-flex gap-2 flex-wrap">
-            {/* <CButton
-              color="secondary"
-              onClick={() => setCalendarModalVisible(true)}
-              className="me-2"
-            >
-              <FontAwesomeIcon icon={faCalendarAlt} />
-            </CButton> */}
-            <CFormSelect
+            {/* <CFormSelect
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
               style={{ width: '120px', marginRight: '10px' }}
@@ -352,7 +358,7 @@ const List = () => {
                   {year}
                 </option>
               ))}
-            </CFormSelect>
+            </CFormSelect> */}
             <CInputGroup style={{ width: '150px' }}>
               <CFormInput
                 type="text"
@@ -360,19 +366,18 @@ const List = () => {
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
               />
-              <CInputGroupText color="primary">
-                <FontAwesomeIcon icon={faSearch} />
-              </CInputGroupText>
+              {/* <CInputGroupText
+                color="primary"
+                onClick={() => setCalendarModalVisible(true)}
+                style={{ cursor: 'pointer' }}
+              >
+                <FontAwesomeIcon icon={faCalendar} />
+              </CInputGroupText> */}
             </CInputGroup>
           </div>
         </CCardHeader>
         <CCardBody>
-          {loading ? (
-            <div className="text-center">
-              <CSpinner color="primary" />
-              <p>Loading...</p>
-            </div>
-          ) : filteredLeave.length === 0 ? (
+          {filteredLeave.length === 0 ? (
             <div className="text-center">
               <p>No leave request found.</p>
             </div>
@@ -412,7 +417,7 @@ const List = () => {
                         <CTableDataCell>
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </CTableDataCell>
-                        <CTableDataCell>{leave.employee_id || 'NA'}</CTableDataCell>
+                        <CTableDataCell>{leave.employeeId || 'NA'}</CTableDataCell>
                         <CTableDataCell>{leave.name}</CTableDataCell>
                         <CTableDataCell>
                           {new Date(leave.updated_at).toLocaleDateString()}
@@ -583,6 +588,20 @@ const List = () => {
               Close
             </CButton>
           </CModalFooter>
+        </CModal>
+
+        <CModal
+          visible={calendarModalVisible}
+          onClose={() => setCalendarModalVisible(false)}
+          size="xl"
+          fullscreen="lg"
+        >
+          <CModalHeader closeButton>
+            <CModalTitle>Leave Calendar</CModalTitle>
+          </CModalHeader>
+          <CModalBody>
+            <LeaveCalendar />
+          </CModalBody>
         </CModal>
 
         <CModal

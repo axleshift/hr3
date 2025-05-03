@@ -1,20 +1,11 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import useAuthStatus from '../hook/useAuthStatus'
-import { CSpinner } from '@coreui/react'
+import Cookies from 'js-cookie'
 
 const ProtectedRoute = () => {
-  const status = useAuthStatus()
+  const token = Cookies.get('dcims') || sessionStorage.getItem('session_id')
 
-  if (status === 'loading') {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <CSpinner color="primary" />
-      </div>
-    )
-  }
-
-  if (status === 'unauthenticated') {
+  if (!token) {
     return <Navigate to="/login" replace />
   }
 

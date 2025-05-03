@@ -41,13 +41,7 @@ const Benefits = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [editingBenefit, setEditingBenefit] = useState(null)
 
-  const benefitTypes = [
-    'Pag-ibig',
-    'SSS',
-    'PhilHealth',
-    '13th Month Pay',
-    'Service Incentive Leave',
-  ]
+  const benefitTypes = ['Pag-ibig', 'SSS', 'PhilHealth', '13th Month Pay', 'Bonus']
 
   const statusOptions = [
     { value: 'Active', label: 'Active' },
@@ -62,10 +56,10 @@ const Benefits = () => {
         setBenefits(response.data)
 
         const grouped = response.data.reduce((acc, benefit) => {
-          if (!acc[benefit.employee_id]) {
-            acc[benefit.employee_id] = []
+          if (!acc[benefit.employeeId]) {
+            acc[benefit.employeeId] = []
           }
-          acc[benefit.employee_id].push(benefit)
+          acc[benefit.employeeId].push(benefit)
           return acc
         }, {})
 
@@ -110,10 +104,10 @@ const Benefits = () => {
       setBenefits(response.data)
 
       const grouped = response.data.reduce((acc, benefit) => {
-        if (!acc[benefit.employee_id]) {
-          acc[benefit.employee_id] = []
+        if (!acc[benefit.employeeId]) {
+          acc[benefit.employeeId] = []
         }
-        acc[benefit.employee_id].push(benefit)
+        acc[benefit.employeeId].push(benefit)
         return acc
       }, {})
 
@@ -152,165 +146,174 @@ const Benefits = () => {
   }
 
   return (
-    <CRow>
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <strong>Manage Employee Benefits</strong>
-            <div className="float-end">
-              {/* <CButton
-                color="secondary"
-                className="me-2"
-                onClick={() => navigate('/Benefits_Archive')}
-              >
-                View Archive
-              </CButton> */}
-              <CButton color="primary" onClick={() => setModalVisible(true)}>
-                <FontAwesomeIcon icon={faPlus} />
-              </CButton>
-            </div>
-          </CCardHeader>
-          <CCardBody>
-            {error && <div className="alert alert-danger mb-3">{error}</div>}
+    <div>
+      {/* Loading overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <CSpinner color="primary" variant="grow" />
+        </div>
+      )}
 
-            <CTable hover responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>ID</CTableHeaderCell>
-                  <CTableHeaderCell>Employee ID</CTableHeaderCell>
-                  <CTableHeaderCell>Name</CTableHeaderCell>
-                  <CTableHeaderCell>Benefit Type</CTableHeaderCell>
-                  <CTableHeaderCell>Amount</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {loading ? (
-                  <CTableRow>
-                    <CTableDataCell colSpan={7} className="text-center">
-                      <CSpinner />
-                      <span className="ms-2">Loading benefits...</span>
-                    </CTableDataCell>
-                  </CTableRow>
-                ) : Object.keys(groupedBenefits).length === 0 ? (
-                  <CTableRow>
-                    <CTableDataCell colSpan={7} className="text-center">
-                      No benefits found
-                    </CTableDataCell>
-                  </CTableRow>
-                ) : (
-                  Object.entries(groupedBenefits).map(([employeeId, employeeBenefits], index) => (
-                    <React.Fragment key={employeeId}>
-                      {employeeBenefits.map((benefit, benefitIndex) => (
-                        <CTableRow key={benefit.id}>
-                          {benefitIndex === 0 && (
-                            <>
-                              <CTableDataCell
-                                rowSpan={employeeBenefits.length}
-                                className="text-center align-middle"
-                              >
-                                {index + 1}
-                              </CTableDataCell>
-                              <CTableDataCell
-                                rowSpan={employeeBenefits.length}
-                                className="text-center align-middle"
-                              >
-                                {benefit.employee_id}
-                              </CTableDataCell>
-                              <CTableDataCell
-                                rowSpan={employeeBenefits.length}
-                                className="text-center align-middle"
-                              >
-                                {benefit.name}
-                              </CTableDataCell>
-                            </>
-                          )}
-                          <CTableDataCell>{benefit.type}</CTableDataCell>
-                          <CTableDataCell>
-                            ₱
-                            {parseFloat(benefit.amount).toLocaleString('en-PH', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </CTableDataCell>
-                          <CTableDataCell>{getStatusBadge(benefit.status)}</CTableDataCell>
-                          <CTableDataCell>
-                            <CButton
-                              color="warning"
-                              size="sm"
-                              onClick={() => handleEdit(benefit)}
-                              className="me-2"
-                            >
-                              <FontAwesomeIcon icon={faEdit} />
-                            </CButton>
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </React.Fragment>
-                  ))
-                )}
-              </CTableBody>
-            </CTable>
-
-            <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
-              <CModalHeader>
-                <CModalTitle>{editingBenefit ? 'Edit Benefit' : 'Add New Benefit'}</CModalTitle>
-              </CModalHeader>
-              <CModalBody>
-                <CInputGroup className="mb-3">
-                  <CInputGroupText>Benefit Type</CInputGroupText>
-                  <CFormSelect value={type} onChange={(e) => setType(e.target.value)}>
-                    <option value="">Select benefit type</option>
-                    {benefitTypes.map((type, index) => (
-                      <option key={index} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                </CInputGroup>
-
-                <CInputGroup className="mb-3">
-                  <CInputGroupText>Amount</CInputGroupText>
-                  <CFormInput
-                    type="number"
-                    placeholder="Enter amount"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </CInputGroup>
-
-                <CInputGroup className="mb-3">
-                  <CInputGroupText>Status</CInputGroupText>
-                  <CFormSelect value={status} onChange={(e) => setStatus(e.target.value)}>
-                    {statusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                </CInputGroup>
-              </CModalBody>
-              <CModalFooter>
-                <CButton color="secondary" onClick={() => setModalVisible(false)}>
-                  Cancel
+      <CRow>
+        <CCol xs={12}>
+          <CCard className="mb-4">
+            <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <strong>Manage Employee Benefits</strong>
+              <div className="float-end">
+                <CButton color="primary" onClick={() => setModalVisible(true)} disabled={loading}>
+                  <FontAwesomeIcon icon={faPlus} />
                 </CButton>
-                <CButton color="primary" onClick={handleSubmit} disabled={loading}>
-                  {loading ? (
-                    <>
-                      <CSpinner component="span" size="sm" aria-hidden="true" />
-                      <span className="ms-2">Processing...</span>
-                    </>
+              </div>
+            </CCardHeader>
+            <CCardBody>
+              {error && <div className="alert alert-danger mb-3">{error}</div>}
+
+              <CTable hover responsive>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>ID</CTableHeaderCell>
+                    <CTableHeaderCell>Employee ID</CTableHeaderCell>
+                    <CTableHeaderCell>Name</CTableHeaderCell>
+                    <CTableHeaderCell>Benefit Type</CTableHeaderCell>
+                    <CTableHeaderCell>Amount</CTableHeaderCell>
+                    <CTableHeaderCell>Status</CTableHeaderCell>
+                    <CTableHeaderCell>Actions</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  {Object.keys(groupedBenefits).length === 0 ? (
+                    <CTableRow>
+                      <CTableDataCell colSpan={7} className="text-center">
+                        No benefits found
+                      </CTableDataCell>
+                    </CTableRow>
                   ) : (
-                    'Submit'
+                    Object.entries(groupedBenefits).map(([employeeId, employeeBenefits], index) => (
+                      <React.Fragment key={employeeId}>
+                        {employeeBenefits.map((benefit, benefitIndex) => (
+                          <CTableRow key={benefit.id}>
+                            {benefitIndex === 0 && (
+                              <>
+                                <CTableDataCell
+                                  rowSpan={employeeBenefits.length}
+                                  className="text-center align-middle"
+                                >
+                                  {index + 1}
+                                </CTableDataCell>
+                                <CTableDataCell
+                                  rowSpan={employeeBenefits.length}
+                                  className="text-center align-middle"
+                                >
+                                  {benefit.employeeId}
+                                </CTableDataCell>
+                                <CTableDataCell
+                                  rowSpan={employeeBenefits.length}
+                                  className="text-center align-middle"
+                                >
+                                  {benefit.name}
+                                </CTableDataCell>
+                              </>
+                            )}
+                            <CTableDataCell>{benefit.type}</CTableDataCell>
+                            <CTableDataCell>
+                              ₱
+                              {parseFloat(benefit.amount).toLocaleString('en-PH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </CTableDataCell>
+                            <CTableDataCell>{getStatusBadge(benefit.status)}</CTableDataCell>
+                            <CTableDataCell>
+                              <CButton
+                                color="warning"
+                                size="sm"
+                                onClick={() => handleEdit(benefit)}
+                                className="me-2"
+                                disabled={loading}
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </CButton>
+                            </CTableDataCell>
+                          </CTableRow>
+                        ))}
+                      </React.Fragment>
+                    ))
                   )}
-                </CButton>
-              </CModalFooter>
-            </CModal>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+                </CTableBody>
+              </CTable>
+
+              <CModal visible={modalVisible} onClose={() => !loading && setModalVisible(false)}>
+                <CModalHeader>
+                  <CModalTitle>{editingBenefit ? 'Edit Benefit' : 'Add New Benefit'}</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>Benefit Type</CInputGroupText>
+                    <CFormSelect
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                      disabled={loading}
+                    >
+                      <option value="">Select benefit type</option>
+                      {benefitTypes.map((type, index) => (
+                        <option key={index} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CInputGroup>
+
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>Amount</CInputGroupText>
+                    <CFormInput
+                      type="number"
+                      placeholder="Enter amount"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      disabled={loading}
+                    />
+                  </CInputGroup>
+
+                  <CInputGroup className="mb-3">
+                    <CInputGroupText>Status</CInputGroupText>
+                    <CFormSelect
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      disabled={loading}
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CInputGroup>
+                </CModalBody>
+                <CModalFooter>
+                  <CButton
+                    color="secondary"
+                    onClick={() => setModalVisible(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </CButton>
+                  <CButton color="primary" onClick={handleSubmit} disabled={loading}>
+                    {loading ? (
+                      <>
+                        <CSpinner component="span" size="sm" aria-hidden="true" />
+                        <span className="ms-2">Processing...</span>
+                      </>
+                    ) : (
+                      'Submit'
+                    )}
+                  </CButton>
+                </CModalFooter>
+              </CModal>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </div>
   )
 }
 

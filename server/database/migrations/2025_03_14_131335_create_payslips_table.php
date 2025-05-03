@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('payslips', function (Blueprint $table) {
             $table->id();
             $table->string('employee_id')->nullable();
-            $table->string('user_id');
-            $table->string('name');
-            $table->decimal('net_salary', 10, 2);
+            $table->string('user_id')->nullable();
+            $table->string('name')->nullable();
+            $table->decimal('net_salary', 10, 2)->nullable();
             $table->decimal('base_salary', 10, 2)->nullable();
+            $table->decimal('benefits_total', 10, 2)->nullable();
             $table->decimal('total_overtime_amount', 8, 2)->nullable();
             $table->decimal('bonus', 8, 2)->default(0);
+            $table->decimal('tax', 8, 2)->default(0);
             $table->decimal('deduction', 8, 2)->default(0);
             $table->integer('month')->nullable();
             $table->string('department')->nullable();
@@ -27,6 +29,8 @@ return new class extends Migration
             $table->integer('year')->nullable();
             $table->string('status')->default('Paid');
             $table->timestamp('issued_at')->nullable();
+            $table->string('password')->nullable();
+            $table->string('pdf_path')->nullable();
             $table->timestamps(); 
         });
     }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import 'react-toastify/dist/ReactToastify.css'
 import { format } from 'date-fns'
 import {
   CCard,
@@ -27,6 +28,8 @@ import {
   CDropdownItem,
   CCol,
   CRow,
+  CPagination,
+  CPaginationItem,
   CAlert,
   CInputGroup,
   CInputGroupText,
@@ -41,11 +44,16 @@ import {
   faClock,
   faGift,
   faCalendarAlt,
-  faSyncAlt,
+  faSearch,
+  faFilter,
+  faEnvelope,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const Payroll = () => {
+  const [toast, setToast] = useState(0)
+  const [userId, setUserId] = useState(null)
+  const toaster = React.useRef()
   const [employees, setEmployees] = useState([])
   const [filteredEmployees, setFilteredEmployees] = useState([])
   const [loading, setLoading] = useState(true)
@@ -71,28 +79,32 @@ const Payroll = () => {
   const [showAttendanceDetails, setShowAttendanceDetails] = useState(false)
   const [workingDays, setWorkingDays] = useState(0)
   const [presetRanges, setPresetRanges] = useState([])
-  const [selectedPreset, setSelectedPreset] = useState('')
-  const [computationModalVisible, setComputationModalVisible] = useState(false)
-  const [selectedEmployeeComputation, setSelectedEmployeeComputation] = useState(null)
+  // const [selectedPreset, setSelectedPreset] = useState('')
+  // const [computationModalVisible, setComputationModalVisible] = useState(false)
+  // const [selectedEmployeeComputation, setSelectedEmployeeComputation] = useState(null)
+  const [selectedPreset, setSelectedPreset] = useState('custom')
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  })
+
+  const [filters, setFilters] = useState({
+    department: 'all',
+    perPage: 15,
+    currentPage: 1,
+  })
 
   useEffect(() => {
     const today = new Date()
     const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth()
 
     const ranges = [
       {
         label: 'Custom',
         value: 'custom',
         getRange: () => [null, null],
-      },
-      {
-        label: 'Last Month',
-        value: 'last_month',
-        getRange: () => {
-          const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-          const lastDay = new Date(today.getFullYear(), today.getMonth(), 0)
-          return [firstDay, lastDay]
-        },
       },
       ...Array.from({ length: 12 }, (_, i) => ({
         label: new Date(currentYear, i, 1).toLocaleString('default', { month: 'long' }),
@@ -106,7 +118,7 @@ const Payroll = () => {
     ]
 
     setPresetRanges(ranges)
-    setSelectedPreset('custom')
+    setSelectedPreset(`month_${currentMonth + 1}`)
   }, [])
 
   useEffect(() => {
@@ -115,12 +127,10 @@ const Payroll = () => {
       if (selectedRange) {
         const [start, end] = selectedRange.getRange()
         setDateRange([start, end])
-
-        // Reset employees when changing periods
         setEmployees([])
         setHasAttendanceData(false)
-
-        if (selectedPreset !== 'custom') {
+        setError(null)
+        if (selectedPreset !== 'custom' && start && end) {
           fetchPayrollDataForMonth(start, end)
         }
       }
@@ -138,34 +148,41 @@ const Payroll = () => {
         return
       }
 
-      const response = await api.get('/payrolls', {
+      const response = await api.get('/payrolls/filter', {
         params: {
           year: start.getFullYear(),
           month: start.getMonth() + 1,
         },
       })
 
-      const groupedData = response.data.reduce((acc, payroll) => {
-        if (!acc[payroll.employee_id]) {
-          acc[payroll.employee_id] = {
-            employee_id: payroll.employee_id,
+      const payrollData = Array.isArray(response?.data?.data) ? response.data.data : []
+
+      if (payrollData.length === 0) {
+        setHasAttendanceData(false)
+        setLoading(false)
+        return
+      }
+
+      const groupedData = payrollData.reduce((acc, payroll) => {
+        if (!acc[payroll.employeeId]) {
+          acc[payroll.employeeId] = {
+            employeeId: payroll.employeeId,
             name: payroll.name,
             department: payroll.department,
-            job_position: payroll.job_position,
+            position: payroll.position,
             payrolls: [],
           }
         }
-        acc[payroll.employee_id].payrolls.push(payroll)
+        acc[payroll.employeeId].payrolls.push(payroll)
         return acc
       }, {})
 
       setEmployees(Object.values(groupedData))
-      setHasAttendanceData(response.data.length > 0)
-
-      const uniqueDepartments = [...new Set(response.data.map((p) => p.department))]
+      setHasAttendanceData(true)
+      const uniqueDepartments = [...new Set(payrollData.map((p) => p.department))]
       setDepartments(uniqueDepartments)
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching payroll data:', error)
       setError(error.response?.data?.message || 'Failed to fetch payroll data')
       setHasAttendanceData(false)
     } finally {
@@ -231,12 +248,8 @@ const Payroll = () => {
   //     }
 
   //     const response = await api.get('/payrolls', { params })
-
-  //     // Debugging: Log the response
   //     console.log('Payroll API Response:', response.data)
-
-  //     // Handle case where response.data is the array directly
-  //     const payrollData = Array.isArray(response.data) ? response.data : response.data.data || [] // Also check for Laravel's default wrapped response
+  //     const payrollData = Array.isArray(response.data) ? response.data : response.data.data || []
 
   //     if (payrollData.length === 0) {
   //       setHasAttendanceData(false)
@@ -250,7 +263,7 @@ const Payroll = () => {
   //           employee_id: payroll.employee_id,
   //           name: payroll.name,
   //           department: payroll.department,
-  //           job_position: payroll.job_position,
+  //           position: payroll.position,
   //           payrolls: [],
   //         }
   //       }
@@ -288,12 +301,12 @@ const Payroll = () => {
       }
 
       const params = {
-        start_date: format(startDate, 'yyyy-MM-dd'), // Format dates properly
+        start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: format(endDate, 'yyyy-MM-dd'),
-        calculate: 'true', // Send as string
+        calculate: selectedPreset === 'custom',
+        department: filters.department !== 'all' ? filters.department : undefined,
+        page: filters.currentPage,
       }
-
-      console.log('Making request with params:', params)
 
       const response = await api.get('/payrolls', { params })
 
@@ -302,31 +315,53 @@ const Payroll = () => {
         return
       }
 
-      // Process response data...
-    } catch (error) {
-      console.error('API Error:', {
-        message: error.message,
-        response: error.response?.data,
-        config: error.config,
+      const payrollData = response.data.data || []
+
+      const groupedData = payrollData.reduce((acc, payroll) => {
+        if (!acc[payroll.employeeId]) {
+          acc[payroll.employeeId] = {
+            employeeId: payroll.employeeId,
+            name: payroll.name,
+            department: payroll.department,
+            position: payroll.position,
+            payrolls: [],
+          }
+        }
+        acc[payroll.employeeId].payrolls.push(payroll)
+        return acc
+      }, {})
+
+      setEmployees(Object.values(groupedData))
+      setHasAttendanceData(payrollData.length > 0)
+
+      setPagination({
+        currentPage: response.data.current_page,
+        totalPages: response.data.last_page,
+        totalItems: response.data.total,
       })
 
+      const uniqueDepartments = [...new Set(payrollData.map((emp) => emp.department))]
+      setDepartments(uniqueDepartments)
+    } catch (error) {
+      console.error('API Error:', error)
       setError(error.response?.data?.message || 'Failed to fetch payroll data')
+      setHasAttendanceData(false)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleRowClick = (employee, e) => {
-    if (
-      e.target.closest('.dropdown') ||
-      e.target.closest('.dropdown-toggle') ||
-      e.target.closest('.dropdown-menu')
-    ) {
-      return
-    }
-    setSelectedEmployeeComputation(employee)
-    setComputationModalVisible(true)
-  }
+  // const handleRowClick = (employee, e) => {
+  //   if (
+  //     e.target.closest('.dropdown') ||
+  //     e.target.closest('.dropdown-toggle') ||
+  //     e.target.closest('.dropdown-menu')
+  //   ) {
+  //     return
+  //   }
+  //   setSelectedEmployeeComputation(employee)
+  //   setComputationModalVisible(true)
+  // }
 
   const handleCustomDateChange = (update) => {
     const [start, end] = update
@@ -336,6 +371,7 @@ const Payroll = () => {
     if (start && end) {
       setEmployees([])
       setHasAttendanceData(false)
+      setError(null)
       fetchPayrollData()
     }
   }
@@ -370,7 +406,7 @@ const Payroll = () => {
 
     try {
       await api.post('/payrolls', {
-        job_position: jobPosition,
+        position: jobPosition,
         monthly_rate: parseFloat(monthlyRate),
       })
       setSalaryModalVisible(false)
@@ -436,14 +472,12 @@ const Payroll = () => {
   const handlePreviewPayslip = async (payroll) => {
     try {
       setSelectedEmployee(payroll)
-      const response = await api.get('/benefits', {
-        params: {
-          employee_id: payroll.employee_id,
-          start_date: payroll.start_date,
-          end_date: payroll.end_date,
-        },
-      })
-      setEmployeeBenefits(response.data.benefits || [])
+      const response = await api.get('/benefits')
+      const filteredBenefits = response.data.filter(
+        (benefit) => benefit.employeeId === payroll.employeeId,
+      )
+
+      setEmployeeBenefits(filteredBenefits)
       setPayslipModalVisible(true)
     } catch (error) {
       console.error('Error fetching benefits:', error)
@@ -507,22 +541,17 @@ const Payroll = () => {
     return `${startDate.toLocaleDateString(undefined, options)} - ${endDate.toLocaleDateString(undefined, options)}`
   }
 
-  const handleRefresh = () => {
-    setError(null)
-    fetchPayrollData()
-  }
-
   return (
     <div>
       <CCard>
         <CCardHeader className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <strong>Employee Payroll</strong>
-            {startDate && endDate && (
+          {/* <div> */}
+          <strong>Employee Payroll</strong>
+          {/* {startDate && endDate && (
               <div className="text-muted small mt-1">{workingDays} working days</div>
             )}
-          </div>
-
+          </div> */}
+          {/* 
           <div className="d-flex flex-wrap gap-2 align-items-center">
             <CInputGroup>
               <CInputGroupText>
@@ -539,40 +568,44 @@ const Payroll = () => {
                   </option>
                 ))}
               </CFormSelect>
-            </CInputGroup>
+            </CInputGroup> */}
 
-            {selectedPreset === 'custom' && (
-              <DatePicker
-                selectsRange
-                startDate={startDate}
-                endDate={endDate}
-                onChange={handleCustomDateChange}
-                isClearable
-                placeholderText="Select date range"
-                className="form-control"
-                dateFormat="yyyy-MM-dd"
-                minDate={new Date(2020, 0, 1)}
-                maxDate={new Date()}
-                onCalendarClose={() => {
-                  if (startDate && endDate) {
-                    fetchPayrollData()
-                  }
-                }}
-              />
-            )}
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            {/* Month/Period Selection Section */}
+            <div className="d-flex align-items-center gap-2">
+              {/* Preset Selection Dropdown */}
+              <CInputGroup>
+                <CInputGroupText>
+                  <FontAwesomeIcon icon={faCalendarAlt} />
+                </CInputGroupText>
+                <CFormSelect
+                  value={selectedPreset}
+                  onChange={(e) => setSelectedPreset(e.target.value)}
+                  style={{ minWidth: '150px' }}
+                >
+                  {presetRanges.map((range) => (
+                    <option key={range.value} value={range.value}>
+                      {range.label}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CInputGroup>
 
-            <CFormSelect
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              style={{ minWidth: '150px' }}
-            >
-              <option value="all">All Departments</option>
-              {departments.map((dept, index) => (
-                <option key={index} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </CFormSelect>
+              {selectedPreset === 'custom' && (
+                <DatePicker
+                  selectsRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={handleCustomDateChange}
+                  isClearable
+                  placeholderText="Select date range"
+                  className="form-control"
+                  dateFormat="yyyy-MM-dd"
+                  minDate={new Date(2020, 0, 1)}
+                  maxDate={new Date()}
+                />
+              )}
+            </div>
 
             <CButton
               color="primary"
@@ -582,9 +615,9 @@ const Payroll = () => {
               <FontAwesomeIcon icon={faClock} />
             </CButton>
 
-            <CButton color="primary" onClick={() => setBonusModalVisible(true)} title="Set Bonus">
+            {/* <CButton color="primary" onClick={() => setBonusModalVisible(true)} title="Set Bonus">
               <FontAwesomeIcon icon={faGift} />
-            </CButton>
+            </CButton> */}
 
             <CButton
               color="info"
@@ -594,9 +627,32 @@ const Payroll = () => {
               <FontAwesomeIcon icon={faMoneyBill} />
             </CButton>
 
-            <CButton color="secondary" onClick={handleRefresh} title="Refresh Data">
-              <FontAwesomeIcon icon={faSyncAlt} />
-            </CButton>
+            <div className="d-flex flex-wrap gap-2 mb-3">
+              <CFormSelect
+                value={filters.department}
+                onChange={(e) => setFilters({ ...filters, department: e.target.value })}
+                style={{ minWidth: '180px' }}
+              >
+                <option value="all">All Departments</option>
+                {departments.map((dept, index) => (
+                  <option key={index} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </CFormSelect>
+
+              <CInputGroup>
+                <CInputGroupText>
+                  <FontAwesomeIcon icon={faSearch} />
+                </CInputGroupText>
+                <CFormInput
+                  placeholder="Search by name or ID"
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  onKeyPress={(e) => e.key === 'Enter' && fetchPayrollData()}
+                />
+              </CInputGroup>
+            </div>
           </div>
         </CCardHeader>
 
@@ -614,7 +670,7 @@ const Payroll = () => {
                 Retry
               </CButton>
             </CAlert>
-          ) : employees.length === 0 ? ( // Changed from hasAttendanceData
+          ) : employees.length === 0 ? (
             <div className="text-center py-5">
               <p>No payroll records found for the selected date range</p>
               <CButton color="primary" onClick={fetchPayrollData}>
@@ -639,7 +695,8 @@ const Payroll = () => {
                     <CTableHeaderCell>Benefits</CTableHeaderCell>
                     <CTableHeaderCell>Bonus</CTableHeaderCell>
                     <CTableHeaderCell>Net Salary</CTableHeaderCell>
-                    <CTableHeaderCell>Status</CTableHeaderCell>
+                    <CTableHeaderCell>Period</CTableHeaderCell>
+                    <CTableHeaderCell>Payment</CTableHeaderCell>
                     <CTableHeaderCell>Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -649,9 +706,9 @@ const Payroll = () => {
                       {employee.payrolls.map((payroll, payrollIndex) => (
                         <CTableRow
                           key={`${employee.employee_id}-${payrollIndex}`}
-                          onClick={(e) => handleRowClick(payroll, e)}
-                          style={{ cursor: 'pointer' }}
-                          className="hover-row"
+                          // onClick={(e) => handleRowClick(payroll, e)}
+                          // style={{ cursor: 'pointer' }}
+                          // className="hover-row"
                         >
                           {payrollIndex === 0 && (
                             <>
@@ -665,7 +722,7 @@ const Payroll = () => {
                                 {employee.department}
                               </CTableDataCell>
                               <CTableDataCell rowSpan={employee.payrolls.length}>
-                                {employee.job_position}
+                                {employee.position}
                               </CTableDataCell>
                             </>
                           )}
@@ -676,6 +733,7 @@ const Payroll = () => {
                           <CTableDataCell>{formatCurrency(payroll.benefits_total)}</CTableDataCell>
                           <CTableDataCell>{formatCurrency(payroll.bonus)}</CTableDataCell>
                           <CTableDataCell>{formatCurrency(payroll.net_salary)}</CTableDataCell>
+                          <CTableDataCell>{payroll.period}</CTableDataCell>
                           <CTableDataCell>
                             <CBadge color={getStatusBadge(payroll.status)}>
                               {payroll.status || 'Pending'}
@@ -730,7 +788,6 @@ const Payroll = () => {
         </CCardBody>
       </CCard>
 
-      {/* Overtime Rate Modal */}
       <CModal visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader closeButton>
           <CModalTitle>Set Overtime Rate</CModalTitle>
@@ -793,7 +850,6 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
-      {/* Salary Management Modal */}
       <CModal visible={salaryModalVisible} onClose={() => setSalaryModalVisible(false)}>
         <CModalHeader closeButton>
           <CModalTitle>Manage Base Salaries</CModalTitle>
@@ -802,9 +858,9 @@ const Payroll = () => {
           {validationError && <CAlert color="danger">{validationError}</CAlert>}
 
           <div className="mb-3">
-            <CFormLabel>Job Position</CFormLabel>
+            <CFormLabel>Position</CFormLabel>
             <CFormSelect value={jobPosition} onChange={(e) => setJobPosition(e.target.value)}>
-              <option value="">Select a job position</option>
+              <option value="">Select a position</option>
               {jobPositions.map((position, index) => (
                 <option key={index} value={position}>
                   {position}
@@ -872,13 +928,13 @@ const Payroll = () => {
                     <strong>Name:</strong> {selectedEmployee.name}
                   </p>
                   <p>
-                    <strong>ID:</strong> {selectedEmployee.employee_id}
+                    <strong>ID:</strong> {selectedEmployee.employeeId}
                   </p>
                   <p>
                     <strong>Department:</strong> {selectedEmployee.department}
                   </p>
                   <p>
-                    <strong>Designation:</strong> {selectedEmployee.job_position}
+                    <strong>Designation:</strong> {selectedEmployee.position}
                   </p>
                 </CCol>
                 <CCol md={6}>
@@ -886,7 +942,7 @@ const Payroll = () => {
                     <strong>Date of Payment:</strong> {selectedEmployee.updated_at || 'N/A'}
                   </p>
                   <p>
-                    <strong>Working Days:</strong> {selectedEmployee.working_days || 'N/A'}
+                    <strong>Working Days:</strong> {selectedEmployee.days_worked || 'N/A'}
                   </p>
                   <p>
                     <strong>Status:</strong>{' '}
@@ -894,18 +950,18 @@ const Payroll = () => {
                       {selectedEmployee.status || 'Pending'}
                     </CBadge>
                   </p>
-                  <p>
+                  {/* <p>
                     <strong
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                      onClick={() => fetchAttendanceDetails(selectedEmployee.employee_id)}
+                      onClick={() => fetchAttendanceDetails(selectedEmployee.employeeId)}
                     >
                       View Attendance Details
                     </strong>
-                  </p>
+                  </p> */}
                 </CCol>
               </CRow>
 
-              {showAttendanceDetails && (
+              {/* {showAttendanceDetails && (
                 <div className="mb-4">
                   <h5>Attendance Details</h5>
                   <div className="table-responsive">
@@ -950,6 +1006,97 @@ const Payroll = () => {
                                     new Date(att.time_in) >=
                                       new Date(selectedEmployee.start_date) &&
                                     new Date(att.time_out) <= new Date(selectedEmployee.end_date),
+                                )
+                                .reduce((total, attendance) => {
+                                  const timeIn = new Date(attendance.time_in)
+                                  const timeOut = new Date(attendance.time_out)
+                                  return total + ((timeOut - timeIn) / (1000 * 60 * 60) - 1)
+                                }, 0)
+                                .toFixed(2)}{' '}
+                              hours
+                            </strong>
+                          </CTableDataCell>
+                        </CTableRow>
+                      </CTableBody>
+                    </CTable>
+                  </div>
+                </div>
+              )} */}
+
+              {showAttendanceDetails && (
+                <div className="mb-4">
+                  <h5>Attendance Details</h5>
+                  <div className="table-responsive">
+                    <CTable striped>
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>Date</CTableHeaderCell>
+                          <CTableHeaderCell>Time In</CTableHeaderCell>
+                          <CTableHeaderCell>Time Out</CTableHeaderCell>
+                          <CTableHeaderCell>Hours Worked</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {attendanceDetails
+                          .filter(
+                            (att) =>
+                              new Date(att.time_in) >= new Date(selectedEmployee.start_date) &&
+                              new Date(att.time_out) <= new Date(selectedEmployee.end_date),
+                          )
+                          .map((attendance, index) => {
+                            if (attendance.status === 'Absent' || attendance.status === 'absent') {
+                              return (
+                                <CTableRow key={index}>
+                                  <CTableDataCell>
+                                    {new Date(attendance.date).toLocaleDateString()}
+                                  </CTableDataCell>
+                                  <CTableDataCell>-</CTableDataCell>
+                                  <CTableDataCell>-</CTableDataCell>
+                                  <CTableDataCell className="text-danger">Absent</CTableDataCell>
+                                </CTableRow>
+                              )
+                            }
+
+                            const timeIn = attendance.time_in ? new Date(attendance.time_in) : null
+                            const timeOut = attendance.time_out
+                              ? new Date(attendance.time_out)
+                              : null
+                            const hoursWorked =
+                              timeIn && timeOut
+                                ? ((timeOut - timeIn) / (1000 * 60 * 60) - 1).toFixed(2)
+                                : 'N/A'
+
+                            return (
+                              <CTableRow key={index}>
+                                <CTableDataCell>
+                                  {timeIn ? timeIn.toLocaleDateString() : 'N/A'}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                  {timeIn ? timeIn.toLocaleTimeString() : 'N/A'}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                  {timeOut ? timeOut.toLocaleTimeString() : 'N/A'}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                  {hoursWorked === 'N/A' ? 'N/A' : `${hoursWorked} hours`}
+                                </CTableDataCell>
+                              </CTableRow>
+                            )
+                          })}
+                        <CTableRow>
+                          <CTableDataCell colSpan="3" className="text-end">
+                            <strong>Total Hours:</strong>
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <strong>
+                              {attendanceDetails
+                                .filter(
+                                  (att) =>
+                                    new Date(att.time_in) >=
+                                      new Date(selectedEmployee.start_date) &&
+                                    new Date(att.time_out) <= new Date(selectedEmployee.end_date) &&
+                                    att.status !== 'Absent' &&
+                                    att.status !== 'absent',
                                 )
                                 .reduce((total, attendance) => {
                                   const timeIn = new Date(attendance.time_in)
@@ -1014,21 +1161,15 @@ const Payroll = () => {
                       <CTableDataCell></CTableDataCell>
                     </CTableRow>
 
-                    {employeeBenefits
-                      .filter(
-                        (benefit) =>
-                          new Date(benefit.date) >= new Date(selectedEmployee.start_date) &&
-                          new Date(benefit.date) <= new Date(selectedEmployee.end_date),
-                      )
-                      .map((benefit, index) => (
-                        <CTableRow key={index}>
-                          <CTableDataCell colSpan={3}></CTableDataCell>
-                          <CTableDataCell>{benefit.type}</CTableDataCell>
-                          <CTableDataCell className="text-center">
-                            {formatCurrency(benefit.amount)}
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
+                    {employeeBenefits.map((benefit, index) => (
+                      <CTableRow key={index}>
+                        <CTableDataCell colSpan={3}></CTableDataCell>
+                        <CTableDataCell>{benefit.type}</CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {formatCurrency(benefit.amount)}
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
 
                     <CTableRow>
                       <CTableDataCell>Paid Leave</CTableDataCell>
@@ -1036,9 +1177,17 @@ const Payroll = () => {
                       <CTableDataCell className="text-center">
                         {formatCurrency(selectedEmployee.paid_leave_amount)}
                       </CTableDataCell>
-                      <CTableDataCell>Late Hours</CTableDataCell>
+                      <CTableDataCell></CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {formatCurrency(selectedEmployee.total_late_hours)}
+                        {formatCurrency(selectedEmployee.leave_conversion_amount)}
+                      </CTableDataCell>
+                    </CTableRow>
+
+                    <CTableRow>
+                      <CTableDataCell>Convert Leave</CTableDataCell>
+                      <CTableDataCell className="text-center">-</CTableDataCell>
+                      <CTableDataCell className="text-center">
+                        {formatCurrency(selectedEmployee.paid_leave_amount)}
                       </CTableDataCell>
                     </CTableRow>
 
@@ -1083,7 +1232,46 @@ const Payroll = () => {
         </CModalFooter>
       </CModal>
 
-      <CModal
+      {pagination.totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-3">
+          <CPagination>
+            <CPaginationItem
+              disabled={pagination.currentPage === 1}
+              onClick={() => {
+                setFilters({ ...filters, currentPage: pagination.currentPage - 1 })
+                fetchPayrollData()
+              }}
+            >
+              Previous
+            </CPaginationItem>
+
+            {[...Array(pagination.totalPages).keys()].map((page) => (
+              <CPaginationItem
+                key={page + 1}
+                active={page + 1 === pagination.currentPage}
+                onClick={() => {
+                  setFilters({ ...filters, currentPage: page + 1 })
+                  fetchPayrollData()
+                }}
+              >
+                {page + 1}
+              </CPaginationItem>
+            ))}
+
+            <CPaginationItem
+              disabled={pagination.currentPage === pagination.totalPages}
+              onClick={() => {
+                setFilters({ ...filters, currentPage: pagination.currentPage + 1 })
+                fetchPayrollData()
+              }}
+            >
+              Next
+            </CPaginationItem>
+          </CPagination>
+        </div>
+      )}
+
+      {/* <CModal
         visible={computationModalVisible}
         onClose={() => setComputationModalVisible(false)}
         size="xl"
@@ -1091,7 +1279,7 @@ const Payroll = () => {
         <CModalHeader closeButton>
           <CModalTitle>
             Payroll Computation for {selectedEmployeeComputation?.name} -{' '}
-            {selectedEmployeeComputation?.job_position}
+            {selectedEmployeeComputation?.position}
           </CModalTitle>
         </CModalHeader>
         <CModalBody>
@@ -1100,7 +1288,7 @@ const Payroll = () => {
               <CRow className="mb-4">
                 <CCol md={6}>
                   <p>
-                    <strong>Employee ID:</strong> {selectedEmployeeComputation.employee_id}
+                    <strong>Employee ID:</strong> {selectedEmployeeComputation.employeeId}
                   </p>
                   <p>
                     <strong>Department:</strong> {selectedEmployeeComputation.department}
@@ -1113,7 +1301,7 @@ const Payroll = () => {
                 </CCol>
                 <CCol md={6}>
                   <p>
-                    <strong>Position:</strong> {selectedEmployeeComputation.job_position}
+                    <strong>Position:</strong> {selectedEmployeeComputation.position}
                   </p>
                   <p>
                     <strong>Monthly Rate:</strong>{' '}
@@ -1144,7 +1332,7 @@ const Payroll = () => {
                   <CTableRow>
                     <CTableDataCell>Base Salary (Half Month)</CTableDataCell>
                     <CTableDataCell>
-                      {formatCurrency(selectedEmployeeComputation.monthly_rate)} / 2
+                      {formatCurrency(selectedEmployeeComputation.base_salary)} / 2
                     </CTableDataCell>
                     <CTableDataCell>
                       {formatCurrency(selectedEmployeeComputation.base_salary)}
@@ -1252,7 +1440,7 @@ const Payroll = () => {
             Close
           </CButton>
         </CModalFooter>
-      </CModal>
+      </CModal> */}
     </div>
   )
 }

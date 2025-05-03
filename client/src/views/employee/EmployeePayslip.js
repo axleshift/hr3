@@ -209,7 +209,7 @@ const EmployeePayslip = () => {
                       color="success"
                       className="ms-2"
                       onClick={() =>
-                        handleDownloadPayslip(payslip.employee_id, payslip.name, payslip.month)
+                        handleDownloadPayslip(payslip.employeeId, payslip.name, payslip.month)
                       }
                       disabled={downloading}
                     >
@@ -240,7 +240,7 @@ const EmployeePayslip = () => {
                   <strong>Employee Name:</strong> {selectedEmployee.name}
                 </p>
                 <p>
-                  <strong>Employee ID:</strong> {selectedEmployee.employee_id}
+                  <strong>Employee ID:</strong> {selectedEmployee.employeeId}
                 </p>
                 <p>
                   <strong>Position:</strong> {selectedEmployee.job_position}

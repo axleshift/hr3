@@ -25,12 +25,29 @@
             margin-top: 20px;
             font-weight: bold;
         }
+        .grand-total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
     <h1>Payroll Report for {{ $month }}/{{ $year }}</h1>
 
+    @php
+        $grandTotal = 0;
+    @endphp
+
     @foreach ($payrollData as $department => $employees)
+        @php
+            $departmentTotal = $employees->sum('net_salary');
+            $grandTotal += $departmentTotal;
+        @endphp
+        
         <div class="department-header">
             Department: {{ $department }}
         </div>
@@ -59,11 +76,15 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="5" style="text-align: right;">Total:</th>
-                    <th>{{ number_format($employees->sum('net_salary'), 2) }}</th>
+                    <th colspan="5" style="text-align: right;">Department Total:</th>
+                    <th>{{ number_format($departmentTotal, 2) }}</th>
                 </tr>
             </tfoot>
         </table>
     @endforeach
+
+    <div class="grand-total">
+        Grand Total: {{ number_format($grandTotal, 2) }}
+    </div>
 </body>
 </html>
